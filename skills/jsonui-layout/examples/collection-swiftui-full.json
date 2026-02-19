@@ -1,0 +1,14 @@
+{
+  "_comment": "SwiftUI/Compose - with header, footer, and columns",
+  "type": "Collection",
+  "id": "itemsCollection",
+  "items": "@{collectionData}",
+  "sections": [
+    {
+      "header": "SectionHeader",
+      "cell": "ProductCell",
+      "footer": "SectionFooter",
+      "columns": 2
+    }
+  ]
+}

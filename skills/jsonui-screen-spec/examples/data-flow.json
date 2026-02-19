@@ -1,0 +1,26 @@
+{
+  "_comment": "Data flow - repositories, API endpoints, mermaid diagram",
+  "dataFlow": {
+    "diagram": "flowchart TD\n    VIEW[View] --> VM[ViewModel]\n    VM --> REPO[Repository]\n    REPO --> API[\"/api/v1/users\"]",
+    "repositories": [
+      {
+        "name": "UserRepository",
+        "methods": ["fetchUser(id: String)", "updateUser(user: User)"]
+      }
+    ],
+    "apiEndpoints": [
+      {
+        "path": "/api/v1/users/{id}",
+        "method": "GET",
+        "request": null,
+        "response": {
+          "id": "String",
+          "name": "String",
+          "email": "String"
+        },
+        "notes": "Fetch user by ID"
+      }
+    ],
+    "notes": "Data flow notes (optional)"
+  }
+}

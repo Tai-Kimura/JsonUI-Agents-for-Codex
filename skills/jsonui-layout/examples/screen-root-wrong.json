@@ -1,0 +1,6 @@
+{
+  "_comment": "WRONG - No scroll, content may be cut off on small screens",
+  "type": "SafeAreaView",
+  "orientation": "vertical",
+  "child": []
+}

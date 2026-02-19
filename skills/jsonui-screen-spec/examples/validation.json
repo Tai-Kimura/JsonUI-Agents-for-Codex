@@ -1,0 +1,14 @@
+{
+  "_comment": "Validation - client-side and server-side validation rules",
+  "validation": {
+    "clientSide": [
+      {"field": "email", "rule": "Required, valid email format"},
+      {"field": "password", "rule": "Required, minimum 8 characters"}
+    ],
+    "serverSide": [
+      {"condition": "401 Unauthorized", "handling": "Show invalid credentials error"},
+      {"condition": "Network error", "handling": "Show retry dialog"}
+    ],
+    "notes": "optional"
+  }
+}

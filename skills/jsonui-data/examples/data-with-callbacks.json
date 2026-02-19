@@ -1,0 +1,15 @@
+{
+  "_comment": "Data section with callback definitions",
+  "type": "View",
+  "child": [
+    {
+      "data": [
+        { "name": "email", "class": "String" },
+        { "name": "password", "class": "String" },
+        { "name": "onLoginTap", "class": "(() -> Void)" },
+        { "name": "onGoogleLoginTap", "class": "(() -> Void)" },
+        { "name": "onItemSelected", "class": "((ItemData) -> Void)" }
+      ]
+    }
+  ]
+}

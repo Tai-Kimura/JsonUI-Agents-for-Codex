@@ -1,0 +1,9 @@
+{
+  "_comment": "Include file example - header.json",
+  "type": "View",
+  "orientation": "horizontal",
+  "child": [
+    { "type": "Button", "id": "backButton", "onClick": "@{onBack}" },
+    { "type": "Label", "id": "titleLabel", "text": "@{title}" }
+  ]
+}

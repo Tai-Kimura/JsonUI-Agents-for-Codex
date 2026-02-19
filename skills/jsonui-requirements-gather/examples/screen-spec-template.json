@@ -1,0 +1,128 @@
+{
+  "$schema": "screen-spec-schema.json",
+  "metadata": {
+    "screenName": "",
+    "screenId": "",
+    "version": "1.0.0",
+    "lastUpdated": "",
+    "author": "",
+    "description": "",
+    "platform": ["iOS", "Android", "Web"],
+    "tags": []
+  },
+  "components": [
+    {
+      "id": "",
+      "type": "",
+      "description": "",
+      "props": {},
+      "dataBinding": "",
+      "events": [],
+      "children": []
+    }
+  ],
+  "layout": {
+    "type": "vertical|horizontal|grid|absolute",
+    "structure": {
+      "sections": [
+        {
+          "id": "",
+          "name": "",
+          "components": []
+        }
+      ]
+    },
+    "responsive": {
+      "breakpoints": {},
+      "behavior": ""
+    }
+  },
+  "dataFlow": {
+    "inputs": [
+      {
+        "name": "",
+        "type": "",
+        "source": "",
+        "required": true
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "",
+        "destination": "",
+        "trigger": ""
+      }
+    ],
+    "apiCalls": [
+      {
+        "endpoint": "",
+        "method": "GET|POST|PUT|DELETE",
+        "requestParams": {},
+        "responseMapping": {},
+        "errorHandling": ""
+      }
+    ]
+  },
+  "stateManagement": {
+    "localState": [
+      {
+        "name": "",
+        "type": "",
+        "initialValue": null,
+        "description": ""
+      }
+    ],
+    "sharedState": [
+      {
+        "name": "",
+        "scope": "",
+        "type": ""
+      }
+    ]
+  },
+  "userActions": [
+    {
+      "actionId": "",
+      "trigger": "",
+      "component": "",
+      "handler": "",
+      "effects": []
+    }
+  ],
+  "validation": {
+    "rules": [
+      {
+        "field": "",
+        "rules": [],
+        "message": ""
+      }
+    ],
+    "formValidation": {
+      "validateOn": "submit|blur|change",
+      "showErrors": ""
+    }
+  },
+  "transitions": {
+    "entryAnimation": "",
+    "exitAnimation": "",
+    "navigation": [
+      {
+        "target": "",
+        "trigger": "",
+        "params": {}
+      }
+    ]
+  },
+  "accessibility": {
+    "screenReaderText": "",
+    "focusOrder": [],
+    "ariaLabels": {}
+  },
+  "relatedFiles": {
+    "viewModel": "",
+    "layout": "",
+    "styles": "",
+    "tests": ""
+  }
+}

@@ -1,0 +1,36 @@
+# JsonUI Agents Configuration for Codex CLI
+
+[features]
+multi_agent = true
+
+# Maximum concurrent agent threads
+[agents]
+max_threads = 2
+
+# =============================================================================
+# Agent Roles
+# =============================================================================
+
+[agents.jsonui-orchestrator]
+description = "Main entry point for JsonUI projects. Coordinates full implementation flow from specification to testing. Use this agent when the user selects 'Implementation' workflow."
+config_file = "agents/jsonui-orchestrator.toml"
+
+[agents.jsonui-requirements]
+description = "Gathers app requirements from non-technical users through friendly dialogue. Creates structured screen specification documents. Use this agent when the user selects 'Requirements Definition' workflow."
+config_file = "agents/jsonui-requirements.toml"
+
+[agents.jsonui-spec]
+description = "Creates specification documents for JsonUI projects. Designs API, DB, and screen specifications through interactive dialogue. Launched by the orchestrator during Step 1."
+config_file = "agents/jsonui-spec.toml"
+
+[agents.jsonui-setup]
+description = "Expert in setting up and initializing JsonUI projects. Handles project initialization for SwiftJsonUI, KotlinJsonUI, and ReactJsonUI. Launched by the orchestrator during Step 2."
+config_file = "agents/jsonui-setup.toml"
+
+[agents.jsonui-screen-impl]
+description = "Expert in implementing screens for JsonUI projects. Orchestrates skill execution in order: generator -> layout -> refactor -> data -> viewmodel. Launched by the orchestrator during Step 3."
+config_file = "agents/jsonui-screen-impl.toml"
+
+[agents.jsonui-test]
+description = "Orchestrates JsonUI test operations. Routes tasks to specialized skills for screen tests, flow tests, documentation, CLI operations, and setup. Launched by the orchestrator during Step 4."
+config_file = "agents/jsonui-test.toml"

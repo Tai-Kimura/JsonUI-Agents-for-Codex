@@ -1,0 +1,9 @@
+{
+  "_comment": "CORRECT - Include usage (no type attribute)",
+  "type": "Linear",
+  "child": [
+    { "include": "header" },
+    { "include": "popups/confirm" },
+    { "type": "Label", "text": "Content" }
+  ]
+}
