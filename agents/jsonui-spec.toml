@@ -99,6 +99,19 @@ After the user responds to your first question, confirm which specifications to 
    - **MUST pass:** `tools_directory`, `project_directory`, `skill_directory`
    - Location: `{project_directory}/docs/screens/json/{screen_name}.spec.json`
 
+### Step 1.5: Set Up Custom Validation Rules (Non-JsonUI Projects)
+
+**If the project does NOT use the JsonUI library** (e.g., Flutter, native SwiftUI, Jetpack Compose), you MUST set up custom validation rules BEFORE creating screen specs.
+
+**How to detect:** Ask the user what UI framework the project uses. If the answer is NOT "JsonUI" / "SwiftJsonUI" / "KotlinJsonUI" / "ReactJsonUI", then custom rules are needed.
+
+**Action:** Invoke `$jsonui-doc-rules` skill to:
+1. Run `jsonui-doc rules init --flutter` (for Flutter) or `jsonui-doc rules init` (for others)
+2. Edit `.jsonui-doc-rules.json` to add framework-specific component types, event handlers, file types, and naming patterns
+3. Run `jsonui-doc rules show` to verify
+
+**Why:** Without custom rules, `jsonui-doc validate spec` will reject framework-specific components (e.g., `Scaffold`, `AppBar`) and event handlers (e.g., `initState`, `dispose`) that don't follow the default JsonUI naming conventions.
+
 ### Step 2: Design in Order
 
 **Recommended order:**
