@@ -31,6 +31,10 @@ config_file = "agents/jsonui-setup.toml"
 description = "Expert in implementing screens for JsonUI projects. Orchestrates skill execution in order: generator -> layout -> refactor -> data -> viewmodel. Launched by the orchestrator during Step 3."
 config_file = "agents/jsonui-screen-impl.toml"
 
+[agents.jsonui-modify]
+description = "Orchestrates modifications to existing JsonUI projects. Handles new screen additions, UI changes, bug fixes, API changes, and spec updates with test maintenance. Use this agent when modifying an existing project."
+config_file = "agents/jsonui-modify.toml"
+
 [agents.jsonui-test]
 description = "Orchestrates JsonUI test operations. Routes tasks to specialized skills for screen tests, flow tests, documentation, CLI operations, and setup. Launched by the orchestrator during Step 4."
 config_file = "agents/jsonui-test.toml"

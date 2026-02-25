@@ -53,10 +53,10 @@ AGENTS_DIR="$CODEX_DIR/agents"
 SKILLS_DIR=".agents/skills"
 
 # Agent config files (in agents/ directory)
-AGENT_FILES="jsonui-orchestrator.toml jsonui-requirements.toml jsonui-screen-impl.toml jsonui-setup.toml jsonui-spec.toml jsonui-test.toml"
+AGENT_FILES="jsonui-orchestrator.toml jsonui-modify.toml jsonui-requirements.toml jsonui-screen-impl.toml jsonui-setup.toml jsonui-spec.toml jsonui-test.toml"
 
 # Skill directories (each contains SKILL.md and optionally examples/)
-SKILL_DIRS="jsonui-component-spec jsonui-converter jsonui-data jsonui-flow-test-implement jsonui-generator jsonui-layout jsonui-refactor jsonui-requirements-gather jsonui-screen-spec jsonui-screen-test-implement jsonui-spec-review jsonui-swagger jsonui-test-cli jsonui-test-document jsonui-test-setup-android jsonui-test-setup-ios jsonui-test-setup-web jsonui-viewmodel kotlinjsonui-compose-setup kotlinjsonui-xml-setup reactjsonui-setup swiftjsonui-swiftui-setup swiftjsonui-uikit-setup"
+SKILL_DIRS="jsonui-component-spec jsonui-converter jsonui-data jsonui-doc-rules jsonui-flow-test-implement jsonui-generator jsonui-layout jsonui-refactor jsonui-requirements-gather jsonui-screen-spec jsonui-screen-test-implement jsonui-spec-review jsonui-swagger jsonui-test-cli jsonui-test-document jsonui-test-setup-android jsonui-test-setup-ios jsonui-test-setup-web jsonui-viewmodel kotlinjsonui-compose-setup kotlinjsonui-xml-setup reactjsonui-setup swiftjsonui-swiftui-setup swiftjsonui-uikit-setup"
 
 # Function to get examples for a skill (Bash 3.2 compatible - no associative arrays)
 get_skill_examples() {
