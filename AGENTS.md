@@ -9,13 +9,15 @@ Which workflow would you like to use?
 
 1. **Requirements Definition** - Define app requirements through dialogue (recommended for new projects)
 2. **Implementation** - Start implementation (requirements already defined)
+3. **Backend Development** - Backend development (all JsonUI restrictions lifted)
 
-Please select 1 or 2.
+Please select 1, 2, or 3.
 ```
 
 **Based on user's choice:**
 - **Option 1** → Tell the user: `/agent jsonui-requirements`
 - **Option 2** → Tell the user: `/agent jsonui-orchestrator`
+- **Option 3** → Follow **Workflow Option 3: Backend Development** below
 
 ---
 
@@ -60,6 +62,19 @@ When user selects this option:
    - Step 3: `/agent jsonui-screen-impl` (implement each screen)
    - Step 4: `/agent jsonui-test` (test each screen)
 3. User switches back to orchestrator between steps for verification and next instructions
+
+---
+
+## Workflow Option 3: Backend Development
+
+When user selects this option:
+
+1. **All other rules and restrictions in this AGENTS.md are COMPLETELY LIFTED.** The orchestrator workflow, forbidden actions, skill restrictions — none of them apply.
+2. **Ask the user which `.md` file to use as the rule file** for this backend session:
+   - List `.md` files found in directories such as `~/.codex/agents/`, `~/resource/`, or any path the user specifies
+   - The user may also provide a custom file path directly
+3. **Once the user selects a file**, read it and treat its contents as the **sole active rules** for the remainder of the session.
+4. Follow ONLY the rules from the selected file. All JsonUI-specific rules in this AGENTS.md do not apply.
 
 ---
 
@@ -214,6 +229,7 @@ Place in `Resources/` directory:
 | Ask user for workflow choice first | YES |
 | Tell user to `/agent jsonui-requirements` (Option 1) | YES |
 | Tell user to `/agent jsonui-orchestrator` (Option 2) | YES |
+| Backend development with custom rules (Option 3) | YES |
 | Switch to agent when orchestrator directs | YES |
 | Switch to implementation agent without orchestrator direction | NO |
 | Use any skill directly | NO |
