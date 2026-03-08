@@ -171,7 +171,7 @@ Use `paddings` and `margins` arrays: `[top, right, bottom, left]` or `[vertical,
 
 ## Label partialAttributes
 
-`partialAttributes` styles parts of a Label's text. `range` supports both array `[start, end]` and string pattern.
+`partialAttributes` styles parts of a Label's text. `range` supports both array `[start, end]` and string pattern. `onClick` makes a partial range tappable (handler type: `(() -> Void)?`).
 
 → Example: `examples/partial-attributes.json`
 

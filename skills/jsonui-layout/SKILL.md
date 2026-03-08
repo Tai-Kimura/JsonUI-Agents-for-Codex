@@ -258,12 +258,14 @@ Not extracted when:
 
 ---
 
-## partialAttributes Range
+## partialAttributes
 
 The `range` in `partialAttributes` supports two formats:
 
 1. **Array** `[start, end]`: Index-based range
 2. **String**: Text pattern matching
+
+`onClick` makes a partial range tappable. The handler must be defined in the data section as `(() -> Void)?`.
 
 → Example: `examples/partial-attributes.json`
 
