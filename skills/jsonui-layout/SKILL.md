@@ -1,6 +1,7 @@
 ---
 name: jsonui-layout
 description: Expert in implementing JSON layouts for JsonUI frameworks. Creates correct view structures, validates attributes, and ensures proper binding syntax across SwiftJsonUI, KotlinJsonUI, and ReactJsonUI.
+tools: Read, Write, MultiEdit, Bash, Glob, Grep
 ---
 
 # JsonUI Layout Agent
@@ -246,7 +247,7 @@ Not extracted when:
 ### Allowed Formats
 
 1. Color names from colors.json: `"primary_color"`, `"deep_gray"`
-2. Hex: `"#FF5500"`, `"#1A1410"`
+2. Hex: `"#FF5500"`, `"#1A1410"`, `"#80FF5500"` (AARRGGBB format with alpha)
 
 ### Prohibited Formats
 
@@ -254,6 +255,35 @@ Not extracted when:
 - `Color.red`, `UIColor.white`
 
 → Examples: `examples/color-correct.json`, `examples/color-wrong.json`
+
+---
+
+## partialAttributes Range
+
+The `range` in `partialAttributes` supports two formats:
+
+1. **Array** `[start, end]`: Index-based range
+2. **String**: Text pattern matching
+
+```json
+{
+  "type": "Label",
+  "text": "By signing up, you agree to the Terms of Service",
+  "partialAttributes": [
+    {
+      "range": [34, 50],
+      "fontColor": "#0066CC"
+    },
+    {
+      "range": "Terms of Service",
+      "fontColor": "#0066CC",
+      "underline": true
+    }
+  ]
+}
+```
+
+String format is preferred when the target text is static and readable.
 
 ---
 

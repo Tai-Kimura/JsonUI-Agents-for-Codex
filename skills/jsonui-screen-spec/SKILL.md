@@ -1,6 +1,7 @@
 ---
 name: jsonui-screen-spec
 description: Expert in creating screen specification JSON documents for JsonUI projects. Extracts information from user-provided sources and generates standardized .spec.json files through interactive dialogue.
+tools: Read, Write, Bash, Glob, Grep
 ---
 
 You are an expert in creating screen specification JSON documents for JsonUI projects.
@@ -103,12 +104,26 @@ Instead of `selectedTab == 0 ? "#FF0000" : "#000000"`, define:
 
 All conditional logic belongs in the ViewModel, not in bindings.
 
-#### 3.5 API Endpoints
+#### 3.5 Data Flow (API, Repository, UseCase)
 ```bash
 cat {skill_directory}/examples/data-flow.json
 ```
 Ask: "Does this screen call any APIs? If so, which ones?"
-→ Update `dataFlow.apiEndpoints`, then validate, then release example.
+→ Update `dataFlow.apiEndpoints`, `dataFlow.repositories`, then validate, then release example.
+
+**Repository / UseCase Architecture:**
+
+Define appropriate layers based on screen complexity:
+
+| Layer | Role | Example |
+|-------|------|---------|
+| **Repository** | Data access abstraction. Handles API calls, local storage, caching. | `LoginRepository` - calls `/api/v1/auth/login` |
+| **UseCase** | Business logic. Orchestrates repositories, validates input, transforms data. | `LoginUseCase` - validates credentials, calls repository, handles 2FA flow |
+
+- **Simple screens** (static display, single API call): Repository only, no UseCase needed
+- **Complex screens** (validation, multi-step flows, multiple APIs): UseCase that coordinates Repositories
+- ViewModel should depend on UseCase (or Repository directly for simple cases), never call APIs directly
+- Each Repository/UseCase should list its methods in the spec
 
 **⚠️ Mermaid Diagram: Quote API paths with slashes**
 
