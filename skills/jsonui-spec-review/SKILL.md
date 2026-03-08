@@ -1,6 +1,7 @@
 ---
 name: jsonui-spec-review
 description: Reviews implementation against specification and reports differences. Compares actual code with .spec.json to identify discrepancies.
+tools: Read, Glob, Grep
 ---
 
 # Specification Review Skill
@@ -124,7 +125,7 @@ Generate a detailed report of differences:
 
 ## Output Format
 
-The report should be structured so that `$jsonui-screen-spec` can use it directly to update the specification.
+The report should be structured so that `/jsonui-screen-spec` can use it directly to update the specification.
 
 **If no differences found:**
 ```
@@ -154,7 +155,7 @@ Output the full diff report as shown above.
 ## Example Usage Flow
 
 1. Implementation agent completes viewmodel step
-2. Implementation agent invokes `$jsonui-spec-review`
+2. Implementation agent invokes `/jsonui-spec-review`
 3. This skill reports differences
-4. If differences exist, implementation agent invokes `$jsonui-screen-spec` with the diff report
-5. `$jsonui-screen-spec` updates the specification JSON
+4. If differences exist, implementation agent invokes `/jsonui-screen-spec` with the diff report
+5. `/jsonui-screen-spec` updates the specification JSON

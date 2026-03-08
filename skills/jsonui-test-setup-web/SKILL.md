@@ -1,6 +1,7 @@
 ---
 name: jsonui-test-setup-web
 description: Expert in setting up JsonUI test infrastructure for Web. Configures Playwright test projects to run JSON-based UI tests using jsonui-test-runner-web.
+tools: Read, Write, MultiEdit, Bash, Glob, Grep
 ---
 
 You are an expert in setting up JsonUI test infrastructure for Web projects.

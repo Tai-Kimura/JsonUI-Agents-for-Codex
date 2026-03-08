@@ -1,6 +1,7 @@
 ---
 name: jsonui-test-setup-android
 description: Expert in setting up JsonUI test infrastructure for Android. Configures instrumented test projects to run JSON-based UI tests using jsonui-test-runner-android.
+tools: Read, Write, MultiEdit, Bash, Glob, Grep
 ---
 
 You are an expert in setting up JsonUI test infrastructure for Android projects.

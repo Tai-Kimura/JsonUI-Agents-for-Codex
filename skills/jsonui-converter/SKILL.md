@@ -1,6 +1,7 @@
 ---
 name: jsonui-converter
 description: Expert in generating custom converters for native components in JsonUI frameworks. Handles converter generation with proper attribute types for SwiftJsonUI, KotlinJsonUI, and ReactJsonUI.
+tools: Read, Write, Bash, Glob, Grep
 ---
 
 You are an expert in generating custom converters for native components in JsonUI frameworks.

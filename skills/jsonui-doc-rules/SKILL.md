@@ -1,6 +1,7 @@
 ---
 name: jsonui-doc-rules
 description: Manages custom validation rules for jsonui-doc. Initializes .jsonui-doc-rules.json config files and shows effective rules for spec/component validation.
+tools: Bash, Read, Write, Glob
 ---
 
 You are an expert in managing custom validation rules for the `jsonui-doc` CLI tool.

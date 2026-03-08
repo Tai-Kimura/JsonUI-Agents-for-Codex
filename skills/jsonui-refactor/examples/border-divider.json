@@ -1,0 +1,32 @@
+{
+  "_comment": "Direction-specific borders (borderBottomWidth, borderTopWidth) are UIKit/Android Views only. In SwiftUI/Compose, use a separate View as a divider line.",
+  "_wrong": {
+    "type": "View",
+    "id": "header_bar",
+    "width": "matchParent",
+    "height": 56,
+    "borderBottomWidth": 1,
+    "borderBottomColor": "#333333"
+  },
+  "_correct": {
+    "type": "View",
+    "id": "header_section",
+    "width": "matchParent",
+    "orientation": "vertical",
+    "child": [
+      {
+        "type": "View",
+        "id": "header_bar",
+        "width": "matchParent",
+        "height": 56
+      },
+      {
+        "type": "View",
+        "id": "header_divider",
+        "width": "matchParent",
+        "height": 1,
+        "background": "#333333"
+      }
+    ]
+  }
+}

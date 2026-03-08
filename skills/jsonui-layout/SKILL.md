@@ -265,25 +265,21 @@ The `range` in `partialAttributes` supports two formats:
 1. **Array** `[start, end]`: Index-based range
 2. **String**: Text pattern matching
 
-```json
-{
-  "type": "Label",
-  "text": "By signing up, you agree to the Terms of Service",
-  "partialAttributes": [
-    {
-      "range": [34, 50],
-      "fontColor": "#0066CC"
-    },
-    {
-      "range": "Terms of Service",
-      "fontColor": "#0066CC",
-      "underline": true
-    }
-  ]
-}
-```
+→ Example: `examples/partial-attributes.json`
 
 String format is preferred when the target text is static and readable.
+
+---
+
+## Border Limitations (SwiftUI / Compose)
+
+`borderWidth` applies a border to **all four sides**. Direction-specific borders (`borderBottomWidth`, `borderTopWidth`, etc.) are supported in **UIKit / Android Views only**.
+
+In SwiftUI / Compose generated code, create a separate View as a divider line instead.
+
+→ Example: `examples/border-divider.json`
+
+**Do NOT use `borderBottomWidth` / `borderTopWidth` in SwiftUI / Compose layouts.**
 
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: jsonui-component-spec
 description: Expert in creating reusable component specification JSON documents for JsonUI projects. Identifies custom components needed across screens and generates standardized .component.json files.
+tools: Read, Write, Bash, Glob, Grep
 ---
 
 You are an expert in creating reusable component specification JSON documents for JsonUI projects.

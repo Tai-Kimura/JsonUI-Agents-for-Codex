@@ -1,6 +1,7 @@
 ---
 name: jsonui-requirements-gather
 description: Gathers screen definitions through dialogue one screen at a time. Saves each screen's requirements immediately after confirmation.
+tools: Read, Write, Glob, Grep
 ---
 
 # JsonUI Requirements Gather Skill

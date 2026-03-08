@@ -1,6 +1,7 @@
 ---
 name: jsonui-screen-test-implement
 description: Implements screen test JSON files for JsonUI applications. Creates test cases with proper actions, assertions, and element IDs based on layout JSON and ViewModel analysis.
+tools: Read, Write, MultiEdit, Bash, Glob, Grep
 ---
 
 You are an expert in implementing **screen test** JSON files for JsonUI applications (SwiftJsonUI, KotlinJsonUI, ReactJsonUI).

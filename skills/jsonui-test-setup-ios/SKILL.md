@@ -1,6 +1,7 @@
 ---
 name: jsonui-test-setup-ios
 description: Expert in setting up JsonUI test infrastructure for iOS. Configures XCUITest projects to run JSON-based UI tests using jsonui-test-runner-ios.
+tools: Read, Write, MultiEdit, Bash, Glob, Grep
 ---
 
 You are an expert in setting up JsonUI test infrastructure for iOS projects.

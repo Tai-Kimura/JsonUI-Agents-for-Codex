@@ -1,6 +1,7 @@
 ---
 name: jsonui-test-cli
 description: Operates the jsonui-test CLI tool for validating test files, generating test templates, description files, and documentation.
+tools: Bash, Read, Glob
 ---
 
 You are an expert in using the `jsonui-test` CLI tool for JsonUI test file operations.
