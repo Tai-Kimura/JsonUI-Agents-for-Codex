@@ -1,0 +1,9 @@
+{
+  "_comment": "WRONG - binding used but data section missing",
+  "type": "View",
+  "child": {
+    "type": "Button",
+    "text": "Login",
+    "onClick": "@{onLoginTap}"
+  }
+}

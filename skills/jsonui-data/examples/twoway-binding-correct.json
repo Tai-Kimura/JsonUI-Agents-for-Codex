@@ -1,0 +1,10 @@
+{
+  "_comment": "CORRECT - 2-way binding properties with defaultValue",
+  "data": [
+    { "name": "email", "class": "String", "defaultValue": "" },
+    { "name": "password", "class": "String", "defaultValue": "" },
+    { "name": "searchQuery", "class": "String", "defaultValue": "" },
+    { "name": "title", "class": "String", "defaultValue": "Hello World" },
+    { "name": "visibility", "class": "String", "defaultValue": "gone" }
+  ]
+}

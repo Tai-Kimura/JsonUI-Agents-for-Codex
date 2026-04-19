@@ -1,0 +1,5 @@
+{
+  "_comment": "GOOD - Use arrays: [vertical, horizontal] or [all]",
+  "paddings": [16, 10],
+  "margins": [8, 0]
+}

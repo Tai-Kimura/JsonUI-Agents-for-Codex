@@ -1,0 +1,11 @@
+{
+  "_comment": "WRONG - Never use logic/operators inside bindings",
+  "examples": [
+    "@{selectedTab == 0 ? #D4A574 : #B8A894}",
+    "@{isLoggedIn ? 'Logout' : 'Login'}",
+    "@{items.count > 0}",
+    "@{price * quantity}",
+    "@{user.name + ' ' + user.lastName}",
+    "@{!isHidden}"
+  ]
+}

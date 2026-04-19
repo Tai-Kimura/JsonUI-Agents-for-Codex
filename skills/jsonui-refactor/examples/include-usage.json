@@ -1,0 +1,9 @@
+{
+  "_comment": "Using includes - just use include key, NOT type",
+  "type": "SafeAreaView",
+  "child": [
+    { "include": "header" },
+    { "include": "popups/confirm" },
+    { "type": "ScrollView", "child": {} }
+  ]
+}

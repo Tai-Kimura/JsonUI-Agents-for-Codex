@@ -1,0 +1,9 @@
+{
+  "_comment": "Style file example - primary_button_style.json",
+  "background": "primary_color",
+  "cornerRadius": 8,
+  "height": 48,
+  "textColor": "#FFFFFF",
+  "textSize": 16,
+  "textWeight": "bold"
+}

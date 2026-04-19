@@ -1,0 +1,9 @@
+{
+  "_comment": "Collection with items binding and CollectionDataSource",
+  "type": "Collection",
+  "items": "@{collectionData}",
+  "sections": [
+    { "cell": "FeaturedCell", "header": "FeaturedHeader" },
+    { "cell": "ProductCell", "columns": 2 }
+  ]
+}

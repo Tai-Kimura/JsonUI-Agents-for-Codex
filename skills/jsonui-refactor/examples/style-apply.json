@@ -1,0 +1,6 @@
+{
+  "_comment": "Applying a style - use name without folder prefix or .json extension",
+  "type": "View",
+  "style": "card_style",
+  "child": {}
+}

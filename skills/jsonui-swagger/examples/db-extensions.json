@@ -1,0 +1,167 @@
+{
+  "_comment": "Database-specific x-* extensions for OpenAPI schema",
+  "_warning": "Read this file FIRST before writing any DB model file",
+
+  "x-primary-key": {
+    "_description": "Marks field as primary key",
+    "example": {
+      "id": {
+        "type": "integer",
+        "description": "ID",
+        "x-primary-key": true,
+        "x-auto-increment": true
+      }
+    }
+  },
+
+  "x-auto-increment": {
+    "_description": "Auto-increment field",
+    "example": {
+      "id": {
+        "type": "integer",
+        "x-auto-increment": true
+      }
+    }
+  },
+
+  "x-unique": {
+    "_description": "Unique constraint",
+    "example": {
+      "email": {
+        "type": "string",
+        "description": "Email address",
+        "x-unique": true
+      }
+    }
+  },
+
+  "x-index": {
+    "_description": "Database index",
+    "example": {
+      "uuid": {
+        "type": "string",
+        "description": "UUID",
+        "x-index": true
+      }
+    }
+  },
+
+  "x-foreign-key": {
+    "_description": "Foreign key reference (object or string format)",
+    "example_object": {
+      "user_id": {
+        "type": "integer",
+        "description": "User ID",
+        "x-foreign-key": {
+          "table": "users",
+          "column": "id"
+        }
+      }
+    },
+    "example_string": {
+      "user_id": {
+        "type": "integer",
+        "description": "User ID",
+        "x-foreign-key": "users.id"
+      }
+    }
+  },
+
+  "x-notes": {
+    "_description": "Additional notes/remarks (string or array)",
+    "example_string": {
+      "member_id": {
+        "type": "string",
+        "description": "Member ID",
+        "x-notes": "12-digit number"
+      }
+    },
+    "example_array": {
+      "member_id": {
+        "type": "string",
+        "description": "Member ID",
+        "x-notes": [
+          "12-digit number",
+          "410000000000-417998999999: Point card",
+          "419000000000-419009999999: EC registration"
+        ]
+      }
+    }
+  },
+
+  "x-table-name": {
+    "_description": "Database table name (in info section)",
+    "example": {
+      "info": {
+        "title": "Bank Account",
+        "x-table-name": "bank_accounts"
+      }
+    }
+  },
+
+  "x-enum-values": {
+    "_description": "Enum integer values for DB storage",
+    "example": {
+      "User_Status": {
+        "type": "string",
+        "enum": ["active", "inactive", "suspended"],
+        "x-enum-values": {
+          "active": 0,
+          "inactive": 1,
+          "suspended": 2
+        }
+      }
+    }
+  },
+
+  "x-custom-validations": {
+    "_description": "Custom validation rules (at schema level)",
+    "example": {
+      "x-custom-validations": [
+        {
+          "name": "email_and_confirmation_match",
+          "conditions": "When creating new record with step=1,4",
+          "description": "Check that email matches email_confirmation"
+        }
+      ]
+    }
+  },
+
+  "x-erd-group": {
+    "_description": "ER diagram tab grouping (string or array)",
+    "example_single": {
+      "info": {
+        "x-table-name": "users",
+        "x-erd-group": "user"
+      }
+    },
+    "example_multiple": {
+      "info": {
+        "x-table-name": "notifications",
+        "x-erd-group": ["user", "notification"]
+      }
+    }
+  },
+
+  "x-erd-main": {
+    "_description": "Main/central table for ER diagram group (boolean, string, or array)",
+    "example_boolean": {
+      "info": {
+        "x-erd-group": "user",
+        "x-erd-main": true
+      }
+    },
+    "example_string": {
+      "info": {
+        "x-erd-group": ["user", "notification"],
+        "x-erd-main": "notification"
+      }
+    },
+    "example_array": {
+      "info": {
+        "x-erd-group": ["user", "order", "payment"],
+        "x-erd-main": ["order", "payment"]
+      }
+    }
+  }
+}

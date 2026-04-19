@@ -1,0 +1,16 @@
+{
+  "_comment": "User actions - what users can do on the screen",
+  "userActions": [
+    {
+      "action": "Tap submit button",
+      "processing": "Validate form and call API",
+      "destination": "HomeScreen",
+      "notes": "optional"
+    },
+    {
+      "action": "Enter email",
+      "processing": "Update email variable, validate form",
+      "destination": "-"
+    }
+  ]
+}

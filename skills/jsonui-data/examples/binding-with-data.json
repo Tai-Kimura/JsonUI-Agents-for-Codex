@@ -1,0 +1,16 @@
+{
+  "_comment": "CORRECT - binding with proper data section",
+  "type": "View",
+  "child": [
+    {
+      "data": [
+        { "name": "onLoginTap", "class": "(() -> Void)" }
+      ]
+    },
+    {
+      "type": "Button",
+      "text": "Login",
+      "onClick": "@{onLoginTap}"
+    }
+  ]
+}

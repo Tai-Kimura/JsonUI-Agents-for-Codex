@@ -1,0 +1,9 @@
+{
+  "_comment": "WRONG - Never manually repeat views. Use Collection instead.",
+  "type": "View",
+  "child": [
+    { "type": "Label", "text": "@{item1}" },
+    { "type": "Label", "text": "@{item2}" },
+    { "type": "Label", "text": "@{item3}" }
+  ]
+}

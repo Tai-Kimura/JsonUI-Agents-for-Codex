@@ -1,0 +1,6 @@
+{
+  "_comment": "WRONG - 2-way binding property missing defaultValue",
+  "data": [
+    { "name": "email", "class": "String" }
+  ]
+}
