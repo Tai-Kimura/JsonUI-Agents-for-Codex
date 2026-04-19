@@ -1,0 +1,22 @@
+{
+  "_comment": "TabView is the ROOT of the app. Each tab's view references a separate JSON file.",
+  "_note": "DO NOT put TabView inside SafeAreaView. TabView IS the root.",
+  "type": "TabView",
+  "tabs": [
+    {
+      "title": "Home",
+      "icon": "house",
+      "view": "home"
+    },
+    {
+      "title": "Search",
+      "icon": "magnifyingglass",
+      "view": "search"
+    },
+    {
+      "title": "Profile",
+      "icon": "person",
+      "view": "profile"
+    }
+  ]
+}

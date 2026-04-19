@@ -1,0 +1,7 @@
+{
+  "_comment": "CORRECT - Color formats",
+  "examples": [
+    { "type": "View", "background": "deep_gray", "_note": "Using color name from colors.json" },
+    { "type": "View", "background": "#1A1410", "_note": "Using hex format" }
+  ]
+}

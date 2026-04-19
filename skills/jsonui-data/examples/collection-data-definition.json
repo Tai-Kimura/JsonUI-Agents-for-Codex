@@ -1,0 +1,6 @@
+{
+  "_comment": "Data section for Collection items",
+  "data": [
+    { "name": "collectionData", "class": "CollectionDataSource" }
+  ]
+}

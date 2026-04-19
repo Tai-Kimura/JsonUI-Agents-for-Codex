@@ -1,0 +1,9 @@
+{
+  "_comment": "BAD - Individual padding/margin attributes",
+  "paddingTop": 16,
+  "paddingBottom": 16,
+  "paddingLeft": 10,
+  "paddingRight": 10,
+  "marginTop": 8,
+  "marginBottom": 8
+}

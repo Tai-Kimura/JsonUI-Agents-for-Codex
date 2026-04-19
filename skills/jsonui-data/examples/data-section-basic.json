@@ -1,0 +1,17 @@
+{
+  "_comment": "Basic data section structure inside root component's child",
+  "type": "View",
+  "child": [
+    {
+      "data": [
+        { "name": "items", "class": "Array(ItemData)" },
+        { "name": "selectedItem", "class": "ItemData?" },
+        { "name": "onItemTap", "class": "(() -> Void)" }
+      ]
+    },
+    {
+      "type": "Text",
+      "text": "Hello"
+    }
+  ]
+}

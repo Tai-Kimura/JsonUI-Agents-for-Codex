@@ -1,0 +1,9 @@
+{
+  "_comment": "SwiftUI/Compose - items binding with sections",
+  "type": "Collection",
+  "id": "itemsCollection",
+  "items": "@{collectionData}",
+  "sections": [
+    { "cell": "ProductCell" }
+  ]
+}

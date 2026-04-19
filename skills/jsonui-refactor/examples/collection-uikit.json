@@ -1,0 +1,6 @@
+{
+  "_comment": "UIKit/Android Views - items binding only, no sections",
+  "type": "Collection",
+  "id": "itemsCollection",
+  "items": "@{collectionData}"
+}

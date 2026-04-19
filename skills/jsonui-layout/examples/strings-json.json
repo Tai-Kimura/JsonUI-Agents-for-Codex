@@ -1,0 +1,10 @@
+{
+  "_comment": "strings.json format - Structure: { file_prefix: { key: value } }",
+  "login": {
+    "itemfinder": "ItemFinder",
+    "discover_your_perfect_item": "Discover Your Perfect Item"
+  },
+  "main": {
+    "welcome": "Welcome"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "_comment": "Transitions - screen navigation conditions",
+  "transitions": [
+    {"condition": "Login successful", "destination": "HomeScreen"},
+    {"condition": "Tap register link", "destination": "RegisterScreen"},
+    {"condition": "Tap forgot password", "destination": "ForgotPasswordScreen"}
+  ]
+}

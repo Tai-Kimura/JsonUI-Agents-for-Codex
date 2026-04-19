@@ -1,0 +1,16 @@
+{
+  "_comment": "TabView with view attributes - needs adapters in Dynamic mode",
+  "type": "TabView",
+  "tabs": [
+    {
+      "title": "Home",
+      "icon": "house",
+      "view": "home"
+    },
+    {
+      "title": "Search",
+      "icon": "magnifyingglass",
+      "view": "search"
+    }
+  ]
+}

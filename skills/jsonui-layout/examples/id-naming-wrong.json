@@ -1,0 +1,8 @@
+{
+  "_comment": "WRONG - ID naming without component type suffix",
+  "type": "View",
+  "child": [
+    { "type": "Label", "id": "title", "text": "@{title}" },
+    { "type": "TextField", "id": "email", "text": "@{email}" }
+  ]
+}

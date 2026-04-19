@@ -1,0 +1,40 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Model Name (user's language)",
+    "description": "Model description",
+    "version": "1.0.0",
+    "x-table-name": "table_name",
+    "x-erd-group": "group_name",
+    "x-erd-main": false
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "ModelName": {
+        "type": "object",
+        "description": "Model description",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID",
+            "x-primary-key": true,
+            "x-auto-increment": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Created timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Updated timestamp"
+          }
+        },
+        "required": ["id"],
+        "x-custom-validations": []
+      }
+    }
+  }
+}

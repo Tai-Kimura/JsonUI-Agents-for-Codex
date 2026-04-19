@@ -1,0 +1,36 @@
+{
+  "_comment": "State management - states, uiVariables, eventHandlers, displayLogic",
+  "_warning": "CRITICAL: uiVariables must list EVERY individual field - NEVER use object types like UserData",
+  "stateManagement": {
+    "states": [
+      {
+        "name": "ViewState",
+        "values": [
+          {"value": "loading", "description": "Loading data", "visibleElements": ["loading_indicator"]},
+          {"value": "content", "description": "Showing content", "visibleElements": ["content_view"]},
+          {"value": "error", "description": "Error occurred", "visibleElements": ["error_view"]}
+        ],
+        "notes": "Main view state"
+      }
+    ],
+    "uiVariables": [
+      {"name": "userName", "type": "String", "description": "User's display name"},
+      {"name": "userEmail", "type": "String", "description": "User's email address"},
+      {"name": "isLoading", "type": "Bool", "description": "Loading indicator state"}
+    ],
+    "eventHandlers": [
+      {"name": "onSubmitTap", "description": "Handle submit button tap"},
+      {"name": "onTextChanged", "description": "Handle text field changes"}
+    ],
+    "displayLogic": [
+      {
+        "condition": "isLoading == true",
+        "effects": [
+          {"element": "loading_view", "state": "visible"},
+          {"element": "content_view", "state": "hidden"}
+        ]
+      }
+    ],
+    "notes": "State management notes (optional)"
+  }
+}

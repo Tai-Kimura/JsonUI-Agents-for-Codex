@@ -1,0 +1,9 @@
+{
+  "_comment": "CORRECT - Simple variable/function references only",
+  "type": "View",
+  "child": [
+    { "type": "Label", "id": "titleLabel", "text": "@{title}" },
+    { "type": "Label", "id": "colorLabel", "textColor": "@{searchTabColor}" },
+    { "type": "Button", "id": "submitButton", "onClick": "@{onButtonTap}" }
+  ]
+}
