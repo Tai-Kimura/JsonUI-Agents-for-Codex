@@ -1,0 +1,9 @@
+{
+  "_comment": "CORRECT - ID naming with component type suffix",
+  "type": "View",
+  "child": [
+    { "type": "Label", "id": "titleLabel", "text": "@{title}" },
+    { "type": "TextField", "id": "emailTextField", "text": "@{email}" },
+    { "type": "Button", "id": "submitButton", "onClick": "@{onSubmit}" }
+  ]
+}

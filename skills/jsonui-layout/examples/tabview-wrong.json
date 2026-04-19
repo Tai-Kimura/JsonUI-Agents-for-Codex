@@ -1,0 +1,31 @@
+{
+  "_comment": "WRONG: TabView should NOT be inside SafeAreaView!",
+  "_error": "TabView must be the ROOT, not a child of another view",
+  "type": "SafeAreaView",
+  "child": [
+    {
+      "_comment": "WRONG: Screen content and TabView mixed together",
+      "type": "ScrollView",
+      "child": {
+        "type": "View",
+        "child": [
+          {
+            "type": "Label",
+            "text": "Some content"
+          }
+        ]
+      }
+    },
+    {
+      "_comment": "WRONG: TabView as a sibling of content",
+      "type": "TabView",
+      "tabs": [
+        {
+          "title": "Home",
+          "icon": "house",
+          "view": "home"
+        }
+      ]
+    }
+  ]
+}

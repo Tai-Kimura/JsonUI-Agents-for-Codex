@@ -1,0 +1,8 @@
+{
+  "_comment": "Component definition example - ID uses snake_case",
+  "type": "View|Label|Button|TextField|...",
+  "id": "component_id_snake_case",
+  "description": "What this component does",
+  "initialState": "Initial state/style (optional)",
+  "notes": "Additional notes (optional)"
+}

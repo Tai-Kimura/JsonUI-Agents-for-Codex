@@ -1,0 +1,14 @@
+{
+  "_comment": "Layout definition - nested structure with children",
+  "root": "root_view",
+  "children": [
+    "simple_child",
+    {
+      "id": "nested_container",
+      "children": [
+        "deeply_nested_1",
+        "deeply_nested_2"
+      ]
+    }
+  ]
+}

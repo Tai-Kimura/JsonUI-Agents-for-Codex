@@ -1,0 +1,6 @@
+{
+  "_comment": "Legacy format using cellClasses (items not specified)",
+  "type": "Collection",
+  "cellClasses": ["ProductCell"],
+  "columns": 2
+}
