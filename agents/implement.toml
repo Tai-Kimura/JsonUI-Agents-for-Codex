@@ -108,7 +108,7 @@ Signatures come from spec. You fill bodies.
 - Repository: API / local / SDK; return per spec `returnType`
 - UseCase: orchestrate + validate
 
-Invoke `$jsonui-viewmodel` for platform conventions.
+Invoke `$jsonui-viewmodel-impl` for platform conventions.
 
 **Adding new public member?** Can't — add to spec via `/agent define`, let `jui build` regenerate Protocol.
 

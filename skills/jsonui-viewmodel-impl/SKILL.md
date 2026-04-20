@@ -1,5 +1,5 @@
 ---
-name: jsonui-viewmodel
+name: jsonui-viewmodel-impl
 description: Expert in implementing ViewModel business logic for JsonUI frameworks. Handles state management, API integration, event handlers, and testability across SwiftJsonUI, KotlinJsonUI, and ReactJsonUI.
 tools: Read, Write, MultiEdit, Bash, Glob, Grep
 ---
@@ -267,12 +267,10 @@ data.bottleItems = CollectionDataSource(section = Section(cellData = items))
 
 ## Data Section Issues
 
-If you find issues with the JSON `data` section (missing bindings, wrong types, etc.):
+If you find issues with the Layout JSON `data` section (missing bindings, wrong types, etc.):
 
-> "I found issues with the JSON data section. Please use the **jsonui-data agent** to fix the data section before I can implement the ViewModel."
+- The type definitions live in the spec's `stateManagement.uiVariables` and `dataFlow.viewModel.vars`. Fix the spec via the `define` agent, not the Layout JSON.
+- The Layout's `data` block is regenerated from those spec fields; editing it manually drifts from the spec.
+- Cross-platform type compatibility comes from the TypeMapper (`.jsonui-type-map.json`). Unregistered custom types produce warnings at `jui verify`.
 
-The jsonui-data agent specializes in:
-- Defining correct data types
-- Validating types against type_converter.rb
-- Adding missing event handler bindings
-- Cross-platform type compatibility
+See `jsonui-dataflow` skill for authoring `dataFlow.viewModel.vars`.

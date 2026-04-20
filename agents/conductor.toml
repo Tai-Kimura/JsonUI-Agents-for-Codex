@@ -79,23 +79,31 @@ Adjust the state summary:
 
 ---
 
-## Transitional agent mapping (Phase 3 in progress)
+## Agent routing table
 
-The target 9-agent layout is being built incrementally. Current state:
+| Logical route | Command | R/W | Responsibility |
+|---|---|---|---|
+| **debug** | `/agent debug` | R | spec-first bug trace, behavior walks, code archaeology |
+| **define** | `/agent define` | W | spec authoring (screen / component / API/DB / doc-rules), validate, HTML docs |
+| **ground** | `/agent ground` | W | `jui init`, platform scaffolding, test runner setup |
+| **implement** | `/agent implement` | W | Layout/Styles/VM body + localize + gates |
+| **navigation-ios** | `/agent navigation-ios` | W | SwiftUI NavigationStack / UIKit UINavigationController |
+| **navigation-android** | `/agent navigation-android` | W | Compose Navigation / XML NavGraph |
+| **navigation-web** | `/agent navigation-web` | W | React Router / Next.js App Router |
+| **test** | `/agent test` | W | spec-first screen / flow test authoring + validation + HTML docs |
 
-| Logical route | Agent command | Status |
-|---|---|---|
-| **debug** | `/agent debug` | ✅ Phase 3a — READ-ONLY, spec-first bug trace |
-| **define** | `/agent define` | ✅ Phase 3b — spec authoring & validation |
-| **implement** | `/agent implement` | ✅ Phase 3c — Layout/VM body + gates (build 0 warnings, verify no drift, localize) |
-| **test** | `/agent test` | ✅ Phase 3d — spec-first screen/flow test authoring + validation + HTML docs |
-| **ground** | `/agent ground` | ✅ Phase 3e — jui_init + platform scaffolding + test runner setup |
-| **navigation-ios** | `/agent navigation-ios` | ✅ Phase 3f — SwiftUI NavigationStack / UIKit UINavigationController |
-| **navigation-android** | `/agent navigation-android` | ✅ Phase 3f — Compose Navigation / XML NavGraph |
-| **navigation-web** | `/agent navigation-web` | ✅ Phase 3f — React Router / Next.js App Router |
-| **adapt / modify** | `/agent jsonui-modify` | transitional (change-existing-screen scenarios) |
+### Routing heuristics
 
-Tell the user which agent to switch to, and what parameters they should mention (spec file, platform, mode, etc.).
+- 新規 + fresh repo → ground → define → implement → test (one screen at a time)
+- 新規 + scaffolded → define → implement → test
+- 新規 + specs exist → implement (or define to add new spec)
+- 既存のバグ → debug first (READ-ONLY, returns routing recommendation)
+- spec 変更 → define
+- Layout / VM body 変更 → implement
+- 画面遷移変更 → navigation-{ios,android,web}
+- 調査だけ → debug
+
+Tell the user which agent to switch to, and what parameters they should mention.
 
 ---
 

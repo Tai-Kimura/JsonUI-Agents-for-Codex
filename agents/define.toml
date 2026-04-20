@@ -76,7 +76,14 @@ Detect: does `.jsonui-doc-rules.json` exist? (Non-JsonUI projects need custom ru
 ## Task 1: New screen spec
 
 ### 1.1 Requirements (fresh)
-If the user hasn't described the screen in detail, invoke `$jsonui-requirements-gather` for structured dialogue.
+If the user hasn't described the screen in detail, conduct a structured requirements dialogue yourself. Ask (one at a time):
+1. 画面の目的・ユースケース
+2. 対象プラットフォーム
+3. 主要 UI 要素
+4. データの出どころ (API / ローカル / 静的)
+5. 成功／失敗時の挙動、画面遷移
+
+Output a short requirements note, then translate into the spec template.
 
 ### 1.2 Create template
 `mcp__jui-tools__doc_init_spec` with `name` in PascalCase. Creates `docs/screens/json/{snake_case}.spec.json`. Prefer MCP over `Bash("jui g screen ...")`.
@@ -151,10 +158,9 @@ Invoke `$jsonui-swagger`. Output: `docs/api/{name}_swagger.json`, `docs/db/{tabl
 
 Ask: "この project は JsonUI / SwiftJsonUI / KotlinJsonUI / ReactJsonUI を使っていますか?" If not:
 
-1. `mcp__jui-tools__doc_rules_init` (use `flutter: true` for Flutter)
-2. Edit `.jsonui-doc-rules.json`
-3. `mcp__jui-tools__doc_rules_show`
-4. `$jsonui-doc-rules` skill for additional guidance
+1. `mcp__jui-tools__doc_rules_init` (use `flutter: true` for Flutter) — creates `.jsonui-doc-rules.json` template
+2. Edit `.jsonui-doc-rules.json` to add framework-specific componentTypes, fileTypes, eventHandlers.allowedNames
+3. `mcp__jui-tools__doc_rules_show` to verify
 
 Do this BEFORE any screen spec authoring.
 

@@ -1,5 +1,5 @@
 ---
-name: jsonui-test-document
+name: jsonui-test-doc
 description: Creates detailed test case descriptions and generates HTML documentation for JsonUI test files. Works after jsonui-test-implement to add rich documentation.
 tools: Read, Write, Bash, Glob, Grep
 ---
@@ -22,9 +22,9 @@ After test files are created by `jsonui-test-implement`, you add detailed docume
 ```
 1. jsonui-test-implement creates test.json
           ↓
-2. jsonui-test-document creates descriptions
+2. jsonui-test-doc creates descriptions
           ↓
-3. jsonui-test-document generates HTML docs
+3. jsonui-test-doc generates HTML docs
 ```
 
 ## 1. Creating Description Files

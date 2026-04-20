@@ -22,9 +22,7 @@ Based on the choice:
 | 1, 2, 3 | (any of the first three) | `/agent conductor` — reads repo state via MCP and routes to the right sub-agent |
 | 4 | Backend | Follow **Workflow 4: Backend** below |
 
-The `conductor` agent is the entry point for all JsonUI work in Codex. It inspects the repo (`jui.config.json`, spec count, layout count), asks a short follow-up, then tells the user which `/agent` to switch to next.
-
-> **Transitional note (Phase 2):** The 9-agent target layout is (`conductor` / `define` / `ground` / `implement` / `navigation-{ios,android,web}` / `test` / `debug`). `conductor` is live; the other new agents will ship in later phases. During the transition, `conductor` routes to existing agents (`/agent jsonui-spec`, `jsonui-setup`, `jsonui-screen-impl`, `jsonui-test`, `jsonui-investigate`, `jsonui-modify`, etc.). The old `jsonui-orchestrator` is deprecated but still works if you need it. See `docs/plans/agent-redesign.md` in the Claude variant repo.
+The `conductor` agent is the entry point for all JsonUI work. It inspects the repo (`jui.config.json`, spec count, layout count), asks a short follow-up, then tells the user which of the 8 specialized agents to switch to via `/agent <name>`: `define` / `ground` / `implement` / `navigation-{ios,android,web}` / `test` / `debug`.
 
 ---
 
@@ -33,16 +31,15 @@ The `conductor` agent is the entry point for all JsonUI work in Codex. It inspec
 This project uses Codex CLI's multi-agent feature. Agents are defined in `.codex/config.toml`.
 
 **Key concepts:**
-- **Agent roles** are specialized workers (orchestrator, spec, setup, implementation, test, modify, investigate)
-- **Skills** (`$skill-name`) are invoked by agents for specific tasks
-- **`/agent`** command switches between agent threads
-- Codex handles sub-agent spawning, routing, and result consolidation automatically
+- **9 specialized agents**: `conductor`, `define`, `ground`, `implement`, `navigation-{ios,android,web}`, `test`, `debug`
+- **Skills** (`$skill-name`) are invoked by agents for authoring guidance
+- **`/agent <name>`** switches between agent threads
 
 **User commands:**
 - `/agent` — list active agent threads
-- `/agent jsonui-orchestrator` — switch to orchestrator
-- `/agent jsonui-investigate` — switch to investigate agent (READ-ONLY)
-- etc.
+- `/agent conductor` — entry point (READ-ONLY routing)
+- `/agent debug` — bug investigation (READ-ONLY)
+- `/agent define` / `implement` / etc. — specialized work
 
 ---
 
@@ -88,11 +85,9 @@ The conductor will:
 
 It handles all of:
 
-- **新規に作る／機能追加** — routes to ground (setup) → define (spec) → implement → test, one screen at a time
-- **既存を直す** — バグなら debug (READ-ONLY) 先行で spec 起点の原因調査、その結果から define / implement / navigation-* へ。機能改修なら直接 adapt/implement
-- **調査だけ** — debug (READ-ONLY) で spec 起点の構造調査
-
-During Phase 2, new agents (`define`, `ground`, `implement`, `navigation-*`, `debug`) don't all exist yet. The conductor maps to existing agents (`jsonui-spec`, `jsonui-setup`, `jsonui-screen-impl`, `jsonui-investigate`, `jsonui-modify`, etc.) behind the scenes.
+- **新規に作る／機能追加** — routes to `ground` (setup, if fresh) → `define` (spec) → `implement` → `test`, one screen at a time
+- **既存を直す** — バグなら `debug` (READ-ONLY) 先行で spec 起点の原因調査、その結果から `define` / `implement` / `navigation-*` へ。機能改修なら直接対応エージェント
+- **調査だけ** — `debug` (READ-ONLY) で spec 起点の構造調査
 
 **Spec-first bug tracing** — when investigating a bug, always start from the spec, not the stack trace. Symptom → spec-section mapping:
 
@@ -153,7 +148,6 @@ Codex loads rule files via `Read` from the agent context. Each agent should refe
 | Tell user to `/agent conductor` (Workflow 1, 2, 3) | YES |
 | Backend with custom rules (Workflow 4) | YES |
 | Switch to a sub-agent when conductor (or any parent) directs you | YES |
-| Tell user to switch to legacy `/agent jsonui-orchestrator` | DISCOURAGED — use `/agent conductor` instead |
 | Skip workflow selection | NO |
 | Edit `@generated` files by hand | NO |
 | Accept `jui build` warnings | NO |

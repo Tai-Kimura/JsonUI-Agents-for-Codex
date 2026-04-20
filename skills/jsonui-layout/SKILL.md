@@ -6,7 +6,7 @@ tools: Read, Write, MultiEdit, Bash, Glob, Grep
 
 # JsonUI Layout Agent
 
-Specialized in correct JSON layout implementation. For refactoring, use the `jsonui-refactor` agent.
+Specialized in correct JSON layout implementation. Styles extraction and DRY cleanup are done inline — there is no separate refactor skill.
 
 ## Rule Reference
 
@@ -64,9 +64,14 @@ Before implementing layouts, read the specification JSON and extract:
 - `stateManagement.eventHandlers` - Event bindings to use (`@{onHandlerName}`)
 - `stateManagement.displayLogic` - Visibility rules (may include explicit `variableName`)
 
-## ⛔ File Creation Prohibited
+## Creating new sub-files
 
-When new files are needed, switch to the `jsonui-generator` skill.
+When you need a new sub-file (partial, collection cell) referenced from a Layout JSON, generate it via Bash:
+
+```bash
+jui g partial {path/to/partial}
+jui g collection {screen}/{CellName}
+```
 
 This skill only handles editing existing JSON layouts.
 
@@ -242,9 +247,9 @@ Creation commands:
 - Bind with `@{}`: `"text": "@{title}"`, `"onClick": "@{onButtonTap}"`
 - **Views with bindings must have an `id`**
 
-### This Agent Does Not Define Data Section
+### This Skill Does Not Define the Data Section
 
-Only write `@{bindingName}`. Type definitions are handled by the `jsonui-data` agent.
+Only write `@{bindingName}`. Type definitions live in the spec's `stateManagement.uiVariables` and `dataFlow.viewModel.vars` — see the `jsonui-dataflow` skill.
 
 ### No Logic in Bindings (Critical)
 

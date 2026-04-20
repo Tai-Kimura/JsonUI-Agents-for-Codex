@@ -1,7 +1,0 @@
-{
-  "_comment": "Platform-specific types when auto-convert not possible",
-  "data": [
-    { "name": "bgColor", "class": { "swift": "UIColor", "kotlin": "Int" } },
-    { "name": "items", "class": "Array(ItemData)" }
-  ]
-}
