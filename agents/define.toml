@@ -52,12 +52,12 @@ The spec authoring and editing agent. Responsible for the *intent and contract* 
 ## First response: classify the task
 
 ```
-何をしますか?
+What are you doing?
 
-1. 新しい画面 / 機能の spec を起こす — 要件 → spec 起票
-2. 既存の spec を直す — 画面追加、項目変更、dataFlow 整備
-3. API / DB の spec を作る — OpenAPI
-4. コンポーネント spec を作る — custom component 化
+1. Author a new screen / feature spec — requirements → spec file
+2. Edit an existing spec — add a screen, change fields, refine dataFlow
+3. Author API / DB spec — OpenAPI
+4. Author component spec — custom component
 ```
 
 ---
@@ -77,11 +77,11 @@ Detect: does `.jsonui-doc-rules.json` exist? (Non-JsonUI projects need custom ru
 
 ### 1.1 Requirements (fresh)
 If the user hasn't described the screen in detail, conduct a structured requirements dialogue yourself. Ask (one at a time):
-1. 画面の目的・ユースケース
-2. 対象プラットフォーム
-3. 主要 UI 要素
-4. データの出どころ (API / ローカル / 静的)
-5. 成功／失敗時の挙動、画面遷移
+1. Screen purpose / use case
+2. Target platform(s)
+3. Main UI elements
+4. Data source (API / local / static)
+5. Success / failure behavior, navigation on completion
 
 Output a short requirements note, then translate into the spec template.
 
@@ -112,7 +112,7 @@ For Layout components/attributes, call MCP: `lookup_component`, `lookup_attribut
 `mcp__jui-tools__doc_validate_spec`. Fix all violations before proceeding.
 
 ### 1.5 Show user + explicit confirmation
-Print summary + excerpts. Ask "この spec で合っていますか?". Wait for yes.
+Print summary + excerpts. Ask "Does this spec look right?". Wait for yes.
 
 ### 1.6 Generate HTML (MANDATORY)
 `mcp__jui-tools__doc_generate_spec` with `format: "html"`. HTML contains the auto-Mermaid diagram that downstream agents rely on.
@@ -156,7 +156,7 @@ Invoke `$jsonui-swagger`. Output: `docs/api/{name}_swagger.json`, `docs/db/{tabl
 
 ## Task 5: Custom validation rules (non-JsonUI)
 
-Ask: "この project は JsonUI / SwiftJsonUI / KotlinJsonUI / ReactJsonUI を使っていますか?" If not:
+Ask: "Is this project using JsonUI / SwiftJsonUI / KotlinJsonUI / ReactJsonUI?" If not:
 
 1. `mcp__jui-tools__doc_rules_init` (use `flutter: true` for Flutter) — creates `.jsonui-doc-rules.json` template
 2. Edit `.jsonui-doc-rules.json` to add framework-specific componentTypes, fileTypes, eventHandlers.allowedNames

@@ -67,11 +67,11 @@ cat {project_directory}/docs/screens/json/{screen_name}.spec.json
 ```
 
 ### Step 2.5: Ask about layoutFile mode
-Ask: "UI コンポーネントの定義方法を選んでください:
-A. **layoutFile モード（推奨）** — UI 構造は Layout JSON に書き、spec には画面の目的・データフロー・状態管理を書く
-B. **従来モード** — spec にすべてのコンポーネントを書く
+Ask: "Which mode for defining UI components?
+A. **layoutFile mode (recommended)** — UI structure lives in Layout JSON; the spec covers purpose, data flow, and state management
+B. **Classic mode** — all components written directly in the spec
 
-どちらにしますか？"
+Which do you prefer?"
 
 **If A (layoutFile mode):**
 1. Ask for the layout file name (e.g., `login`)
