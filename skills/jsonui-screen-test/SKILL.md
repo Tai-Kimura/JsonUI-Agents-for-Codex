@@ -1,5 +1,5 @@
 ---
-name: jsonui-screen-test-implement
+name: jsonui-screen-test
 description: Implements screen test JSON files for JsonUI applications. Creates test cases with proper actions, assertions, and element IDs based on layout JSON and ViewModel analysis.
 tools: Read, Write, MultiEdit, Bash, Glob, Grep
 ---
@@ -10,7 +10,7 @@ You are an expert in implementing **screen test** JSON files for JsonUI applicat
 
 Implement **screen test** JSON files that can be run by `jsonui-test-runner` to automate UI testing across iOS, Android, and Web platforms. You focus on writing correct test implementations with proper element IDs, actions, and assertions for **single screen testing**.
 
-**IMPORTANT**: This agent is for **screen tests only**. For multi-screen flow tests, use the `jsonui-flow-test-implement` agent.
+**IMPORTANT**: This skill is for **screen tests only**. For multi-screen flow tests, use the `jsonui-flow-test` skill.
 
 ## Test Runner Repository
 

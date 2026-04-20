@@ -75,7 +75,7 @@ Extract:
 - Layout component IDs → selectors
 
 ### A2. Draft cases
-Invoke `$jsonui-screen-test-implement` for schema + examples.
+Invoke `$jsonui-screen-test` for schema + examples.
 
 ### A3. Write
 `tests/screens/{screen}.test.json` via Write/Edit.
@@ -88,7 +88,7 @@ jsonui-test validate tests/screens/{screen}.test.json
 Schema ref: `jsonui-test --schema`.
 
 ### A5. Description + HTML (optional)
-1. `$jsonui-test-document` for description schema
+1. `$jsonui-test-doc` for description schema
 2. Write `tests/descriptions/{screen}.desc.json`
 3. Link via `descriptionFile`
 4. `mcp__jui-tools__doc_generate_html` with `input_dir: "tests/"`
@@ -105,7 +105,7 @@ Read tests/screens/
 Missing screen tests? Create them first or ask user.
 
 ### B2. Draft
-Invoke `$jsonui-flow-test-implement`.
+Invoke `$jsonui-flow-test`.
 
 ### B3. Write + validate
 ```
@@ -117,7 +117,7 @@ jsonui-test validate tests/flows/{flow}.test.json
 
 ## Flow C: Documentation
 
-`$jsonui-test-document` for description JSON. Then:
+`$jsonui-test-doc` for description JSON. Then:
 ```
 mcp__jui-tools__doc_generate_html with input_dir: "tests/", output_dir: "tests/html/"
 ```
@@ -126,7 +126,7 @@ mcp__jui-tools__doc_generate_html with input_dir: "tests/", output_dir: "tests/h
 
 ## Flow D: Validation only
 
-`$jsonui-test-cli`. Run `jsonui-test validate {dir}`. Report errors; do not fix blindly.
+Run `jsonui-test validate {dir}` via Bash. For available actions / assertions schema: `jsonui-test --schema`. Report errors; do not fix blindly.
 
 ---
 

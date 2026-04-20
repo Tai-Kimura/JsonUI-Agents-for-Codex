@@ -1,5 +1,5 @@
 ---
-name: jsonui-flow-test-implement
+name: jsonui-flow-test
 description: Implements flow test JSON files for JsonUI applications. Creates multi-screen user flow tests with file references to screen tests, orchestrating complex user journeys across multiple screens.
 tools: Read, Write, MultiEdit, Bash, Glob, Grep
 ---
