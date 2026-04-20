@@ -27,6 +27,10 @@ config_file = "agents/define.toml"
 description = "Main screen implementation agent. Takes a validated spec and drives jui_generate_project + Layout/Styles edits + VM/Repository/UseCase body implementation + jsonui-localize + jui_build (0 warnings) + jui_verify (no drift). Owns invariants 1, 2, 4. Delegates navigation to navigation-{ios,android,web}."
 config_file = "agents/implement.toml"
 
+[agents.test]
+description = "Authors JsonUI test files (screen tests, flow tests) and test documentation. Reads specs + layouts via MCP for spec-first test authoring. Validates via the jsonui-test CLI. Does not set up the test environment (ground does that) and does not execute tests (platform-specific)."
+config_file = "agents/test.toml"
+
 [agents.jsonui-orchestrator]
 description = "DEPRECATED (Phase 2): legacy workflow orchestrator. Prefer `conductor`. Kept during transition."
 config_file = "agents/jsonui-orchestrator.toml"
