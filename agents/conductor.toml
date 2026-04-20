@@ -88,8 +88,8 @@ The target 9-agent layout is being built incrementally. Current state:
 | **debug** | `/agent debug` | ✅ Phase 3a — READ-ONLY, spec-first bug trace |
 | **define** | `/agent define` | ✅ Phase 3b — spec authoring & validation |
 | **implement** | `/agent implement` | ✅ Phase 3c — Layout/VM body + gates (build 0 warnings, verify no drift, localize) |
+| **test** | `/agent test` | ✅ Phase 3d — spec-first screen/flow test authoring + validation + HTML docs |
 | **ground** | `/agent jsonui-setup` | transitional |
-| **test** | `/agent jsonui-test` | transitional |
 | **adapt / modify** | `/agent jsonui-modify` | transitional |
 | **navigation-ios / android / web** | not yet built — navigation work happens inside `/agent jsonui-screen-impl` for now | pending |
 
