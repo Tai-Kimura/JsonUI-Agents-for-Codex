@@ -23,6 +23,10 @@ config_file = "agents/debug.toml"
 description = "Spec authoring and editing agent. Owns screen specs, component specs, API/DB OpenAPI, and custom validation rules. MCP-first: uses doc_init_spec, doc_validate_spec, doc_generate_spec, jui_verify. Does not touch Layout JSON or VM impl."
 config_file = "agents/define.toml"
 
+[agents.implement]
+description = "Main screen implementation agent. Takes a validated spec and drives jui_generate_project + Layout/Styles edits + VM/Repository/UseCase body implementation + jsonui-localize + jui_build (0 warnings) + jui_verify (no drift). Owns invariants 1, 2, 4. Delegates navigation to navigation-{ios,android,web}."
+config_file = "agents/implement.toml"
+
 [agents.jsonui-orchestrator]
 description = "DEPRECATED (Phase 2): legacy workflow orchestrator. Prefer `conductor`. Kept during transition."
 config_file = "agents/jsonui-orchestrator.toml"
