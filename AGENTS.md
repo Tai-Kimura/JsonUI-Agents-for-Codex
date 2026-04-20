@@ -56,7 +56,7 @@ Every task must satisfy all four of these.
 
 ## MCP-first
 
-Agents should call the `jsonui-mcp-server` (the `jui-tools` MCP) for spec reads, layout reads, component lookups, builds, and verification. Bash shell-outs to the `jui` CLI are reserved for the four commands that have no MCP equivalent: `jui g screen`, `jui migrate-layouts`, `jui lint-generated`, `jui g converter`.
+Agents should call the `jsonui-mcp-server` (the `jui-tools` MCP) for spec reads, layout reads, component lookups, builds, verification, and platform-tool sync. The only `jui` subcommand still requiring a Bash shell-out is `jui lint-generated` (CI-only). Everything else — `init` / `generate project|screen|converter` / `build` / `verify` / `migrate-layouts` / `sync_tool` — has an MCP wrapper in Group C.
 
 Per-agent MCP tool allowlists should be declared in `.codex/config.toml` under each agent's `allowed_tools` (Codex equivalent of the Claude `tools:` frontmatter).
 
