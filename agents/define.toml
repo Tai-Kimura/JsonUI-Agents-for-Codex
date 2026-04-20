@@ -92,7 +92,7 @@ Invoke `$jsonui-screen-spec` for authoring guide; write content yourself via Edi
 | `stateManagement.uiVariables` | Data bindings + types | |
 | `stateManagement.eventHandlers` | View-local handlers (rare) | Most handlers go in `dataFlow.viewModel.methods` |
 | `stateManagement.displayLogic` | Visibility rules | |
-| `dataFlow.viewModel.methods` | Public VM contract | `$jsonui-dataflow` skill (Phase 4) for details |
+| `dataFlow.viewModel.methods` | Public VM contract | `$jsonui-dataflow` skill for details |
 | `dataFlow.viewModel.vars` | Observable state | |
 | `dataFlow.repositories` | Data access; link endpoints via `methods[].endpoint/endpoints` | |
 | `dataFlow.useCases` | Business logic (optional); link via `repositories` or `methods[].calls` | |
