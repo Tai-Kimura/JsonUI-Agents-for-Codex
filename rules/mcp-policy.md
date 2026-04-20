@@ -6,23 +6,25 @@ JsonUI agents call the `jsonui-mcp-server` (the `jui-tools` MCP) to interact wit
 
 ## MCP-first
 
-| Action | Prefer | Fallback (Bash) |
+| Action | Prefer | Bash fallback |
 |---|---|---|
 | Read project config | `mcp__jui-tools__get_project_config` | — |
 | List specs / layouts / components | `mcp__jui-tools__list_screen_specs`, `list_layouts`, `list_component_specs` | — |
 | Read spec / layout files | `mcp__jui-tools__read_spec_file`, `read_layout_file` | — |
 | Look up components / attributes | `mcp__jui-tools__lookup_component`, `lookup_attribute`, `search_components` | — |
+| Create spec / component template | `mcp__jui-tools__doc_init_spec`, `doc_init_component` | — |
+| Generate screen scaffold from spec | `mcp__jui-tools__jui_generate_screen` | `jui g screen` |
 | Generate Layout JSON + VM stubs | `mcp__jui-tools__jui_generate_project` | — |
+| Generate custom converter | `mcp__jui-tools__jui_generate_converter` | `jui g converter` |
 | Build + distribute | `mcp__jui-tools__jui_build` | — |
 | Verify spec ↔ layout | `mcp__jui-tools__jui_verify` | — |
+| Migrate platform layouts | `mcp__jui-tools__jui_migrate_layouts` | `jui migrate-layouts` |
+| Sync project-local platform tools with ~/.jsonui-cli/ | `mcp__jui-tools__jui_sync_tool` | `jui sync_tool` |
 | Validate spec | `mcp__jui-tools__doc_validate_spec`, `doc_validate_component` | — |
 | Generate docs | `mcp__jui-tools__doc_generate_spec`, `doc_generate_html` | — |
-| Create spec / component template | `mcp__jui-tools__doc_init_spec`, `doc_init_component` | `jui g screen` |
-| Migrate platform layouts | — | `jui migrate-layouts` |
 | Lint @generated markers | — | `jui lint-generated` (CI only) |
-| Generate custom converter | — | `jui g converter` |
 
-Only four CLI commands have no MCP equivalent. Everything else goes through MCP.
+Only **one** CLI command has no MCP equivalent today: `jui lint-generated`. Everything else goes through MCP.
 
 ---
 
@@ -68,7 +70,7 @@ description = "..."
 config_file = "agents/define.toml"
 ```
 
-**Avoid:** wildcard `mcp__jui-tools__*`. It loads all 28 tool schemas into the prompt, wasting tokens and increasing agent confusion.
+**Avoid:** wildcard `mcp__jui-tools__*`. It loads all 30 tool schemas into the prompt, wasting tokens and increasing agent confusion.
 
 **Avoid:** allowing every built-in tool. Only grant `Write` / `Edit` / `Bash` when the agent genuinely needs them.
 
@@ -82,7 +84,7 @@ config_file = "agents/define.toml"
 |---|---|
 | `conductor` | `get_project_config`, `list_screen_specs`, `list_layouts`, `list_component_specs` |
 | `define` | `doc_init_spec`, `doc_init_component`, `doc_validate_spec`, `doc_validate_component`, `doc_generate_spec`, `read_spec_file`, `lookup_component`, `lookup_attribute`, `search_components`, `jui_verify` |
-| `ground` | `jui_init`, `get_project_config` |
+| `ground` | `jui_init`, `jui_sync_tool`, `get_project_config` |
 | `implement` | `jui_generate_project`, `jui_build`, `jui_verify`, `read_spec_file`, `read_layout_file`, `list_layouts`, `lookup_component`, `lookup_attribute`, `get_binding_rules`, `get_modifier_order`, `get_platform_mapping` |
 | `navigation-ios` / `navigation-android` / `navigation-web` | `read_spec_file`, `read_layout_file`, `list_screen_specs`, `get_platform_mapping` |
 | `test` | `list_screen_specs`, `read_spec_file`, `doc_generate_html` |
@@ -94,7 +96,7 @@ Agents that do not appear in this table should still follow the "explicit enumer
 
 ## Bash tool policy
 
-Include `Bash` in the `tools:` frontmatter only when the agent needs one of the four uncovered CLI commands (`jui g screen`, `jui migrate-layouts`, `jui lint-generated`, `jui g converter`) or needs to run platform-specific native commands (e.g. `xcodebuild`, `./gradlew`, `npm run dev`).
+Include `Bash` in the `tools:` frontmatter when the agent needs the one remaining uncovered CLI command (`jui lint-generated`, typically CI-only), or needs to run platform-specific native commands (e.g. `xcodebuild`, `./gradlew`, `npm run dev`, `git`, `rbenv` diagnostics). Every other `jui` / `jsonui-doc` operation is an MCP call — prefer that.
 
 - `ground`: needs Bash for initial platform scaffolding
 - `debug`: needs Bash for impl-side grep and CI-style checks
