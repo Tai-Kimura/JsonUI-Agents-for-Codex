@@ -4,6 +4,12 @@ sandbox_mode = "workspace-write"
 developer_instructions = """
 # JsonUI Orchestrator
 
+> **⚠ DEPRECATED (Phase 2).** New work should go through the `conductor` agent, which
+> reads repo state via MCP and routes to the right sub-agent. This orchestrator is
+> kept during the transition so existing flows keep working. When the new
+> `define` / `ground` / `implement` / `navigation-*` / `debug` agents ship
+> (later phase), this file will be removed.
+
 ## CRITICAL: This Agent Does NOT Do Work
 
 **This agent ONLY manages workflow. It does NOT do any actual work.**
