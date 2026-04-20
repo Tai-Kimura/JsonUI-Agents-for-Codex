@@ -8,7 +8,7 @@ multi_agent = true
 max_threads = 2
 
 # =============================================================================
-# Agent Roles
+# Agent Roles (9-agent layout)
 # =============================================================================
 
 [agents.conductor]
@@ -23,17 +23,13 @@ config_file = "agents/debug.toml"
 description = "Spec authoring and editing agent. Owns screen specs, component specs, API/DB OpenAPI, and custom validation rules. MCP-first: uses doc_init_spec, doc_validate_spec, doc_generate_spec, jui_verify. Does not touch Layout JSON or VM impl."
 config_file = "agents/define.toml"
 
-[agents.implement]
-description = "Main screen implementation agent. Takes a validated spec and drives jui_generate_project + Layout/Styles edits + VM/Repository/UseCase body implementation + jsonui-localize + jui_build (0 warnings) + jui_verify (no drift). Owns invariants 1, 2, 4. Delegates navigation to navigation-{ios,android,web}."
-config_file = "agents/implement.toml"
-
-[agents.test]
-description = "Authors JsonUI test files (screen tests, flow tests) and test documentation. Reads specs + layouts via MCP for spec-first test authoring. Validates via the jsonui-test CLI. Does not set up the test environment (ground does that) and does not execute tests (platform-specific)."
-config_file = "agents/test.toml"
-
 [agents.ground]
 description = "Project setup / scaffolding agent. Runs jui_init, platform setup (iOS SwiftUI/UIKit, Android Compose/XML, Web React), test runner installation, .jsonui-type-map.json seed. One-time work per project or per-platform addition. Does not author specs, screens, or tests."
 config_file = "agents/ground.toml"
+
+[agents.implement]
+description = "Main screen implementation agent. Takes a validated spec and drives jui_generate_project + Layout/Styles edits + VM/Repository/UseCase body implementation + jsonui-localize + jui_build (0 warnings) + jui_verify (no drift). Owns invariants 1, 2, 4. Delegates navigation to navigation-{ios,android,web}."
+config_file = "agents/implement.toml"
 
 [agents.navigation-ios]
 description = "iOS navigation code writer (SwiftUI NavigationStack or UIKit UINavigationController). Takes spec userActions / transitions and writes Swift navigation plumbing. Never edits spec or Layout JSON."
@@ -47,30 +43,6 @@ config_file = "agents/navigation-android.toml"
 description = "Web navigation code writer (React Router or Next.js App Router). TypeScript-specific. Never edits spec or Layout JSON."
 config_file = "agents/navigation-web.toml"
 
-[agents.jsonui-orchestrator]
-description = "DEPRECATED (Phase 2): legacy workflow orchestrator. Prefer `conductor`. Kept during transition."
-config_file = "agents/jsonui-orchestrator.toml"
-
-[agents.jsonui-requirements]
-description = "Gathers app requirements from non-technical users through friendly dialogue. Creates structured screen specification documents. Use this agent when the user selects 'Requirements Definition' workflow."
-config_file = "agents/jsonui-requirements.toml"
-
-[agents.jsonui-spec]
-description = "Creates specification documents for JsonUI projects. Designs API, DB, and screen specifications through interactive dialogue. Launched by the orchestrator during Step 1."
-config_file = "agents/jsonui-spec.toml"
-
-[agents.jsonui-setup]
-description = "Expert in setting up and initializing JsonUI projects. Handles project initialization for SwiftJsonUI, KotlinJsonUI, and ReactJsonUI. Launched by the orchestrator during Step 2."
-config_file = "agents/jsonui-setup.toml"
-
-[agents.jsonui-screen-impl]
-description = "Expert in implementing screens for JsonUI projects. Orchestrates skill execution in order: generator -> layout -> refactor -> data -> viewmodel. Launched by the orchestrator during Step 3."
-config_file = "agents/jsonui-screen-impl.toml"
-
-[agents.jsonui-modify]
-description = "Orchestrates modifications to existing JsonUI projects. Handles new screen additions, UI changes, bug fixes, API changes, and spec updates with test maintenance. Use this agent when modifying an existing project."
-config_file = "agents/jsonui-modify.toml"
-
-[agents.jsonui-test]
-description = "Orchestrates JsonUI test operations. Routes tasks to specialized skills for screen tests, flow tests, documentation, CLI operations, and setup. Launched by the orchestrator during Step 4."
-config_file = "agents/jsonui-test.toml"
+[agents.test]
+description = "Authors JsonUI test files (screen tests, flow tests) and test documentation. Reads specs + layouts via MCP for spec-first test authoring. Validates via the jsonui-test CLI. Does not set up the test environment (ground does that) and does not execute tests (platform-specific)."
+config_file = "agents/test.toml"

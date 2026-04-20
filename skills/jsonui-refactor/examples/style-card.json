@@ -1,7 +1,0 @@
-{
-  "_comment": "Style file example - card_style.json",
-  "background": "#FFFFFF",
-  "cornerRadius": 12,
-  "shadow": 4,
-  "padding": 16
-}
