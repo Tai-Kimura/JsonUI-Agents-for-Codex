@@ -19,12 +19,12 @@ Based on the choice:
 
 | # | Choice | Tell user to run |
 |---|---|---|
-| 1 | 新規に作る／機能追加 | `/agent jsonui-orchestrator` |
-| 2 | 既存を直す | First ask: "バグ? 機能改修?" → バグなら `/agent jsonui-investigate` (READ-ONLY) → 結果を受けて `/agent jsonui-modify`。機能改修なら直接 `/agent jsonui-modify` |
-| 3 | 調査だけ | `/agent jsonui-investigate` (READ-ONLY) |
+| 1, 2, 3 | (any of the first three) | `/agent conductor` — reads repo state via MCP and routes to the right sub-agent |
 | 4 | Backend | Follow **Workflow 4: Backend** below |
 
-> **Transitional note (Phase 1):** The agent system is being redesigned toward a 9-agent layout (`conductor` / `define` / `ground` / `implement` / `navigation-{ios,android,web}` / `test` / `debug`). Until later phases land, routing uses the current agents (`jsonui-orchestrator`, `jsonui-modify`, `jsonui-investigate`, etc.). See `docs/plans/agent-redesign.md` in the Claude variant repo.
+The `conductor` agent is the entry point for all JsonUI work in Codex. It inspects the repo (`jui.config.json`, spec count, layout count), asks a short follow-up, then tells the user which `/agent` to switch to next.
+
+> **Transitional note (Phase 2):** The 9-agent target layout is (`conductor` / `define` / `ground` / `implement` / `navigation-{ios,android,web}` / `test` / `debug`). `conductor` is live; the other new agents will ship in later phases. During the transition, `conductor` routes to existing agents (`/agent jsonui-spec`, `jsonui-setup`, `jsonui-screen-impl`, `jsonui-test`, `jsonui-investigate`, `jsonui-modify`, etc.). The old `jsonui-orchestrator` is deprecated but still works if you need it. See `docs/plans/agent-redesign.md` in the Claude variant repo.
 
 ---
 
@@ -76,28 +76,25 @@ Per-agent MCP tool allowlists should be declared in `.codex/config.toml` under e
 
 ---
 
-## Workflow 1: 新規に作る／機能追加
+## Workflow 1-3: Any JsonUI work
 
-1. Tell user to run: `/agent jsonui-orchestrator`
-2. The orchestrator will guide the full workflow:
-   - Step 1: `/agent jsonui-spec` (create specifications)
-   - Step 2: `/agent jsonui-setup` (project configuration + `jui init`)
-   - Step 3: `/agent jsonui-screen-impl` (implement each screen in shared `layouts_directory`)
-   - Step 4: `/agent jsonui-test` (test each screen)
-3. User switches back to orchestrator between steps for verification and next instructions
-4. Key gate commands: `jui build` (zero warnings), `jui verify --fail-on-diff` (no drift)
+Tell the user: `/agent conductor`
 
----
+The conductor will:
 
-## Workflow 2: 既存を直す
+1. Read repo state via MCP (`jui.config.json`, screen specs, layouts, component specs)
+2. Ask 1-2 follow-up questions
+3. Tell the user which `/agent` to switch to next
 
-Ask what kind of change:
+It handles all of:
 
-- **バグ修正** — first `/agent jsonui-investigate` (READ-ONLY) to trace the bug from the spec. Then route findings to `/agent jsonui-modify` for the fix.
-- **機能改修** — `/agent jsonui-modify` directly.
-- **spec 修正だけ** — `/agent jsonui-modify` (it will delegate to spec work).
+- **新規に作る／機能追加** — routes to ground (setup) → define (spec) → implement → test, one screen at a time
+- **既存を直す** — バグなら debug (READ-ONLY) 先行で spec 起点の原因調査、その結果から define / implement / navigation-* へ。機能改修なら直接 adapt/implement
+- **調査だけ** — debug (READ-ONLY) で spec 起点の構造調査
 
-The investigate agent must start from the spec, not the stack trace. Symptom → spec-section mapping:
+During Phase 2, new agents (`define`, `ground`, `implement`, `navigation-*`, `debug`) don't all exist yet. The conductor maps to existing agents (`jsonui-spec`, `jsonui-setup`, `jsonui-screen-impl`, `jsonui-investigate`, `jsonui-modify`, etc.) behind the scenes.
+
+**Spec-first bug tracing** — when investigating a bug, always start from the spec, not the stack trace. Symptom → spec-section mapping:
 
 | Symptom | Spec section to inspect first |
 |---|---|
@@ -109,12 +106,6 @@ The investigate agent must start from the spec, not the stack trace. Symptom →
 | 画面遷移不良 | `userActions` / `transitions` + native navigation code |
 
 Always run the three gate commands as diagnostics: `jui verify --detail`, `jui build`, `doc_validate_spec`.
-
----
-
-## Workflow 3: 調査だけ
-
-`/agent jsonui-investigate`. This agent is strictly READ-ONLY — it never writes files. It reports findings and suggests which agent to route to for any follow-up fix.
 
 ---
 
@@ -202,11 +193,10 @@ To change a generated signature, edit `dataFlow.viewModel.{methods,vars}` or `da
 | Action | Allowed? |
 |--------|----------|
 | Ask user for workflow choice first | YES |
-| Tell user to `/agent jsonui-orchestrator` (Workflow 1) | YES |
-| Tell user to `/agent jsonui-modify` (Workflow 2: 機能改修) | YES |
-| Tell user to `/agent jsonui-investigate` (Workflow 2: バグ / Workflow 3) | YES |
+| Tell user to `/agent conductor` (Workflow 1, 2, 3) | YES |
 | Backend with custom rules (Workflow 4) | YES |
-| Switch to an agent when the parent agent directs you | YES |
+| Switch to a sub-agent when conductor (or any parent) directs you | YES |
+| Tell user to switch to legacy `/agent jsonui-orchestrator` | DISCOURAGED — use `/agent conductor` instead |
 | Skip workflow selection | NO |
 | Edit `@generated` files by hand | NO |
 | Accept `jui build` warnings | NO |

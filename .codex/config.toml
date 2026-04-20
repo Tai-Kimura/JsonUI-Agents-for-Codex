@@ -11,8 +11,12 @@ max_threads = 2
 # Agent Roles
 # =============================================================================
 
+[agents.conductor]
+description = "Entry point for JsonUI work. Reads repo state via MCP and routes the user to the right sub-agent (define / ground / implement / navigation-* / test / debug). Does not implement anything itself."
+config_file = "agents/conductor.toml"
+
 [agents.jsonui-orchestrator]
-description = "Main entry point for JsonUI projects. Coordinates full implementation flow from specification to testing. Use this agent when the user selects 'Implementation' workflow."
+description = "DEPRECATED (Phase 2): legacy workflow orchestrator. Prefer `conductor`. Kept during transition."
 config_file = "agents/jsonui-orchestrator.toml"
 
 [agents.jsonui-requirements]
