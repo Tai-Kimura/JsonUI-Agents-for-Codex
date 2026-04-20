@@ -35,6 +35,18 @@ config_file = "agents/test.toml"
 description = "Project setup / scaffolding agent. Runs jui_init, platform setup (iOS SwiftUI/UIKit, Android Compose/XML, Web React), test runner installation, .jsonui-type-map.json seed. One-time work per project or per-platform addition. Does not author specs, screens, or tests."
 config_file = "agents/ground.toml"
 
+[agents.navigation-ios]
+description = "iOS navigation code writer (SwiftUI NavigationStack or UIKit UINavigationController). Takes spec userActions / transitions and writes Swift navigation plumbing. Never edits spec or Layout JSON."
+config_file = "agents/navigation-ios.toml"
+
+[agents.navigation-android]
+description = "Android navigation code writer (Jetpack Compose Navigation or XML NavGraph + Fragment). Kotlin-specific. Never edits spec or Layout JSON."
+config_file = "agents/navigation-android.toml"
+
+[agents.navigation-web]
+description = "Web navigation code writer (React Router or Next.js App Router). TypeScript-specific. Never edits spec or Layout JSON."
+config_file = "agents/navigation-web.toml"
+
 [agents.jsonui-orchestrator]
 description = "DEPRECATED (Phase 2): legacy workflow orchestrator. Prefer `conductor`. Kept during transition."
 config_file = "agents/jsonui-orchestrator.toml"
