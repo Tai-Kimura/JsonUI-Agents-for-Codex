@@ -49,12 +49,12 @@ Writes test files for JsonUI screens and flows. Spec-first: assertions come from
 ## First response: classify
 
 ```
-何の test を書きますか?
+Which kind of test?
 
-1. 画面テスト — 1 画面の機能・表示・インタラクション
-2. フローテスト — 複数画面にまたがるユーザージャーニー
-3. テスト documentation — description JSON + HTML
-4. test validation — CLI schema 合致チェック
+1. Screen test — one screen: functionality, rendering, interactions
+2. Flow test — multi-screen user journey
+3. Test documentation — description JSON + HTML
+4. Test validation — check existing tests against CLI schema
 ```
 
 ---

@@ -42,11 +42,11 @@ If you catch yourself about to write a file, stop and report what you would chan
 Ask one short question if the user's request is unclear:
 
 ```
-何を調べますか?
+What are you investigating?
 
-A. バグを追う — 症状から原因を特定したい
-B. 挙動を理解したい — 機能の仕組み、データフロー、依存関係を知りたい
-C. コード archaeology — 変更履歴、意図、blame
+A. Trace a bug — find the root cause from a symptom
+B. Understand behavior — walk a feature, data flow, or dependencies
+C. Code archaeology — change history, intent, blame
 ```
 
 If the user has already described a symptom concretely, skip the question and go straight to Mode A.
@@ -65,14 +65,14 @@ Map symptom to a spec section:
 
 | Symptom | Start from |
 |---|---|
-| UI 表示異常 | `structure.components` → Layout JSON |
-| ボタン無反応 | `stateManagement.eventHandlers` + `dataFlow.viewModel.methods` |
-| データ未表示/古い | `dataFlow.viewModel.vars` + `dataFlow.repositories` / `useCases` + binding |
-| 表示/非表示切替不良 | `stateManagement.displayLogic` + Layout `visibility` |
-| API エラー | `dataFlow.apiEndpoints` + `repositories[].methods[].endpoint` |
-| 画面遷移不良 | `userActions` / `transitions` + Navigation コード |
-| クラッシュ | 上記 + `.jsonui-type-map.json` の型整合 |
-| spec-external | spec ↔ impl drift 無を確認してから impl へ |
+| UI rendering wrong / missing | `structure.components` → Layout JSON |
+| Button tap does nothing | `stateManagement.eventHandlers` + `dataFlow.viewModel.methods` |
+| Data missing / stale | `dataFlow.viewModel.vars` + `dataFlow.repositories` / `useCases` + binding |
+| Visibility not toggling | `stateManagement.displayLogic` + Layout `visibility` |
+| API error | `dataFlow.apiEndpoints` + `repositories[].methods[].endpoint` |
+| Navigation broken | `userActions` / `transitions` + native navigation code |
+| Crash | above + type alignment in `.jsonui-type-map.json` |
+| spec-external | confirm no spec ↔ impl drift first, then go to impl |
 
 ### A3. Read the spec
 
@@ -117,12 +117,12 @@ For Navigation bugs, confirm spec-based areas are clean first, then read platfor
 | doc_validate_spec | pass / fail | (violations) |
 
 ### Spec findings
-- 該当箇所: `{section.path}`
-- 抜粋: ...
+- Spec section: `{section.path}`
+- Declaration (excerpt)
 
 ### Impl findings (only if gates pass)
-- 該当箇所: `{file}:{line}`
-- 要約: ...
+- Impl location: `{file}:{line}`
+- Summary of what was read
 
 ### Root cause hypothesis
 {specific, 1-3 sentences}

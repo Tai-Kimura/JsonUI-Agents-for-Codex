@@ -36,7 +36,7 @@ Specification (intent + contract)
 | Spec (`*.spec.json`) | Protocol / Interface / ViewModelBase |
 | Layout JSON | VM method / var signatures |
 | Styles (`Styles/*.json`) | Repository / UseCase signatures |
-| `strings.json` | Inheritance list補完, Kotlin `override` insertion |
+| `strings.json` | Inheritance list completion, Kotlin `override` insertion |
 | VM method bodies | SVG → PDF / VectorDrawable / SVG |
 | Repository / UseCase method bodies | HTML docs |
 | Navigation code (platform-native) | |

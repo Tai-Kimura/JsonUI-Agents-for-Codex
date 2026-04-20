@@ -22,7 +22,7 @@ Authoring guide for the `dataFlow` section of a screen spec. Use this when writi
 |---|---|
 | Simple (1 API call) | ViewModel → Repository → API |
 | Complex (multiple APIs, validation, orchestration) | ViewModel → UseCase → Repository → API |
-| View-local state only (純 UI toggle) | `stateManagement.eventHandlers` (NOT `dataFlow.viewModel.methods`) |
+| View-local state only (pure UI toggle) | `stateManagement.eventHandlers` (NOT `dataFlow.viewModel.methods`) |
 
 Do not use UseCase unless there's genuine orchestration. A 1-API screen should not go through a UseCase just for symmetry — it adds a layer that returns no value.
 
@@ -45,7 +45,7 @@ The public contract. Every method and var declared here becomes a Protocol/Inter
     "params": [{ "name": "category", "type": "String" }],
     "returnType": "Array(Bottle)",
     "isAsync": true,
-    "description": "カテゴリ別ボトル一覧取得"
+    "description": "Fetch bottles filtered by category"
   },
 
   // platform-limited
@@ -103,7 +103,7 @@ spec: { "name": "onDismiss", "type": "() -> Void", "optional": true }
   iOS Protocol:     var onDismiss: (() -> Void)? { get set }
   iOS Impl:         @Published var onDismiss: (() -> Void)? = nil
   Android Protocol: var onDismiss: (() -> Unit)?
-  Web Base:         public onDismiss?: () => void;   (observable:false の場合のみ)
+  Web Base:         public onDismiss?: () => void;   (only when observable: false)
 ```
 
 ### `// @jui:protocol` marker (escape hatch)
@@ -136,7 +136,7 @@ Multi-line signatures use consecutive marker lines:
 "repositories": [
   {
     "name": "BottleRepository",
-    "description": "ボトルデータの API 通信",
+    "description": "API access for bottle data",
     "methods": [
       {
         "name": "fetchBottles",
@@ -174,7 +174,7 @@ Endpoint path/method must match a corresponding entry in `dataFlow.apiEndpoints`
 "useCases": [
   {
     "name": "LoginUseCase",
-    "description": "ログインフローの調整",
+    "description": "Coordinate the login flow",
     "repositories": ["AuthRepository", "UserRepository"],
     "methods": [
       {
@@ -205,14 +205,14 @@ If you provide both, they merge. If neither is present, the UC appears in the di
   {
     "method": "POST",
     "path": "/api/auth/login",
-    "description": "メールパスワードでログイン",
+    "description": "Log in with email + password",
     "requestSchema": "LoginRequest",
     "responseSchema": "AuthResponse"
   },
   {
     "method": "GET",
     "path": "/api/bottles",
-    "description": "ボトル一覧取得"
+    "description": "Fetch bottle list"
   }
 ]
 ```
@@ -274,6 +274,6 @@ Coordinate with `implement` when making these edits:
 
 ## References
 
-- `jui_tools_README.md` — canonical spec: "Repository / UseCase パターン", "ViewModel Protocol 自動同期", "dataFlow から Mermaid 図を自動生成"
+- `jui_tools_README.md` — canonical spec: "Repository / UseCase pattern", "ViewModel Protocol auto-sync", "Auto-generated Mermaid diagram from dataFlow"
 - `rules/invariants.md` — why protocol sync matters (invariants 2 and 3)
 - `rules/design-philosophy.md` — hand-written vs generated split
