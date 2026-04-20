@@ -85,9 +85,9 @@ The target 9-agent layout is being built incrementally. Current state:
 
 | Logical route | Agent command | Status |
 |---|---|---|
-| **debug** | `/agent debug` | ✅ Phase 3a — shipped. READ-ONLY, spec-first bug trace |
+| **debug** | `/agent debug` | ✅ Phase 3a — READ-ONLY, spec-first bug trace |
+| **define** | `/agent define` | ✅ Phase 3b — spec authoring & validation |
 | **ground** | `/agent jsonui-setup` | transitional |
-| **define** | `/agent jsonui-spec` | transitional (until `define` ships) |
 | **implement** | `/agent jsonui-screen-impl` | transitional (until `implement` ships) |
 | **test** | `/agent jsonui-test` | transitional |
 | **adapt / modify** | `/agent jsonui-modify` | transitional |

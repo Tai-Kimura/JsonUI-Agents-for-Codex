@@ -19,6 +19,10 @@ config_file = "agents/conductor.toml"
 description = "READ-ONLY bug investigation and behavior tracing. Always starts from the spec, classifies symptoms, runs the 3 gates (jui verify / jui build / doc_validate_spec) as diagnostics, produces a structured report with a routing recommendation. Never writes files."
 config_file = "agents/debug.toml"
 
+[agents.define]
+description = "Spec authoring and editing agent. Owns screen specs, component specs, API/DB OpenAPI, and custom validation rules. MCP-first: uses doc_init_spec, doc_validate_spec, doc_generate_spec, jui_verify. Does not touch Layout JSON or VM impl."
+config_file = "agents/define.toml"
+
 [agents.jsonui-orchestrator]
 description = "DEPRECATED (Phase 2): legacy workflow orchestrator. Prefer `conductor`. Kept during transition."
 config_file = "agents/jsonui-orchestrator.toml"
