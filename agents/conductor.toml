@@ -90,8 +90,10 @@ The target 9-agent layout is being built incrementally. Current state:
 | **implement** | `/agent implement` | ✅ Phase 3c — Layout/VM body + gates (build 0 warnings, verify no drift, localize) |
 | **test** | `/agent test` | ✅ Phase 3d — spec-first screen/flow test authoring + validation + HTML docs |
 | **ground** | `/agent ground` | ✅ Phase 3e — jui_init + platform scaffolding + test runner setup |
-| **adapt / modify** | `/agent jsonui-modify` | transitional |
-| **navigation-ios / android / web** | not yet built — navigation work happens inside `/agent jsonui-screen-impl` for now | pending |
+| **navigation-ios** | `/agent navigation-ios` | ✅ Phase 3f — SwiftUI NavigationStack / UIKit UINavigationController |
+| **navigation-android** | `/agent navigation-android` | ✅ Phase 3f — Compose Navigation / XML NavGraph |
+| **navigation-web** | `/agent navigation-web` | ✅ Phase 3f — React Router / Next.js App Router |
+| **adapt / modify** | `/agent jsonui-modify` | transitional (change-existing-screen scenarios) |
 
 Tell the user which agent to switch to, and what parameters they should mention (spec file, platform, mode, etc.).
 
