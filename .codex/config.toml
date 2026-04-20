@@ -15,6 +15,10 @@ max_threads = 2
 description = "Entry point for JsonUI work. Reads repo state via MCP and routes the user to the right sub-agent (define / ground / implement / navigation-* / test / debug). Does not implement anything itself."
 config_file = "agents/conductor.toml"
 
+[agents.debug]
+description = "READ-ONLY bug investigation and behavior tracing. Always starts from the spec, classifies symptoms, runs the 3 gates (jui verify / jui build / doc_validate_spec) as diagnostics, produces a structured report with a routing recommendation. Never writes files."
+config_file = "agents/debug.toml"
+
 [agents.jsonui-orchestrator]
 description = "DEPRECATED (Phase 2): legacy workflow orchestrator. Prefer `conductor`. Kept during transition."
 config_file = "agents/jsonui-orchestrator.toml"
