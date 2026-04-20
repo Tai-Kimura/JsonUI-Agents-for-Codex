@@ -7,10 +7,10 @@
 ```
 Which workflow?
 
-1. **新規に作る／機能追加** — spec から画面や機能を新しく作る
-2. **既存を直す** — バグ修正 or 機能改修
-3. **調査だけ** — 読み取り専用で仕組み・挙動を調べる
-4. **Backend** — JsonUI のルール外で作業する
+1. **New work / feature addition** — build new screens or features from the spec
+2. **Modify existing** — bug fix or feature change
+3. **Investigate only** — read-only analysis of current behavior / structure
+4. **Backend** — work outside JsonUI's rules
 
 Select 1, 2, 3, or 4.
 ```
@@ -85,20 +85,20 @@ The conductor will:
 
 It handles all of:
 
-- **新規に作る／機能追加** — routes to `ground` (setup, if fresh) → `define` (spec) → `implement` → `test`, one screen at a time
-- **既存を直す** — バグなら `debug` (READ-ONLY) 先行で spec 起点の原因調査、その結果から `define` / `implement` / `navigation-*` へ。機能改修なら直接対応エージェント
-- **調査だけ** — `debug` (READ-ONLY) で spec 起点の構造調査
+- **New work / feature addition** — routes to `ground` (setup, if fresh) → `define` (spec) → `implement` → `test`, one screen at a time
+- **Modify existing** — for bugs, run `debug` (READ-ONLY) first to locate the root cause from the spec, then route to `define` / `implement` / `navigation-*` as the report indicates. For a feature change, go directly to the relevant agent.
+- **Investigate only** — `debug` (READ-ONLY) walks the structure starting from the spec
 
 **Spec-first bug tracing** — when investigating a bug, always start from the spec, not the stack trace. Symptom → spec-section mapping:
 
 | Symptom | Spec section to inspect first |
 |---|---|
-| UI 表示異常 | `structure.components` → Layout JSON |
-| ボタン無反応 | `stateManagement.eventHandlers` + `dataFlow.viewModel.methods` |
-| データ未表示/古い | `dataFlow.viewModel.vars` + `dataFlow.repositories/useCases` |
-| 表示/非表示切り替え不良 | `stateManagement.displayLogic` |
-| API エラー | `dataFlow.apiEndpoints` + `repositories[].methods[].endpoint` |
-| 画面遷移不良 | `userActions` / `transitions` + native navigation code |
+| UI rendering wrong / missing | `structure.components` → Layout JSON |
+| Button does nothing | `stateManagement.eventHandlers` + `dataFlow.viewModel.methods` |
+| Data missing / stale | `dataFlow.viewModel.vars` + `dataFlow.repositories/useCases` |
+| Visibility not toggling | `stateManagement.displayLogic` |
+| API error | `dataFlow.apiEndpoints` + `repositories[].methods[].endpoint` |
+| Navigation broken | `userActions` / `transitions` + native navigation code |
 
 Always run the three gate commands as diagnostics: `jui verify --detail`, `jui build`, `doc_validate_spec`.
 

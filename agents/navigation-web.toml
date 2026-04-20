@@ -79,7 +79,7 @@ src/app/
 
 ```tsx
 import Link from 'next/link';
-<Link href={`/item/${id}`}>詳細</Link>
+<Link href={`/item/${id}`}>Details</Link>
 
 const router = useRouter();
 router.push(`/item/${id}`);

@@ -51,12 +51,12 @@ Run `mcp__jui-tools__get_project_config` to detect state, then ask:
 ```
 (Repo state: {classification})
 
-やりたいのはどれ?
+What do you want to do?
 
-1. 新規 project の init
-2. 既存 project に platform 追加
-3. test runner だけ入れる
-4. type map / doc rules のひな形だけ
+1. Init a new project
+2. Add a platform to an existing project
+3. Install test runner only
+4. Type map / doc rules template only
 ```
 
 ---
