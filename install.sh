@@ -49,14 +49,20 @@ done
 
 REPO_URL="https://raw.githubusercontent.com/Tai-Kimura/JsonUI-Agents-for-Codex/$REF"
 CODEX_DIR=".codex"
-AGENTS_DIR="$CODEX_DIR/agents"
-SKILLS_DIR=".agents/skills"
+AGENTS_DIR="agents"
+SKILLS_DIR="skills"
+RULES_DIR="rules"
 
-# Agent config files (in agents/ directory)
-AGENT_FILES="jsonui-orchestrator.toml jsonui-modify.toml jsonui-requirements.toml jsonui-screen-impl.toml jsonui-setup.toml jsonui-spec.toml jsonui-test.toml"
+# Agent config files (Phase 3: new 9-agent layout + legacy for parallel period)
+AGENT_FILES="conductor.toml debug.toml define.toml ground.toml implement.toml navigation-android.toml navigation-ios.toml navigation-web.toml test.toml jsonui-orchestrator.toml jsonui-modify.toml jsonui-requirements.toml jsonui-screen-impl.toml jsonui-setup.toml jsonui-spec.toml jsonui-test.toml"
 
 # Skill directories (each contains SKILL.md and optionally examples/)
-SKILL_DIRS="jsonui-component-spec jsonui-converter jsonui-data jsonui-doc-rules jsonui-flow-test-implement jsonui-generator jsonui-layout jsonui-refactor jsonui-requirements-gather jsonui-screen-spec jsonui-screen-test-implement jsonui-spec-review jsonui-swagger jsonui-test-cli jsonui-test-document jsonui-test-setup-android jsonui-test-setup-ios jsonui-test-setup-web jsonui-viewmodel kotlinjsonui-compose-setup kotlinjsonui-xml-setup reactjsonui-setup swiftjsonui-swiftui-setup swiftjsonui-uikit-setup"
+# Phase 4: new consolidated skills (jsonui-dataflow, jsonui-platform-setup)
+# plus legacy skills kept during parallel period (removed in Phase 6)
+SKILL_DIRS="jsonui-component-spec jsonui-converter jsonui-data jsonui-dataflow jsonui-doc-rules jsonui-flow-test-implement jsonui-generator jsonui-layout jsonui-localize jsonui-platform-setup jsonui-refactor jsonui-requirements-gather jsonui-screen-spec jsonui-screen-test-implement jsonui-spec-review jsonui-swagger jsonui-test-cli jsonui-test-document jsonui-test-setup-android jsonui-test-setup-ios jsonui-test-setup-web jsonui-viewmodel kotlinjsonui-compose-setup kotlinjsonui-xml-setup reactjsonui-setup swiftjsonui-swiftui-setup swiftjsonui-uikit-setup"
+
+# Rule files (Phase 5: introduced to Codex)
+RULE_FILES="invariants.md mcp-policy.md design-philosophy.md file-locations.md specification-rules.md"
 
 # Function to get examples for a skill (Bash 3.2 compatible - no associative arrays)
 get_skill_examples() {
@@ -92,7 +98,7 @@ echo "Installing JsonUI Agents for Codex CLI..."
 echo "  Source: $REF_TYPE '$REF'"
 
 # Create directories
-for dir in "$CODEX_DIR" "$AGENTS_DIR" "$SKILLS_DIR"; do
+for dir in "$CODEX_DIR" "$AGENTS_DIR" "$SKILLS_DIR" "$RULES_DIR"; do
     if [ ! -d "$dir" ]; then
         echo "Creating directory: $dir"
         mkdir -p "$dir"
@@ -102,6 +108,7 @@ done
 # Count items
 agent_count=0
 skill_count=0
+rule_count=0
 
 # Download config.toml
 echo ""
@@ -152,6 +159,19 @@ for skill in $SKILL_DIRS; do
     fi
 done
 
+# Download rule files (Phase 5)
+echo ""
+echo "Downloading rules..."
+for file in $RULE_FILES; do
+    echo "  - rules/$file"
+    if ! curl -sLf "$REPO_URL/rules/$file" -o "$RULES_DIR/$file"; then
+        echo "Error: Failed to download rules/$file" >&2
+        echo "Please check if the $REF_TYPE '$REF' exists." >&2
+        exit 1
+    fi
+    rule_count=$((rule_count + 1))
+done
+
 # Download AGENTS.md to project root
 echo ""
 echo "Downloading AGENTS.md..."
@@ -167,11 +187,13 @@ echo ""
 echo "Installed:"
 echo "  Agent configs: $agent_count"
 echo "  Skills: $skill_count"
+echo "  Rules: $rule_count"
 echo ""
 echo "Files installed to:"
 echo "  - $CODEX_DIR/config.toml"
 echo "  - $AGENTS_DIR/"
 echo "  - $SKILLS_DIR/"
+echo "  - $RULES_DIR/"
 echo ""
 echo "========================================"
 echo "          HOW TO GET STARTED"
@@ -185,29 +207,19 @@ echo "   Or add to ~/.codex/config.toml:"
 echo "   [features]"
 echo "   multi_agent = true"
 echo ""
-echo "Option A: Requirements Already Defined"
-echo "---------------------------------------"
-echo "If you already have clear requirements documented:"
+echo "Standard flow (all workflows route through /agent conductor):"
+echo "---------------------------------------------------------------"
 echo ""
 echo "  > Read AGENTS.md"
 echo ""
-echo "This launches the orchestrator for implementation."
+echo "AGENTS.md will ask which workflow you want (1: new work,"
+echo "2: modify existing, 3: investigate, 4: backend). The first"
+echo "three all route to /agent conductor, which inspects the repo"
+echo "via MCP and tells you which specialized agent to switch to"
+echo "(define / ground / implement / navigation-* / test / debug)."
 echo ""
-echo "Option B: Requirements Not Yet Defined (Recommended)"
-echo "-----------------------------------------------------"
-echo "If starting from scratch or need help defining what to build:"
-echo ""
-echo "  > Switch to the jsonui-requirements agent"
-echo ""
-echo "This agent helps define app requirements through dialogue:"
-echo "  1. Select platform(s) (iOS / Android / Web)"
-echo "  2. Describe your app idea"
-echo "  3. Define screens through guided questions"
-echo "  4. Output: docs/screens/json/*.spec.json"
-echo ""
-echo "After requirements are complete, START A NEW SESSION and run:"
-echo ""
-echo "  > Read AGENTS.md"
+echo "Legacy /agent jsonui-orchestrator is still available during"
+echo "the transition period but deprecated. Prefer /agent conductor."
 echo ""
 echo "========================================"
 echo ""
