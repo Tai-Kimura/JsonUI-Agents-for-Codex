@@ -76,31 +76,31 @@ If present, extract: app name, bundle ID, package name, lib versions, platform r
 
 ### 1.3 Platform scaffolding skill
 
-| Platform | Mode | Skill |
-|---|---|---|
-| iOS | SwiftUI | `$swiftjsonui-swiftui-setup` |
-| iOS | UIKit | `$swiftjsonui-uikit-setup` |
-| Android | Compose | `$kotlinjsonui-compose-setup` |
-| Android | XML | `$kotlinjsonui-xml-setup` |
-| Web | React / Next.js | `$reactjsonui-setup` |
+Invoke `$jsonui-platform-setup` with:
 
-Pass: `project_directory`, `jsonui_cli_path` (default `~/.jsonui-cli`), `app_config_path`.
+```
+target: app
+platform: ios | android | web
+mode: swiftui | uikit | compose | xml | react | nextjs
+project_directory, jsonui_cli_path, app_config_path
+```
+
+This is the Phase 4 consolidated skill (replaces `$swiftjsonui-swiftui-setup`, `$swiftjsonui-uikit-setup`, `$kotlinjsonui-compose-setup`, `$kotlinjsonui-xml-setup`, `$reactjsonui-setup`).
+
+Legacy fallback if not installed: use the individual legacy skill matching platform + mode.
 
 ### 1.4 Test runner setup
-```bash
-which jsonui-test
-# if missing:
-curl -fsSL https://raw.githubusercontent.com/Tai-Kimura/jsonui-test-runner/main/test_tools/installer/bootstrap.sh | bash
+
+Invoke `$jsonui-platform-setup` with:
 ```
-Python 3.10+ required.
+target: test
+platform: ios | android | web
+project_directory
+```
 
-Then:
+The skill handles CLI installation (`jsonui-test`, Python 3.10+), directory scaffolding (`tests/screens/`, `tests/flows/`, `tests/descriptions/`), and driver wiring (XCUITest / UIAutomator / Playwright). Replaces `$jsonui-test-setup-{ios,android,web}`.
 
-| Platform | Skill |
-|---|---|
-| iOS | `$jsonui-test-setup-ios` |
-| Android | `$jsonui-test-setup-android` |
-| Web | `$jsonui-test-setup-web` |
+Legacy fallback if not installed: use individual legacy skills.
 
 ### 1.5 Verification build
 Bash `jui build` (no MCP wrapper in `ground`'s allowlist, so shell out). Zero warnings expected on empty project — verifies pipeline.
