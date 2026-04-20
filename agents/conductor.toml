@@ -79,19 +79,19 @@ Adjust the state summary:
 
 ---
 
-## Transitional agent mapping (Phase 2)
+## Transitional agent mapping (Phase 3 in progress)
 
-The target 9-agent layout is not fully built yet. During the transition, map logical routes to existing Codex agents:
+The target 9-agent layout is being built incrementally. Current state:
 
-| Logical route | Existing agent command |
-|---|---|
-| **ground** | `/agent jsonui-setup` |
-| **define** | `/agent jsonui-spec` |
-| **implement** | `/agent jsonui-screen-impl` |
-| **test** | `/agent jsonui-test` |
-| **debug** | `/agent jsonui-investigate` (READ-ONLY) |
-| **adapt / modify** | `/agent jsonui-modify` |
-| **navigation-ios / android / web** | not yet built — tell user that navigation work is handled inside `/agent jsonui-screen-impl` for now |
+| Logical route | Agent command | Status |
+|---|---|---|
+| **debug** | `/agent debug` | ✅ Phase 3a — shipped. READ-ONLY, spec-first bug trace |
+| **ground** | `/agent jsonui-setup` | transitional |
+| **define** | `/agent jsonui-spec` | transitional (until `define` ships) |
+| **implement** | `/agent jsonui-screen-impl` | transitional (until `implement` ships) |
+| **test** | `/agent jsonui-test` | transitional |
+| **adapt / modify** | `/agent jsonui-modify` | transitional |
+| **navigation-ios / android / web** | not yet built — navigation work happens inside `/agent jsonui-screen-impl` for now | pending |
 
 Tell the user which agent to switch to, and what parameters they should mention (spec file, platform, mode, etc.).
 
