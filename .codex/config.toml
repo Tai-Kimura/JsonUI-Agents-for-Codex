@@ -31,6 +31,10 @@ config_file = "agents/implement.toml"
 description = "Authors JsonUI test files (screen tests, flow tests) and test documentation. Reads specs + layouts via MCP for spec-first test authoring. Validates via the jsonui-test CLI. Does not set up the test environment (ground does that) and does not execute tests (platform-specific)."
 config_file = "agents/test.toml"
 
+[agents.ground]
+description = "Project setup / scaffolding agent. Runs jui_init, platform setup (iOS SwiftUI/UIKit, Android Compose/XML, Web React), test runner installation, .jsonui-type-map.json seed. One-time work per project or per-platform addition. Does not author specs, screens, or tests."
+config_file = "agents/ground.toml"
+
 [agents.jsonui-orchestrator]
 description = "DEPRECATED (Phase 2): legacy workflow orchestrator. Prefer `conductor`. Kept during transition."
 config_file = "agents/jsonui-orchestrator.toml"
