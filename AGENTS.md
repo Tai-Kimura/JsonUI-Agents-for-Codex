@@ -135,7 +135,7 @@ Codex loads rule files via `Read` from the agent context. Each agent should refe
 2. **Commit work that produces `jui build` warnings.** Fix them first.
 3. **Skip `$jsonui-localize` "just this once".** It's a gate.
 4. **Silently fall back to Bash when an MCP call fails.** Surface the failure.
-5. **Bypass `/agent jsonui-investigate` for bug fixes in Workflow 2.** The spec-first trace dramatically improves accuracy.
+5. **Bypass `/agent debug` for bug fixes in Workflow 2.** The spec-first trace dramatically improves accuracy.
 6. **Invent behavior that is not in the spec.** Ask the user, or update the spec first.
 
 ---
