@@ -58,3 +58,46 @@ Agent: "For email validation, I need to confirm:
 - Incorrect assumptions propagate to all downstream agents
 - Fixing misinterpretations later is expensive
 - The user knows their requirements better than we do
+
+---
+
+## Custom Components — spec first, then `jui g converter`
+
+Any Layout JSON node whose `type` is **not** a standard JsonUI component (e.g. `CodeBlock`, `NavLink`, `Collapse`, `Details`, `PlatformBadge`, `NetworkImage`) is a **custom component**. Custom components MUST be introduced in this order. Skipping steps produces a converter whose attributes don't match the actual component — layouts render wrong or emit invalid JSX.
+
+### 1. Write a `component_spec` FIRST
+
+Before any layout or screen spec references the custom type:
+
+```
+mcp__jui-tools__doc_init_component with name: "CodeBlock", category: "display", displayName: "Code block"
+```
+
+Creates `{component_spec_directory}/codeblock.component.json`. Fill in:
+
+- `metadata.name` (PascalCase), `displayName`, `description`, `category`
+- `props.items[]` — every attribute the layout can pass. `name` camelCase, `type` is a spec type (`String`, `Int`, `Bool`, `String?`, `[String]`, `(() -> Void)?`).
+- `slots.items[]` — non-empty = container (renders children); empty = leaf.
+
+Validate with `mcp__jui-tools__doc_validate_component`.
+
+### 2. Generate the converter FROM the spec
+
+```bash
+jui g converter --from codeblock.component.json   # single spec
+jui g converter --all                             # every component spec
+```
+
+The spec-driven path reads `props.items[]` → `--attributes` and `slots.items[]` non-empty → `--container`. **Never pass `--attributes` by hand** in production — it defeats the lockstep between the component's contract and the generated converter.
+
+### 3. Register in `.jsonui-doc-rules.json` (doc-site / non-JsonUI projects)
+
+```json
+{ "rules": { "componentTypes": { "screen": ["CodeBlock", "…"] } } }
+```
+
+### 4. THEN write layouts / screen specs that reference it
+
+Only after 1-3 may a screen spec or Layout JSON reference `{"type": "CodeBlock", "language": "bash", "code": "…"}`.
+
+If you find a Layout using a custom `type` with no matching `component_spec`, stop the current task, run Task 4 of `/agent define` for the missing component, then continue. Do not try to reverse-engineer the converter from the layout alone.

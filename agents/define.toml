@@ -49,6 +49,12 @@ The spec authoring and editing agent. Responsible for the *intent and contract* 
 
 ---
 
+## 🔴 Hard rule: custom Layout `type` needs a `component_spec` FIRST
+
+Before a screen spec references a non-standard Layout `type` (`CodeBlock`, `NavLink`, `Collapse`, `Details`, `PlatformBadge`, anything outside the framework's built-in component list), that component MUST have a `{name}.component.json` defining its `props.items[]` and `slots.items[]`. If the screen you're about to author uses a custom type with no component spec yet, stop and run Task 4 first, then resume. See `rules/specification-rules.md` → "Custom Components — spec first".
+
+---
+
 ## First response: classify the task
 
 ```
@@ -142,15 +148,43 @@ Invoke `$jsonui-swagger`. Output: `docs/api/{name}_swagger.json`, `docs/db/{tabl
 
 ---
 
-## Task 4: Component spec
+## Task 4: Component spec (MANDATORY before any custom-type layout)
 
-1. `mcp__jui-tools__doc_init_component` with `name`, `category`, `display_name`
-2. `$jsonui-component-spec` for authoring guide
-3. Edit via Edit
-4. `mcp__jui-tools__doc_validate_component`
-5. `mcp__jui-tools__doc_generate_component` (HTML)
-6. Link into relevant screen specs (`customComponents`) and re-generate those HTMLs
-7. Always invoke `$jsonui-component-spec` even if you think no custom components are needed
+For any Layout `type` that isn't a standard JsonUI component (platform-native widget wrappers, third-party SDK views, doc-site custom elements like `CodeBlock` / `NavLink` / `Collapse`), author a `component_spec` before any layout or screen spec references the type.
+
+### 4.1 Create template
+`mcp__jui-tools__doc_init_component` with `name`, `category`, `display_name`. Creates `{component_spec_directory}/{name}.component.json`.
+
+### 4.2 Fill the contract
+Invoke `$jsonui-component-spec`, then Edit. Minimum:
+- `metadata.name` PascalCase; `displayName`; `description`; `category`
+- `props.items[]` — every attribute the layout can pass. `name` camelCase, `type` a spec type (`String`, `Int`, `Bool`, `String?`, `[String]`, `(() -> Void)?`).
+- `slots.items[]` — non-empty = container; empty = leaf. Drives `--container` vs `--no-container`.
+
+### 4.3 Validate
+`mcp__jui-tools__doc_validate_component`. Fix all violations.
+
+### 4.4 Generate HTML
+`mcp__jui-tools__doc_generate_component`.
+
+### 4.5 Handoff: converter scaffold
+Converter generation is owned by `/agent implement`. Hand off with the exact command:
+```
+jui g converter --from {name}.component.json   # or --all
+```
+**Do not scaffold with `--attributes` by hand.** The spec-driven path (`generate_cmd.py::_cmd_generate_converter`) reads `props.items[]` → `--attributes` and `slots.items[]` non-empty → `--container`. Passing attrs by hand defeats the spec↔converter lockstep.
+
+### 4.6 Register in `.jsonui-doc-rules.json` (doc-site / non-JsonUI projects)
+```json
+{ "rules": { "componentTypes": { "screen": ["CodeBlock", "…"] } } }
+```
+
+### 4.7 Link into screen specs
+Only AFTER 4.1-4.6 may screen specs reference `{"type": "CodeBlock", …}`. Add a `customComponents` reference if the schema tracks them; re-generate affected screen HTMLs.
+
+Always invoke `$jsonui-component-spec` even if you think no custom components are needed — the skill asks the right filter questions.
+
+If you're authoring a screen spec and its Layout JSON uses a custom `type` with no matching component spec, stop the screen task, run Task 4 for the missing component first, THEN continue the screen task. Do not let the converter scaffold run against a hand-written attribute list.
 
 ---
 
