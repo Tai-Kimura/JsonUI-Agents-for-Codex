@@ -44,20 +44,21 @@ project-root/
 │   │   └── chat/                    # Sub-specs
 │   │       ├── chat-core.spec.json
 │   │       └── ...
-│   └── layouts/                     # Layout JSON (SINGLE SOURCE OF TRUTH)
-│       ├── login.json
-│       ├── mypage.json
-│       ├── chat.json
-│       ├── chat/
-│       │   ├── message_cell.json
-│       │   └── ...
-│       ├── common/                  # Shared across screens
-│       │   ├── header.json
-│       │   └── footer.json
-│       ├── Styles/
-│       │   └── card_style.json
-│       └── Resources/
-│           └── strings.json
+│   ├── layouts/                     # Layout JSON (SINGLE SOURCE OF TRUTH)
+│   │   ├── login.json
+│   │   ├── mypage.json
+│   │   ├── chat.json
+│   │   ├── chat/
+│   │   │   ├── message_cell.json
+│   │   │   └── ...
+│   │   ├── common/                  # Shared across screens
+│   │   │   ├── header.json
+│   │   │   └── footer.json
+│   │   └── Resources/               # Under layouts/ — strings.json, colors.json
+│   │       ├── strings.json
+│   │       └── colors.json
+│   └── styles/                      # Sibling to layouts/ — NOT under it
+│       └── card_style.json
 ├── my-app-ios/                      # ← jui build copies here
 ├── my-app-android/                  # ← jui build copies here
 └── my-app-web/                      # ← jui build copies here
@@ -97,20 +98,38 @@ jui build
 
 ## Style Files
 
-Place in `Styles/` directory within `layouts_directory`:
+Place under the `styles_directory` config value (default: `docs/screens/styles/`,
+**sibling to `layouts/`, NOT under it**). `jui build` reads from
+`config_mgr.styles_directory` and distributes each file to every platform's
+`Styles/` folder (placed alongside the platform's `Layouts/` at the same level).
 
 ```
-{layouts_directory}/Styles/
+{styles_directory}/
 ├── card_style.json
 ├── primary_button_style.json
 └── section_header_style.json
 ```
 
+> **Common mistake:** Putting style files under `{layouts_directory}/Styles/`
+> is a legacy placement that current build flow does not read from. Place them
+> at `{styles_directory}/` (sibling to layouts) instead.
+
 ## Resource Files
 
-Place in `Resources/` directory within `layouts_directory`:
+Place in `Resources/` directory **within `layouts_directory`**:
 - `strings.json` — String resources
 - `colors.json` — Color definitions
+
+```
+{layouts_directory}/Resources/
+├── strings.json
+└── colors.json
+```
+
+> Resources are the one concession: they live *under* layouts (unlike styles).
+> `_distribute_resources` in `jui build` reads from
+> `config_mgr.layouts_directory / "Resources"` and copies to each platform's
+> `Layouts/Resources/`.
 
 ## Generated Files (Do Not Edit)
 
