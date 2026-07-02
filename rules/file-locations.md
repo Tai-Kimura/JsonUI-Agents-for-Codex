@@ -161,6 +161,17 @@ DTOs carry the `@generated` banner and are rewritten on every `jui build`. Hand 
 
 To change a DTO field shape: edit the swagger schema. To add a computed / proxy property: edit the **Domain** file (it's user-owned after first emit).
 
+### Android Domain — kotlinx mode also carries an AUTO-GENERATED Serializer block
+
+When `api.platforms.android.serializer == "kotlinx"`, each Domain wrapper file has two regions:
+
+1. **User customization zone** — the class body (`class Foo(val dto: FooDto) { ... }`). Preserved across rebuilds.
+2. **AUTO-GENERATED Serializer block** — a delegating `KSerializer` object at the bottom, marked with `// ╔═══ AUTO-GENERATED Serializer — ...` and `// ╚═══ END AUTO-GENERATED Serializer ═══`. `jui build` rewrites the block between these markers and adds the `@Serializable(with = FooSerializer::class)` annotation on the class declaration if missing.
+
+Required so the wrapper is usable as a Retrofit request/response type and as a field inside `@Serializable` composites (Kotlin can't hand-write `init(from decoder:)` delegation the way Swift can). Moshi / none modes get the plain scaffold without the serializer block.
+
+**Do not delete the AUTO-GENERATED markers** — without them the patcher falls back to "append at end of file" mode and duplicates the block.
+
 ## ⛔ NEVER Edit Platform Copies Directly
 
 Each platform's `Layouts/` directory is overwritten by `jui build`. Any direct edits there will be lost.
