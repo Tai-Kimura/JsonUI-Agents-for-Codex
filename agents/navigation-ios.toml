@@ -235,6 +235,19 @@ Keep the glue minimal. If navigation logic starts living inside VMs in ways that
 
 ---
 
+## Embed navigation (delegate mode, v1)
+
+When the spec contains `structure.embeds[]`, navigation involving the embedded screen is handled per the `navigationMode`:
+
+- **`delegate` (v1 default)** — embedded screen's `navigate(...)` drives the **parent's** `NavigationStack` / `UINavigationController`. The runtime threads `parentNavigation` into `EmbedContainer`; you do not write extra plumbing in the parent. The embedded screen's `userActions[]` / `transitions[]` targets are pushed onto the parent stack as usual.
+  - `pop` / `dismiss` / `navigateBack` are **bounded at the embed** — calling them inside the embedded screen does NOT close the embed. The runtime enforces this; do not work around it.
+  - If the user wants the embedded screen to be popped together with the parent (e.g. tapping back on the parent should also close any pushed destination originating from the embed), that's standard parent stack behavior — no extra code needed.
+- **`isolated` (deferred to v1.5)** — would put a private `NavigationStack` inside the embed. Not implemented yet. If the user asks for it, route them back to `/agent define` to wait or to re-architect with `delegate`.
+
+Generated code already wires `parentNavigation` for you (via the SwiftUI converter). Your job in this agent is just to make sure the **parent's** `NavigationStack` covers any new destinations introduced by `userActions[]` from the embedded screen. The embedded screen is untouched.
+
+---
+
 ## Handoff
 
 After completion, hand back to `/agent conductor` (or `/agent implement` if more work remains on the same screen):

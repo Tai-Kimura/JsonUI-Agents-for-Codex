@@ -262,6 +262,47 @@ cat {skill_directory}/examples/transitions.json
 Ask: "What screen transitions occur from this screen?"
 → Update `transitions`, then validate, then release example.
 
+#### 3.9 Embedded Sub-Screens (skip unless the screen hosts another screen)
+
+If the screen is the **parent** of an embed (tablet master/detail, dashboard panel hosting another full screen), declare `structure.embeds[]`. The embedded screen is NOT modified — only the parent spec changes.
+
+Ask the user:
+
+```
+Does this screen host another screen as a region of its layout? If yes:
+- regionId (camelCase — must match the Layout JSON Embed.id):
+- screen to embed (snake_case layout JSON filename, no extension, e.g. 'order_detail'):
+- params to pass (key → parent VM var name or literal value):
+- events to receive from the embedded screen (on[A-Z]... → parent VM method or eventHandler):
+- navigationMode: 'delegate' is v1 default; 'isolated' is deferred to v1.5.
+```
+
+Then write `structure.embeds[]`. Example shape:
+
+```json
+"structure": {
+  "components": [],
+  "layout": {},
+  "embeds": [
+    {
+      "regionId": "detailPane",
+      "screen": "order_detail",
+      "params": { "orderId": "@{selectedOrderId}" },
+      "events": { "onOrderUpdated": "handleOrderUpdated" },
+      "navigationMode": "delegate"
+    }
+  ]
+}
+```
+
+Make sure:
+- Every `@{varName}` in `params` is declared in `stateManagement.uiVariables` or `dataFlow.viewModel.vars`.
+- Every handler name in `events` exists in `dataFlow.viewModel.methods` or `stateManagement.eventHandlers`.
+
+`doc_validate_spec` enforces both — validation will reject unresolved references. The embedded screen requires no spec changes.
+
+See `rules/specification-rules.md` (5) and `skills/jsonui-layout/examples/embed-spec-fragment.json`.
+
 ### Step 4: Final validation
 Run validate to ensure all sections are correct:
 ```bash

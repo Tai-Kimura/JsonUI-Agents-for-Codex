@@ -255,6 +255,19 @@ Same as iOS/Android: keep navigation glue minimal. If nav logic starts duplicati
 
 ---
 
+## Embed navigation (delegate mode, v1)
+
+When the spec contains `structure.embeds[]`, navigation involving the embedded screen is handled per the `navigationMode`:
+
+- **`delegate` (v1 default)** — embedded component's `navigate(...)` drives the **parent's** router. The generated `<EmbedContainer>` either receives `routerOverride` (when isolation is needed by other parts of the system) or transparently uses the parent's `useRouter` / `useNavigate`. Add any new routes triggered by the embedded screen's `userActions[]` to the route tree as you normally would for the parent screen.
+  - `pop` / dismiss / `navigateBack` semantics are **bounded at the embed** — calling them inside the embedded component does NOT unmount the embed. Runtime enforces this; do not work around it.
+  - VM isolation comes from hook closure scoping — embedding the same screen twice naturally yields two hook instances. No extra wiring needed on the web side.
+- **`isolated` (deferred to v1.5)** — would mount a `<MemoryRouter>` or a nested `<Outlet>` inside the embed. Not implemented yet. Route user back to `/agent define` if asked.
+
+Generated React/Next.js code from `rjui_tools` already emits `<EmbedContainer>` around the embedded screen component. Your job here is to make sure the parent's route definitions cover any destinations introduced by the embedded screen's `userActions[]`. The embedded screen component is untouched.
+
+---
+
 ## Handoff
 
 ```

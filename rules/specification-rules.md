@@ -277,6 +277,30 @@ Sub-spec (`screen_sub_spec`) — references the parent and covers one slice:
 
 Sub-specs never duplicate the parent's `layoutFile`. Parent authors the Layout; sub-specs inherit via `parentSpec` (`validator.py:353-405`).
 
+### (5) Screen with embedded sub-screens (`Embed`)
+
+Use the `Embed` view type when a parent screen hosts another screen as a region of its layout (tablet master/detail, dashboard panels). The embedded screen owns its own ViewModel — independent from the parent VM.
+
+**Canonical reference**: the JsonUIDocument repository's `specification-rules.md` (5) section (the file authored at distribution time). Treat that section as authoritative for the JSON shape, attribute table, and validation rules.
+
+**Quick recap of the rules (mirror these in spec / Layout JSON authoring):**
+
+| Field | Where | Convention | Example |
+|---|---|---|---|
+| `structure.components[].id` (spec) | spec | snake_case | `detail_pane` |
+| `Embed.id` (Layout JSON) | layout | camelCase | `detailPane` |
+| `structure.embeds[].regionId` (spec) | spec | camelCase — references the Layout JSON `Embed.id` | `detailPane` |
+| `Embed.screen` value | spec & layout | **snake_case layout JSON filename** (no extension) — codegen converts to PascalCase View name | `order_detail` |
+| `params` keys | spec & layout | camelCase | `orderId` |
+| `events` keys | spec | `^on[A-Z][a-zA-Z0-9]*$` | `onOrderUpdated` |
+| `navigationMode` | spec & layout | **v1: `"delegate"` only** (`"isolated"` deferred to v1.5) | `delegate` |
+
+**Local-only validation** — `doc_validate_spec` checks the Embed block in isolation; the embedded screen's spec is NOT required to declare anything special. Type contracts beyond key/binding existence are runtime responsibilities (v1 scope). See `validator.py :: _validate_embed`.
+
+**Embedded screen is unchanged.** Parents declare the embed; embedded VMs stay as-is. VMs that implement `applyInitParams(_:)` consume `params`; emit events via the lib-provided `emit(name, payload)` helper.
+
+See `jsonui-cli/docs/plans/2026-05-11-embed-feature.md` for the full design.
+
 ## `dataFlow`
 
 ### 🔴 HARD RULE: `dataFlow` is REQUIRED for any screen that isn't pure-static display

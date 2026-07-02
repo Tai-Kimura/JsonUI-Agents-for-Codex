@@ -1,0 +1,36 @@
+{
+  "_comment": "Parent layout JSON for a tablet master/detail screen. The right pane embeds the 'order_detail' screen, which keeps its own VM. The selected order ID flows in via params binding; the embedded screen emits onOrderUpdated which the parent maps to handleOrderUpdated. See specification-rules.md (5) and design-philosophy.md 'VM isolation across embedded screens'.",
+  "type": "SafeAreaView",
+  "child": {
+    "type": "View",
+    "id": "rootContainer",
+    "orientation": "horizontal",
+    "width": "matchParent",
+    "height": "matchParent",
+    "child": [
+      {
+        "type": "View",
+        "id": "masterPane",
+        "width": 320,
+        "background": "#F5F5F5",
+        "child": [
+          {
+            "type": "Label",
+            "id": "masterTitle",
+            "text": "@string/dashboard_master_title"
+          }
+        ]
+      },
+      {
+        "type": "Embed",
+        "id": "detailPane",
+        "screen": "order_detail",
+        "params": {
+          "orderId": "@{selectedOrderId}"
+        },
+        "navigationMode": "delegate",
+        "weight": 1
+      }
+    ]
+  }
+}

@@ -240,6 +240,7 @@ Every assertion should trace back to a spec section:
 | Spec section | What it drives in the test |
 |---|---|
 | `structure.components` | Which element IDs exist (selectors) |
+| `structure.embeds` | Whether a test must run in an embedded context — use the `embeddedIn` test-runner field (see below) |
 | `stateManagement.eventHandlers` | `action: tap / swipe / long_press` steps |
 | `dataFlow.viewModel.methods` | Async flows (success / error / loading) |
 | `dataFlow.viewModel.vars` | `assert: value == ...` / observable state |
@@ -247,6 +248,23 @@ Every assertion should trace back to a spec section:
 | `userActions` / `transitions` | Navigation assertions (`wait_for screen == ...`) |
 
 If a test assertion doesn't map back to the spec, either the spec is missing a declaration (route to `/agent define` to add it) or the test is testing impl details (remove or rewrite).
+
+### Testing embedded screens
+
+When a screen is intended to run inside an `Embed` slot of a parent screen, the screen test can declare the embed context so the runner spins it up inside the parent:
+
+```json
+{
+  "screen": "OrderDetail",
+  "embeddedIn": "Dashboard.detailPane",
+  "cases": [ ... ]
+}
+```
+
+Notes:
+- `embeddedIn` value is `{ParentScreen}.{regionId}` (PascalCase parent + camelCase regionId — matches the spec).
+- In v1 `navigationMode: "delegate"`, navigation assertions for the embedded screen target the **parent's** NavController/Router. `pop` / `dismiss` / `navigateBack` are bounded at the embed.
+- Flow tests do not yet support assertions that cross the embed boundary (v1 limitation). If the user needs an end-to-end flow that involves an embed, write two screen tests (parent + embedded) and assert their states independently, or wait for the flow test schema's `embeddedIn` support (deferred).
 
 ---
 
