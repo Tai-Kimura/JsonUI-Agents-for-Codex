@@ -6,7 +6,7 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: d36bbee07ead4a89121f78fde5d887f7b9934a4b
+source_commit: 7db7a9e17ef328d293b53b4b689914fdf64590df
 
 - **Last sync date:** 2026-07-02
 - **Source commit subject:** `docs(agents+skill): clarify oneOf + discriminator is supported, not a halt`
@@ -49,7 +49,7 @@ Consumer-project identifiers are genericized in this repo. Current list
 | File | Claude source | This repo |
 |---|---|---|
 | `rules/specification-rules.md` | `BarCellView`, `bars_collection`, `bar_cell_root`, `barName`/`shotPrice` (+ JP labels), `bar_list/bar_cell` | `ItemCellView`, `items_collection`, `item_cell_root`, `itemName`/`unitPrice`, `item_list/item_cell` |
-| `rules/file-locations.md` | consumer FQN example / `BarLegacy*` | `com.example.myapp.model` / `ItemLegacy*` |
+| `rules/file-locations.md` | consumer FQN example / `BarLegacy*` | `com.example.myapp.model` / `ItemLegacy*` (upstream genericized the FQN to `com.example.app.model` in 7db7a9e — spelling-only difference) |
 | `skills/jsonui-layout/examples/strings-json.json` | whisky-flavored sample string | neutral wording |
 | `agents/implement.toml` | domain-flavored Domain accessor example (`displayAbv`/`abv`) | `displayRating`/`rating` |
 | `agents/test.toml` | fixture example schema `` `Bar` `` | `` `Product` `` |
