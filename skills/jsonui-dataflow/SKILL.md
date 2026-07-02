@@ -16,6 +16,26 @@ Authoring guide for the `dataFlow` section of a screen spec. Use this when writi
 
 ---
 
+## 🔴 `dataFlow` is REQUIRED for any interactive screen
+
+Agents have been caught shipping specs with empty or missing `dataFlow` on screens that clearly need a ViewModel, Repository, or UseCase. That is a spec bug — the generated Protocol ends up empty and humans hand-patch the VM.
+
+**You MUST fill the following when applicable:**
+
+| Sub-section | When required | Trigger phrases in the requirements |
+|---|---|---|
+| `viewModel.methods` | Any user action that does work (tap, submit, fetch, navigate, validate, toggle VM-owned state). Every `stateManagement.eventHandlers` entry that reaches the VM needs a matching `viewModel.methods` entry. | "on tap", "when the user submits", "load", "save", "validate", "navigate to" |
+| `viewModel.vars` | Any observable state (loading, fetched list, error message, form value VM owns, derived display string). | "loading indicator", "show results", "error message", "display the …" |
+| `repositories[]` | Any access outside the VM — API, disk, keychain, cache, shared state, platform SDK (StoreKit, Firebase, CoreLocation). | "fetch from API", "save locally", "sign in with Apple", "get location" |
+| `useCases[]` | Orchestration across multiple repos, multi-step validation, or business logic that belongs neither in VM nor Repo. | "check credentials then fetch user", "validate then submit", "login with fallback" |
+| `apiEndpoints[]` | Every endpoint declared on `repositories[*].methods[*].endpoint` must have a matching `apiEndpoints[]` entry. | auto-derived from repository methods |
+
+**Pure-static display is the one exception.** Even then, write `viewModel: { methods: [], vars: [] }` explicitly — don't omit `dataFlow`.
+
+**Do not guess method / var / repo names from the screen description alone.** They become part of the generated Protocol that every platform must implement, and renaming is a breaking change. If the user didn't volunteer the detail, ASK with the template in `rules/specification-rules.md` → "How to ask the user when they didn't volunteer this info".
+
+---
+
 ## When to use which layer
 
 | Screen complexity | Pattern |
@@ -41,11 +61,11 @@ The public contract. Every method and var declared here becomes a Protocol/Inter
 
   // with params + return + async
   {
-    "name": "fetchBottles",
+    "name": "fetchProducts",
     "params": [{ "name": "category", "type": "String" }],
-    "returnType": "Array(Bottle)",
+    "returnType": "Array(Product)",
     "isAsync": true,
-    "description": "Fetch bottles filtered by category"
+    "description": "Fetch items filtered by category"
   },
 
   // platform-limited
@@ -60,7 +80,7 @@ The public contract. Every method and var declared here becomes a Protocol/Inter
 |---|---|---|---|
 | `name` | ✅ | — | camelCase method name |
 | `params` | | `[]` | structured list or legacy `"id: String, x: Int"` string |
-| `returnType` | | (none) | passes through TypeMapper — e.g. `Array(Bottle)` → Swift `[Bottle]`, Kotlin `List<Bottle>`, TS `Bottle[]` |
+| `returnType` | | (none) | passes through TypeMapper — e.g. `Array(Product)` → Swift `[Product]`, Kotlin `List<Product>`, TS `Product[]` |
 | `isAsync` | | `false` | ViewModel methods are synchronous by default |
 | `platforms` | | all platforms | `["ios"]`, `["ios", "android"]` — empty `[]` is valid but triggers WARNING |
 | `description` | | — | |
@@ -70,7 +90,7 @@ The public contract. Every method and var declared here becomes a Protocol/Inter
 ```jsonc
 "vars": [
   { "name": "isLoading", "type": "Bool" },
-  { "name": "bottles", "type": "Array(Bottle)" },
+  { "name": "items", "type": "Array(Product)" },
   { "name": "onDismiss", "type": "() -> Void", "optional": true },
   { "name": "staticLabel", "type": "String", "readOnly": true, "observable": false }
 ]
@@ -135,15 +155,15 @@ Multi-line signatures use consecutive marker lines:
 ```jsonc
 "repositories": [
   {
-    "name": "BottleRepository",
-    "description": "API access for bottle data",
+    "name": "ProductRepository",
+    "description": "API access for item data",
     "methods": [
       {
-        "name": "fetchBottles",
+        "name": "fetchProducts",
         "params": [{ "name": "category", "type": "String" }],
-        "returnType": "Array(Bottle)",
+        "returnType": "Array(Product)",
         "isAsync": true,
-        "endpoint": "GET /api/bottles"
+        "endpoint": "GET /api/items"
       },
       {
         "name": "loginAndFetch",
@@ -211,8 +231,8 @@ If you provide both, they merge. If neither is present, the UC appears in the di
   },
   {
     "method": "GET",
-    "path": "/api/bottles",
-    "description": "Fetch bottle list"
+    "path": "/api/items",
+    "description": "Fetch item list"
   }
 ]
 ```
@@ -255,7 +275,7 @@ When the auto-generator produces the Mermaid:
 2. **Declaring `eventHandlers` items in `dataFlow.viewModel.methods`** — event handlers for pure UI toggles go in `stateManagement.eventHandlers`. Things that reach the VM (tap → fetch → update state) go in `dataFlow.viewModel.methods`.
 3. **Closure type in a `var` without `optional: true`** — non-optional closures need initialization; usually you want the optional form.
 4. **Forgetting `platforms` on iOS-only methods** — Apple Sign-In, StoreKit, WebKit-specific things should be `platforms: ["ios"]`. Otherwise the Android / Web builds will fail protocol sync.
-5. **Mismatched endpoint path** — `"GET /api/bottles"` in Repository must match `{ "method": "GET", "path": "/api/bottles" }` in apiEndpoints. Mermaid linkage breaks silently if they don't.
+5. **Mismatched endpoint path** — `"GET /api/items"` in Repository must match `{ "method": "GET", "path": "/api/items" }` in apiEndpoints. Mermaid linkage breaks silently if they don't.
 6. **UseCase with a single method calling a single Repo method** — consider whether the UseCase adds value. Often not.
 
 ---

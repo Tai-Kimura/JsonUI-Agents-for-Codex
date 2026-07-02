@@ -173,7 +173,7 @@ Single-cell Collection:
   "collection": {
     "id": "bars_collection",
     "cell": {
-      "viewName": "BarCellView",
+      "viewName": "ItemCellView",
       "root": "bar_cell_root",
       "layoutFile": "bar_list/bar_cell",   // external Layout JSON
       "generateCellLayout": true,          // true → jui writes the cell Layout JSON on generate
@@ -278,6 +278,39 @@ Sub-spec (`screen_sub_spec`) — references the parent and covers one slice:
 Sub-specs never duplicate the parent's `layoutFile`. Parent authors the Layout; sub-specs inherit via `parentSpec` (`validator.py:353-405`).
 
 ## `dataFlow`
+
+### 🔴 HARD RULE: `dataFlow` is REQUIRED for any screen that isn't pure-static display
+
+Agents have shipped specs with empty or missing `dataFlow` even when the screen clearly has interaction or data. That is a spec bug — downstream `/agent implement` has nothing to generate the Protocol / Base / Repository / UseCase from, and `jui build` will pass with an empty contract that humans then have to fix by hand.
+
+**Every screen spec (except pure-static display screens) MUST author ALL of the following when applicable:**
+
+| Sub-section | When to fill | What to write |
+|---|---|---|
+| `dataFlow.viewModel.methods` | Screen has ANY user action that does work (tap → fetch, submit, navigate, validate, toggle state the VM owns). | One entry per public ViewModel method. **Every `stateManagement.eventHandlers` entry that reaches the VM must have a corresponding `viewModel.methods` entry** — if a handler only toggles pure-UI state, leave it as an eventHandler and note the omission. |
+| `dataFlow.viewModel.vars` | Screen has any observable state (loading flags, fetched data, form values the VM owns, derived display strings). | One entry per observable property. camelCase, typed. Do not let UI-bound `stateManagement.uiVariables` stand in for VM vars — the spec needs both when the VM owns the source of truth. |
+| `dataFlow.repositories[]` | Screen reads/writes ANYTHING outside the VM — API, disk, keychain, cache, shared state, platform SDK (StoreKit, Firebase, CoreLocation). | At minimum one Repository with `methods[]` and `endpoint` (or SDK description in `description`). API calls via ViewModel directly are NOT allowed — see design-philosophy.md. |
+| `dataFlow.useCases[]` | Screen has orchestration across multiple repositories, multi-step validation, or business logic that doesn't belong in either the VM or a Repo. | Declare the UseCase and link it to Repositories via `useCase.repositories` or `methods[].calls`. Skip the UseCase for 1-API single-repo screens. |
+| `dataFlow.apiEndpoints[]` | Every endpoint referenced by `repositories[*].methods[*].endpoint` must have a matching entry here. | `{path, method, request, response, notes}`. Paths must match repo entries exactly. |
+
+**Pure-static display screens** (no interaction, no dynamic data, no observable state — e.g. a help page with hard-coded text) are the ONE exception. For those, still write `dataFlow.viewModel: { methods: [], vars: [] }` **explicitly** — do not omit the `dataFlow` key entirely, so the next editor can see it was a considered choice rather than a skip.
+
+**Validation gate before moving to HTML generation:** if the spec has any `stateManagement.eventHandlers` OR any `uiVariables` with callback type `(() -> Void)?` OR any dynamic binding (`@{...}`) in the referenced Layout JSON, then `dataFlow.viewModel.methods` MUST be non-empty. If it's empty, go back and ask the user — do not let the spec pass.
+
+**How to ask the user when they didn't volunteer this info:**
+
+```
+Looking at the screen description, I see <tap/submit/fetch/etc>. I need to author the dataFlow section — a few questions:
+
+1. ViewModel methods: what should the VM do on each action? (I'll draft one method per action with the signature.)
+2. Observable state: what state does the VM own and the UI observes? (isLoading, fetchedItems, errorMessage, etc.)
+3. Data source: does this screen hit any API / SDK / storage? If yes, I'll draft a Repository with those methods.
+4. Orchestration: does a single user action trigger work across multiple repos or multi-step validation? If yes, I'll draft a UseCase.
+```
+
+Do this BEFORE writing `dataFlow`. Do not guess method names / var names / repo names from the screen description alone — they become part of the generated Protocol that downstream platforms must implement, and renaming later is a breaking change.
+
+### dataFlow structure reference
 
 ```json
 "dataFlow": {
@@ -385,7 +418,7 @@ Cross-references to generated and hand-written files. Accepted `type` values (`v
   { "type": "Layout",    "path": "docs/screens/layouts/login.json" },
   { "type": "View",      "path": "…/LoginView.swift",           "platform": "ios" },
   { "type": "ViewModel", "path": "…/LoginViewModel.swift",      "platform": "ios" },
-  { "type": "Extension", "path": "…/BarListing+Status.swift",   "platform": "ios" },
+  { "type": "Extension", "path": "…/ItemListing+Status.swift",   "platform": "ios" },
   { "type": "Component", "path": "…/LoginButton.tsx",           "platform": "web" },
   { "type": "Hook",      "path": "…/useLoginViewModel.ts",      "platform": "web" }
 ]
@@ -398,7 +431,7 @@ Enforced by the schema. Violations are validation errors, not warnings:
 | Field | Pattern | Example |
 |---|---|---|
 | `version` | `^\d+\.\d+$` | `"1.0"` |
-| `metadata.name` | `^[A-Z][a-zA-Z0-9]*$` | `Login`, `BarList` |
+| `metadata.name` | `^[A-Z][a-zA-Z0-9]*$` | `Login`, `ItemList` |
 | Any `component.id` | `^[a-z][a-z0-9_]*$` | `bar_cell_root` |
 | `uiVariable.name` | `^[a-z][a-zA-Z0-9]*$` | `loadingVisibility` |
 | `eventHandler.name` | `^on[A-Z][a-zA-Z0-9]*$` | `onLoginTap` |
@@ -455,7 +488,7 @@ on `structure.collection.cell` using the same shape as the screen's
 "collection": {
   "id": "bars_collection",
   "cell": {
-    "viewName": "BarCellView",
+    "viewName": "ItemCellView",
     "layoutFile": "bar_list/bar_cell",
     "generateCellLayout": true,
     "root": "bar_cell_root",
@@ -578,9 +611,19 @@ The framework has spec-driven scaffolding. Do NOT pass `--attributes` by
 hand; drive it from the spec so the attribute list and types stay in sync
 with the component's contract.
 
+**You must run this explicitly** — `jui build` does NOT auto-run
+converter scaffolding. That was tried and reverted: the downstream
+component generators (React/Swift/Kotlin component + adapter +
+dynamic-component scaffolders) all prompt interactively on overwrite,
+which blocks MCP / CI callers even when the outer `jui g converter`
+honors `--skip-existing`. Keep `jui build` focused on "build what's
+written"; scaffold explicitly when you add or change a spec.
+
 ```bash
 jui g converter --from codeblock.component.json   # single spec
 jui g converter --all                             # every component spec
+jui g converter --all --skip-existing             # idempotent (skip existing
+                                                   #   converter files silently)
 ```
 
 Under the hood (`generate_cmd.py::_cmd_generate_converter`):
@@ -588,6 +631,13 @@ Under the hood (`generate_cmd.py::_cmd_generate_converter`):
 - Reads `slots.items[]` non-empty → `--container`, empty → `--no-container`
 - Calls `sjui g converter` / `kjui g converter` / `rjui g converter` with
   the same args per platform listed in `jui.config.json::platforms`
+- `--skip-existing` exports `JUI_SKIP_EXISTING=1` to each platform
+  subprocess. That bypasses the interactive prompt in the outer
+  `converter_generator.rb` only — the React/Swift/Kotlin component
+  generators invoked downstream still prompt, so `--skip-existing` is
+  **best-effort idempotency**, not a full non-interactive guarantee.
+  Use it for agent/CI runs when you expect every converter to already
+  exist; fall back to answering `n` for any leftover prompt.
 
 The direct form `jui g converter CodeBlock --attributes …` exists but is
 only for one-off prototyping. **Production code always uses `--from` or
@@ -648,3 +698,6 @@ agree on the attribute contract.
 9. **`relatedFiles.type` = unknown string** — only these 10 are accepted: `View`, `ViewModel`, `Layout`, `Repository`, `UseCase`, `Model`, `Test`, `Extension`, `Component`, `Hook`.
 10. **Missing `metadata.layoutFile` + empty `structure`** — if no `layoutFile`, the validator requires `components` + `layout` to be filled. Always set `layoutFile`.
 11. **Using a custom `type` in a layout without a `component_spec`** — any non-standard `type` (`CodeBlock`, `Collapse`, `NavLink`, etc.) must have a `{name}.component.json` defining its `props.items[]` + `slots.items[]` FIRST, then be scaffolded via `jui g converter --from {name}.component.json`. Skipping the spec produces a converter whose attributes don't match the actual component — layouts render wrong or emit invalid JSX. See "Custom Components — spec first" above.
+12. **Empty or missing `dataFlow` on an interactive screen** — if the screen has any user action or observable state, `dataFlow.viewModel.methods` / `vars` MUST be filled. `dataFlow.repositories[]` MUST be filled if the screen touches any API / SDK / disk. Agents have shipped specs with empty `dataFlow`, which lets `jui build` generate an empty Protocol — then humans patch around it in hand-written VM code, defeating the spec-first design. See "HARD RULE: `dataFlow` is REQUIRED" above.
+13. **`stateManagement.eventHandlers` without matching `dataFlow.viewModel.methods`** — an eventHandler that calls the VM (tap → fetch, submit → validate) MUST appear as a `viewModel.methods[]` entry too. eventHandlers on their own only handle pure-UI toggles. If the handler reaches the VM, you need both entries.
+14. **API calls declared directly in `viewModel.methods` without a `repositories[]` entry** — ViewModels don't call APIs directly. Any `methods[].endpoint` or obvious fetch-y method name (`fetchX`, `loadX`, `saveX`, `deleteX`) implies a Repository exists and must be declared. Route API access through `dataFlow.repositories[]`.

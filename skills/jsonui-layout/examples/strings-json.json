@@ -1,8 +1,8 @@
 {
   "_comment": "strings.json format - Structure: { file_prefix: { key: value } }",
   "login": {
-    "whiskyfinder": "WhiskyFinder",
-    "discover_your_perfect_dram": "Discover Your Perfect Dram"
+    "sampleapp": "SampleApp",
+    "discover_new_arrivals": "Discover New Arrivals"
   },
   "main": {
     "welcome": "Welcome"

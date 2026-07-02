@@ -136,8 +136,8 @@ Define cell/header/footer structure via `sections`. Each view requires a JSON fi
 {
   "type": "Collection",
   "cellIdProperty": "id",
-  "items": "@{bottleItems}",
-  "sections": [{ "cell": "bottle_cell" }]
+  "items": "@{productItems}",
+  "sections": [{ "cell": "item_cell" }]
 }
 ```
 
@@ -246,6 +246,12 @@ Creation commands:
 
 - Bind with `@{}`: `"text": "@{title}"`, `"onClick": "@{onButtonTap}"`
 - **Views with bindings must have an `id`**
+- **Never prefix with `data.`** — bindings reference variables by bare name regardless of where they're declared (`data: [...]` at the root of a cell Layout, `stateManagement.uiVariables` in the spec, `dataFlow.viewModel.vars` — all resolve the same way at the binding site)
+
+**Wrong:** `"@{data.titleKey}"`, `"@{data.onNavigate}"`
+**Right:** `"@{titleKey}"`, `"@{onNavigate}"`
+
+The `data: [...]` block in a Collection cell Layout only DECLARES the variable names + types; it is not a namespace. Downstream generators (sjui / kjui / rjui) emit direct property access from the bare names — a `data.` prefix becomes a broken path at runtime.
 
 ### This Skill Does Not Define the Data Section
 

@@ -219,26 +219,26 @@ When working with Collection components, use `CollectionDataSource` to populate 
 
 ```swift
 // Swift - each item must have a unique "id" value
-let items = bottles.map { bottle in
+let items = items.map { item in
     [
-        "id": bottle.id,       // REQUIRED: unique identifier matching cellIdProperty
-        "name": bottle.name,
-        "price": "\(bottle.price)"
+        "id": item.id,       // REQUIRED: unique identifier matching cellIdProperty
+        "name": item.name,
+        "price": "\(item.price)"
     ] as [String: Any]
 }
-data.bottleItems = CollectionDataSource(section: .init(cellData: items))
+data.productItems = CollectionDataSource(section: .init(cellData: items))
 ```
 
 ```kotlin
 // Kotlin - each item must have a unique "id" value
-val items = bottles.map { bottle ->
+val items = items.map { item ->
     mapOf(
-        "id" to bottle.id,     // REQUIRED: unique identifier matching cellIdProperty
-        "name" to bottle.name,
-        "price" to "${bottle.price}"
+        "id" to item.id,     // REQUIRED: unique identifier matching cellIdProperty
+        "name" to item.name,
+        "price" to "${item.price}"
     )
 }
-data.bottleItems = CollectionDataSource(section = Section(cellData = items))
+data.productItems = CollectionDataSource(section = Section(cellData = items))
 ```
 
 ---
