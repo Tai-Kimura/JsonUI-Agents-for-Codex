@@ -132,6 +132,7 @@ Before a screen spec references a custom component (`CodeBlock`, `NavLink`, `Col
 | `structure.layout` | `{}` | Always empty for the same reason. |
 | `structure.collection` | `null`, or a Collection with `cellClasses: [...]` / `cell.layoutFile` / `sections[]` | See `rules/specification-rules.md` section "(2) Collection screen" for the three accepted shapes. `cellClasses` is an **array of strings** (Layout JSON refs). |
 | `structure.tabView` | `null`, or `{id, tabs: [{title, layoutFile}]}` | Each tab is its own Layout JSON. |
+| `structure.embeds` | `[]`, or `[{regionId, screen, params?, events?, navigationMode?}]` | Use when a parent screen hosts another screen as a region (tablet master/detail, dashboard panels). See `rules/specification-rules.md` (5) and the dedicated dialogue block below. |
 | `stateManagement.uiVariables` | Typed screen data (visibility flags, toast messages, callbacks) | Callback variables use `"type": "(() -> Void)?"` (or the `"callback"` alias) |
 | `stateManagement.eventHandlers` | View-local handlers — name + description only | Anything that needs to be callable from the ViewModel belongs in `dataFlow.viewModel.methods` |
 | `stateManagement.displayLogic` | `condition` + `effects[{element, state}]` for visibility rules | Auto-generated `{element_id}Visibility` var names unless `variableName` is explicit |
@@ -152,6 +153,45 @@ Naming regexes the schema enforces silently — violations make the spec get SKI
 - Any `component.id` → `^[a-z][a-z0-9_]*$` (snake_case)
 - `uiVariable.name` → `^[a-z][a-zA-Z0-9]*$` (camelCase)
 - `eventHandler.name` → `^on[A-Z][a-zA-Z0-9]*$`
+- `structure.embeds[].regionId` → `^[a-z][a-zA-Z0-9]*$` (camelCase — matches Layout JSON `Embed.id`)
+- `structure.embeds[].screen` → `^[a-z][a-z0-9_]*$` (snake_case layout JSON filename, no extension)
+
+### 1.3.1 When the parent screen embeds another screen (`Embed`)
+
+If the screen hosts another screen as a region (tablet master/detail, dashboard pane), ask the user this block explicitly **before** writing `structure.embeds[]`:
+
+```
+This screen embeds another screen. A few details:
+- regionId (camelCase, used in the parent Layout JSON Embed.id):
+- screen to embed (the embedded screen's layout JSON filename, snake_case):
+- params to pass (key → parent VM var name or literal):
+- events to receive from the child (on[A-Z]... → parent VM method or eventHandler):
+- navigationMode: 'delegate' is the v1 default ('isolated' is deferred to v1.5).
+```
+
+Then translate into:
+
+```json
+"structure": {
+  "components": [],
+  "layout": {},
+  "embeds": [
+    {
+      "regionId": "detailPane",
+      "screen": "order_detail",
+      "params": { "orderId": "@{selectedOrderId}" },
+      "events": { "onOrderUpdated": "handleOrderUpdated" },
+      "navigationMode": "delegate"
+    }
+  ]
+}
+```
+
+Then make sure the parent VM has:
+- `stateManagement.uiVariables[]` (or `dataFlow.viewModel.vars[]`) entries for every `@{varName}` binding referenced in `params`
+- `dataFlow.viewModel.methods[]` (or `stateManagement.eventHandlers[]`) entries for every handler name referenced in `events`
+
+`doc_validate_spec` will reject the spec if either reference is unresolved (`validator.py :: _validate_embed`). The embedded screen's spec is NOT modified — leave it alone.
 
 ### 1.4 Validate
 

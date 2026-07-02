@@ -63,6 +63,19 @@ There is also a `platforms` (plural) key at the root of a Layout JSON file that 
 - **Never** edit `@generated` files. Edit the spec and let `jui build` regenerate.
 - **Never** add features not described in the spec. If a feature is needed, update the spec first.
 
+## VM isolation across embedded screens (`Embed`)
+
+Unlike `include` (static inline expansion, parent owns the VM) and `TabView` (tabs share the parent VM), an `Embed` view type creates a **VM boundary**: the embedded screen owns its own ViewModel, fully independent from the parent. This is the design contract — not a side-effect of any one platform's implementation:
+
+- **Parent → child data**: only what is explicitly listed in `params` crosses the boundary. No implicit `data` sharing.
+- **Child → parent events**: only what is explicitly declared in `events` (mapped to a parent VM method or eventHandler) crosses back. Embedded VMs emit via the lib `emit(name, payload)` helper.
+- **Same screen embedded twice**: each instance gets its own VM, keyed by the Layout JSON `Embed.id`. On Android, `EmbedContainer` `remember(id)` a per-slot `ViewModelStoreOwner` to guarantee this — do not bypass.
+- **Navigation**: v1 uses `navigationMode: "delegate"` — the embedded screen's `navigate()` drives the parent's NavController/Router. `pop` / `dismiss` / `navigateBack` are bounded at the embed and do not close it.
+
+The embedded screen requires **no spec changes** to be embeddable. VMs that implement `applyInitParams(_:)` consume the params; others ignore them. This is the inverse of `include`'s ID-prefix scoping trick — instead of injecting parent identity into the child, `Embed` walls the child off and forces explicit channels.
+
+See `specification-rules.md` (5) and `jsonui-cli/docs/plans/2026-05-11-embed-feature.md`.
+
 ## When in doubt
 
 Refer to the spec. If the spec is silent, ask the user — do not invent behavior. See `specification-rules.md`.

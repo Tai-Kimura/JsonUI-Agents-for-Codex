@@ -121,6 +121,8 @@ app_config_path: {app_config_path}
 
 This is the consolidated Phase 4 skill that replaces the 5 legacy setup skills (`swiftjsonui-swiftui-setup`, `swiftjsonui-uikit-setup`, `kotlinjsonui-compose-setup`, `kotlinjsonui-xml-setup`, `reactjsonui-setup`). It installs the platform's tools (`sjui_tools/` / `kjui_tools/` / `rjui_tools/`), bootstraps the app shell, and wires up JsonUI. The skill does the work; you invoke and monitor.
 
+> Note: `rjui init` emits a `EmbedContainer.tsx` template into the project for the `Embed` view type as part of scaffold. No separate setup step is needed for Embed support.
+
 > Legacy fallback (pre-Phase 4 projects): if `$jsonui-platform-setup` is not yet installed in the user's environment, fall back to the individual legacy skill matching `platform` + `mode`. They remain in the skills/ directory until Phase 6.
 
 ### 1.4 Test runner setup

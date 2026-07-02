@@ -135,6 +135,35 @@ jui g partial {path/to/partial}
 
 Then edit the generated JSON.
 
+### 3.5 Embed nodes in the Layout JSON (cross-screen embedding)
+
+If the spec declares `structure.embeds[]`, the corresponding Layout JSON must contain `{"type": "Embed"}` nodes inside the view tree — one per `structure.embeds[].regionId`. The `Embed` node's `id` is camelCase and matches the spec's `regionId`. The `screen` value is the **snake_case layout filename** of the embedded screen (no extension).
+
+Shape:
+
+```json
+{
+  "type": "Embed",
+  "id": "detailPane",
+  "screen": "order_detail",
+  "params": { "orderId": "@{selectedOrderId}" },
+  "navigationMode": "delegate",
+  "weight": 1
+}
+```
+
+Before authoring:
+
+- Confirm the embedded screen exists via `mcp__jui-tools__list_layouts` (the embedded layout JSON must be on disk) and `mcp__jui-tools__list_screen_specs` (the embedded screen's spec). **You do not modify the embedded screen** — both spec and Layout JSON stay as-is.
+- Make sure every `@{varName}` in `params` is declared in the parent VM's `stateManagement.uiVariables` or `dataFlow.viewModel.vars` (otherwise spec validation rejected the spec earlier — recheck and route back to `/agent define` if missed).
+- `navigationMode` in v1 is `"delegate"` only. If the user asked for `"isolated"`, stop and tell them — that's deferred to v1.5.
+
+After `jui build`, the generated screen code includes an `EmbedContainer { ... }` block. **Do not hand-edit the generated EmbedContainer** — it is regenerated. If the embedding is wrong, fix the spec / Layout JSON.
+
+Same-screen multi-embed: it's supported. Each Layout JSON `Embed.id` keys an independent VM instance (Android uses `remember(id)` on a per-slot `ViewModelStoreOwner` — do not bypass). Confirm IDs are unique within the parent layout, otherwise the two embeds will collide on Android.
+
+`$jsonui-localize` does not touch `Embed` nodes (they hold no user-visible strings). The embedded screen is localized as part of its own implementation — make sure it has already been localized before considering the parent done.
+
 ### 4. Implement VM / Repository / UseCase bodies
 
 The **signatures** are generated from the spec (`dataFlow.viewModel.methods/vars`, `dataFlow.repositories[].methods`, `dataFlow.useCases[].methods`). You do NOT add new signatures here — you fill in the `{ ... }` of method bodies.

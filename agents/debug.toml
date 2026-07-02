@@ -78,6 +78,10 @@ Map the user's description to a spec section:
 | API error / wrong response | `dataFlow.apiEndpoints` + `repositories[].methods[].endpoint` |
 | Navigation stuck / wrong back behavior | `userActions` / `transitions` — also check Navigation code outside the spec |
 | Crash | above + type alignment in `.jsonui-type-map.json` |
+| Embedded screen does not see parent VM data | `structure.embeds[].params` — embeds receive only what is explicitly passed. Expected per design (`rules/design-philosophy.md` "VM isolation across embedded screens"); not a bug. |
+| Same screen embedded twice shares state | Layout JSON `Embed.id` uniqueness + Android `EmbedContainer.remember(id)` — id collision causes shared VM. Confirm IDs are unique within the parent layout. |
+| Embed child navigate() does the wrong thing | `Embed.navigationMode` in v1 is `delegate` only — child `navigate` drives parent NavController/Router. `pop` / `dismiss` / `navigateBack` are bounded at the embed (do not close it). |
+| Embed event handler not firing on parent | `structure.embeds[].events` mapping → confirm parent VM has the named method or eventHandler. Validator catches this at spec time; runtime miss usually means lib `emit(name, payload)` was called with a name not in the map. |
 | Symptom not in the spec (infra, runtime race, memory) | **spec-external** — confirm there's no spec ↔ impl drift first, then go to impl |
 
 If the symptom doesn't fit cleanly, pick the closest and note the assumption in the report.

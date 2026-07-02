@@ -274,3 +274,88 @@ If you find issues with the Layout JSON `data` section (missing bindings, wrong 
 - Cross-platform type compatibility comes from the TypeMapper (`.jsonui-type-map.json`). Unregistered custom types produce warnings at `jui verify`.
 
 See `jsonui-dataflow` skill for authoring `dataFlow.viewModel.vars`.
+
+---
+
+## Embeddable ViewModels (`Embed` view type)
+
+A ViewModel becomes "embeddable" when its screen may be hosted as a region inside another screen via `Embed`. Two optional patterns enable richer integration; both are **opt-in** — VMs that don't implement them still embed correctly, they just ignore parent-supplied params and cannot emit events to the parent.
+
+### Receiving init params (`applyInitParams`)
+
+When the parent declares `Embed.params: { orderId: "@{selectedOrderId}" }`, the runtime calls `applyInitParams(_:)` on the embedded VM whenever the bound value changes. If the VM does not implement this method, params are silently ignored (by design — the embedded screen stays usable standalone).
+
+#### Swift (SwiftUI)
+
+```swift
+extension OrderDetailViewModel {
+    func applyInitParams(_ params: [String: Any]) {
+        if let orderId = params["orderId"] as? String {
+            self.orderId = orderId
+            Task { await self.refresh() }
+        }
+    }
+}
+```
+
+#### Kotlin (Compose)
+
+```kotlin
+class OrderDetailViewModel : OrderDetailViewModelBase() {
+    fun applyInitParams(params: Map<String, Any?>) {
+        (params["orderId"] as? String)?.let {
+            orderId.value = it
+            viewModelScope.launch { refresh() }
+        }
+    }
+}
+```
+
+#### React (rjui_tools generated hook)
+
+```tsx
+export function useOrderDetailViewModel(router: AppRouter, initParams?: { orderId?: string }) {
+    // initParams flows in as the second hook arg; treat it as a regular prop.
+    useEffect(() => {
+        if (initParams?.orderId) refresh(initParams.orderId);
+    }, [initParams?.orderId]);
+    // ...
+}
+```
+
+Bindings (`@{selectedOrderId}`) reactively re-invoke `applyInitParams` when the parent state changes, so do not cache the param locally with stale-detection logic — let the runtime call you.
+
+### Emitting events to the parent (`emit`)
+
+When the parent declares `Embed.events: { onOrderUpdated: "handleOrderUpdated" }`, the embedded VM emits via the lib-provided `emit(name, payload)` helper. **No spec-side declaration is required** on the embedded screen — the contract is "names that the parent maps".
+
+#### Swift
+
+```swift
+func didFinishEditingOrder(_ id: String) {
+    emit("onOrderUpdated", payload: ["id": id])
+}
+```
+
+#### Kotlin
+
+```kotlin
+fun didFinishEditingOrder(id: String) {
+    emit("onOrderUpdated", mapOf("id" to id))
+}
+```
+
+#### React
+
+```tsx
+const { emit } = useEmbedScope();
+function didFinishEditingOrder(id: string) {
+    emit("onOrderUpdated", { id });
+}
+```
+
+If the embedded screen is rendered standalone (not via Embed), `emit` is a no-op — events have no parent to deliver to. The VM does not need to branch on context.
+
+### Navigation inside an embedded VM (v1: `delegate` only)
+
+`navigate(...)` calls forward to the parent's NavController/Router. `pop` / `dismiss` / `navigateBack` are bounded at the embed (they do NOT close the embed). Write VM methods that call these as you would for the standalone case — the runtime handles the rest.
