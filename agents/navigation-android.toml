@@ -69,11 +69,11 @@ Pattern: sealed class routes + `NavHost` with `composable(route)` entries.
 ```kotlin
 sealed class Route(val path: String) {
   object Home : Route("home")
-  data class ItemDetail(val id: String) : Route("item/$id") {
-    companion object { const val pattern = "item/{id}" }
+  data class ProductDetail(val id: String) : Route("product/$id") {
+    companion object { const val pattern = "product/{id}" }
   }
-  data class ReviewForm(val itemId: String) : Route("review/$itemId") {
-    companion object { const val pattern = "review/{itemId}" }
+  data class ReviewForm(val productId: String) : Route("review/$productId") {
+    companion object { const val pattern = "review/{productId}" }
   }
 }
 
@@ -83,18 +83,18 @@ fun AppNavHost(navController: NavHostController) {
     composable("login") { LoginScreen(navController) }
     composable("home")  { HomeScreen(navController) }
     composable(
-      route = Route.ItemDetail.pattern,
+      route = Route.ProductDetail.pattern,
       arguments = listOf(navArgument("id") { type = NavType.StringType })
     ) { backStack ->
       val id = backStack.arguments?.getString("id") ?: return@composable
-      ItemDetailScreen(itemId = id)
+      ProductDetailScreen(productId = id)
     }
   }
 }
 
 // In a screen:
 Button(onClick = {
-  navController.navigate("item/${item.id}")
+  navController.navigate("product/${product.id}")
 }) { ... }
 ```
 
@@ -120,7 +120,7 @@ Pattern: `NavGraph` XML + `findNavController().navigate(actionId)`.
 // In a fragment:
 findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
 // With args via Safe Args:
-findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToItemDetailFragment(id))
+findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToProductDetailFragment(id))
 ```
 
 Prefer Safe Args plugin if the project already uses it.
@@ -177,7 +177,7 @@ var onNavigateToDetail: ((String) -> Unit)? = null
 // Screen
 LoginScreen(
   viewModel = vm,
-  onNavigate = { id -> navController.navigate("item/$id") }
+  onNavigate = { id -> navController.navigate("product/$id") }
 )
 ```
 
@@ -201,8 +201,8 @@ Kotlin compile should succeed. If errors, fix Kotlin code.
 ## Navigation implemented (Android / {mode})
 
 ### Routes added
-- Route.ItemDetail(id) → "item/{id}"
-- Route.ReviewForm(itemId) → "review/{itemId}"
+- Route.ProductDetail(id) → "product/{id}"
+- Route.ReviewForm(productId) → "review/{productId}"
 
 ### Files touched
 - app/src/main/java/.../nav/Route.kt
@@ -210,7 +210,7 @@ Kotlin compile should succeed. If errors, fix Kotlin code.
 - app/src/main/java/.../login/LoginScreen.kt  (navigate call on successful login)
 
 ### Presentation
-- itemDetail: composable (push)
+- productDetail: composable (push)
 - reviewForm: dialog
 
 ### Deep links

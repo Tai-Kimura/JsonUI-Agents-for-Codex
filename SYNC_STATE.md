@@ -48,11 +48,13 @@ Consumer-project identifiers are genericized in this repo. Current list
 
 | File | Claude source | This repo |
 |---|---|---|
-| `rules/specification-rules.md` | `ItemCellView` (2×) | `ItemCellView` |
+| `rules/specification-rules.md` | `ItemCellView`, `items_collection`, `item_cell_root`, `itemName`/`unitPrice` (+ JP labels), `item_list/item_cell` | `ItemCellView`, `items_collection`, `item_cell_root`, `itemName`/`unitPrice`, `item_list/item_cell` |
 | `rules/file-locations.md` | consumer FQN example / `ItemLegacy*` | `com.example.myapp.model` / `ItemLegacy*` |
 | `skills/jsonui-layout/examples/strings-json.json` | item-flavored sample string | neutral wording |
 | `agents/implement.toml` | domain-flavored Domain accessor example (`displayRating`/`rating`) | `displayRating`/`rating` |
 | `agents/test.toml` | fixture example schema `` `Bar` `` | `` `Product` `` |
+| `agents/navigation-{ios,android,web}.toml` | item-domain route examples (`ItemDetail`, `ReviewForm`, `Item`, `/item/[id]`, `/review/…`) | `ProductDetail`, `ReviewForm`, `Product`, `/product/[id]`, `/review/…` |
+| `agents/debug.toml` / `agents/define.toml` | "product search" example / `"item_list"` layoutFile example | "product search" / `"item_list"` |
 | `rules/specification-rules.md` (5) | markdown link into JsonUIDocument's `.claude/` path | plain-prose reference |
 | `rules/specification-rules.md` HARD RULE | `jsonui-implement` agent ref | `/agent implement` |
 | `rules/mcp-policy.md` | Claude frontmatter example in "Declaring MCP tools in agents" | Codex-variant section (structural, per mapping table) |
