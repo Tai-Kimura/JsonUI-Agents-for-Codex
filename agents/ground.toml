@@ -95,6 +95,33 @@ Pass only the platforms the user wants. `jui init` creates:
 
 Review the generated `jui.config.json` with the user — especially platform paths and `layoutsDir`. Adjust if needed.
 
+### 1.1a Optional: API model setup
+
+If the project will consume an HTTP API, the `jui build` pipeline can auto-generate per-platform DTO + Domain model files from a swagger document (v3 plan §2). Default config requires no changes:
+
+- `api_directory` defaults to `docs/api/` (relative to project root)
+- `api.platforms.<ios|android|web>` defaults are wired up automatically
+
+**For shared swaggers (multiple apps consuming one swagger file)**, set `api_directory` to a relative path above the project root, and scope each app with `api.schemas.include_paths`:
+
+```jsonc
+{
+  "api_directory": "../docs/api",     // shared swagger lives outside project_root
+  "api": {
+    "platforms": {
+      "android": { "serializer": "moshi" }    // or "kotlinx" or "none"
+    },
+    "schemas": {
+      "include_paths": ["/api/auth/*", "/api/user/*"],
+      "exclude_paths": ["/api/admin/*"],
+      "skip_domain": ["LoginRequest"]
+    }
+  }
+}
+```
+
+Don't author swagger files here — that's `/agent define`'s job. Just confirm the consumer's config is set up so generation works once swagger files arrive.
+
 ### 1.2 Read `docs/app-config/` (if present)
 
 If `{app_config_path}` exists, read its files to extract:

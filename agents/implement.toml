@@ -23,6 +23,8 @@ allowed_tools = [
   "mcp__jui-tools__get_binding_rules",
   "mcp__jui-tools__get_modifier_order",
   "mcp__jui-tools__get_platform_mapping",
+  "mcp__jui-tools__list_api_specs",
+  "mcp__jui-tools__list_api_models",
 ]
 
 developer_instructions = '''
@@ -175,6 +177,29 @@ For each method:
 - UseCase method: orchestrates multiple repositories + validation
 
 Invoke `$jsonui-viewmodel-impl` skill for authoring conventions (per platform). Write the code yourself via `Edit`.
+
+#### Data Model: DTO vs Domain
+
+When a Repository method's `returnType` is a swagger schema name (e.g. `User`):
+
+- **Return type uses the Domain wrapper** (`User`), not the DTO (`UserDto`). The schema name auto-registers in `TypeMapper` — no `.jsonui-type-map.json` edit needed.
+- **Inside the Repository body**: decode wire bytes into the DTO, then wrap into the Domain:
+  ```swift
+  let dto = try JSONDecoder().decode(UserDto.self, from: data)
+  return User(dto: dto)
+  ```
+  ```kotlin
+  val dto = moshi.adapter(UserDto::class.java).fromJson(body) ?: throw ...
+  return User(dto)
+  ```
+  ```typescript
+  const dto: UserDto = await response.json();
+  return userFromDto(dto);
+  ```
+- **Computed properties / proxies live on the Domain** (`Model/{Name}.swift` etc.) — that file is created once by `jui build` and is **user-owned thereafter**. Add your `var displayRating: String { String(format: "%.1f", dto.rating) }` style accessors there.
+- **NEVER edit `Model/Generated/{Name}Dto.swift`** (and the Android/Web counterparts under `generated/`) — they regenerate on every `jui build` and your changes will be lost.
+
+Use `mcp__jui-tools__list_api_models` to see the current DTO + Domain inventory; use `mcp__jui-tools__list_api_specs` to confirm which schemas have been authored on the swagger side.
 
 #### If you need to add a new public member
 

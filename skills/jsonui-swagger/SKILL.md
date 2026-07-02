@@ -87,3 +87,19 @@ cat {skill_directory}/examples/property-types.json
 - Use the user's language for `title` and `description` fields
 - Use English for property names and type values
 - Always include `description` for every property
+
+## DTO + Domain codegen consequences
+
+API specification files (`docs/api/*.json`) are not just documentation — `jui build` reads them and generates per-platform DTO + Domain Data Model files (see `rules/file-locations.md` § API Specifications + Data Model, `rules/invariants.md` rules 5-8). Author with that in mind:
+
+- **v1 halt constructs** — these will halt `jui build` with an ERROR (not warning). Avoid them or factor them out before `jui build` is invoked:
+  - `oneOf` / `anyOf` / `discriminator` inside `components.schemas.*` (polymorphic types — v2 feature)
+  - `$ref` pointing outside the same file (`./other.yaml#/Foo`, URL refs — v2)
+  - direct self-reference without collection indirection (`{ next: $ref(Self) }` — use `{ children: [$ref(Self)] }` instead)
+  - `type: object` with no `$ref`, no `properties`, and no typed `additionalProperties` (shapeless objects — schema bug)
+- **Domain wrapper opt-out** — when a schema is "pure transport" with no value in wrapping (e.g. `LoginRequest`), add `x-jui-skip-domain: true` to the schema. Codegen still emits the DTO but skips the Domain scaffold.
+- **Inline enums get auto-derived names** — `{ type: string, enum: [...] }` at the property level is OK; codegen synthesizes a top-level enum named `{ParentSchema}{FieldPascal}` (or set `x-jui-name: CustomName` to override).
+- **`description` carries into doc comments** — every `description` you write becomes a Swift `///`, Kotlin `/** */`, or TS JSDoc on the generated DTO field. Lean into that — it's developer documentation, not just HTML doc filler.
+- **`deprecated: true`** — emits `@available(*, deprecated)` / `@Deprecated` / JSDoc `@deprecated` so IDE strikethroughs surface in app code automatically.
+
+After authoring or editing a swagger file, the user can verify the codegen impact with `mcp__jui-tools__preview_api_model_sync` (dry-run, no writes) before running `jui build`.

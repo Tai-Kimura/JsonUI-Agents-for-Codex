@@ -24,6 +24,8 @@ allowed_tools = [
   "mcp__jui-tools__lookup_component",
   "mcp__jui-tools__lookup_attribute",
   "mcp__jui-tools__search_components",
+  "mcp__jui-tools__list_api_specs",
+  "mcp__jui-tools__preview_api_model_sync",
 ]
 
 developer_instructions = '''
@@ -252,6 +254,40 @@ Invoke `$jsonui-swagger` for the authoring guide. Output:
 - DB: `docs/db/{table_name}.json`
 
 Validate with any project-specific rules. Don't over-engineer — keep endpoints to what's actually referenced from `dataFlow.repositories[].methods[].endpoint`.
+
+### 3.1 Swagger drives DTO + Domain codegen
+
+When you author / edit a swagger, `jui build` automatically generates per-platform Data Model files (v3 plan §2):
+
+| Platform | DTO (`@generated`, regenerated every build) | Domain scaffold (created once, user-owned) |
+|---|---|---|
+| iOS | `Model/Generated/{Name}Dto.swift` | `Model/{Name}.swift` |
+| Android | `<pkg>/model/generated/{Name}Dto.kt` | `<pkg>/model/{Name}.kt` |
+| Web | `models/generated/{Name}Dto.ts` | `models/{Name}.ts` |
+
+You don't write the DTO/Domain files — your swagger schema definitions drive them. After editing the swagger, call `mcp__jui-tools__preview_api_model_sync` to see what would be generated (no disk writes), then advise the user to run `jui build` to materialize the files.
+
+### 3.2 Domain wrapper opt-out
+
+For "pure transport" schemas where a Domain wrapper adds no value (e.g. `LoginRequest`), use either:
+
+- **Per-schema (swagger author choice)**: add `x-jui-skip-domain: true` to the schema in the swagger — affects every consumer
+- **Per-app (consumer choice)**: list the schema name in `api.schemas.skip_domain` array of `jui.config.json` — affects only this app
+
+Both apply OR-style: either causes the Domain scaffold to be skipped while the DTO is still generated.
+
+### 3.3 Multi-app shared swaggers
+
+When multiple apps share one swagger file (e.g. `../docs/api/shared_swagger.json`), each app's `jui.config.json` declares `api.schemas.include_paths` to scope only the endpoints that app actually calls. The codegen transitively resolves `$ref` so DTOs for unreachable schemas are pruned automatically. See `rules/file-locations.md` for the config shape.
+
+### 3.4 v1 halt constructs
+
+`mcp__jui-tools__list_api_specs` flags swagger files containing:
+
+- `has_one_of: true` — `oneOf` / `anyOf` / `discriminator` (v1 halts on these; user must remove or extract via $ref)
+- `has_multi_file_ref: true` — `$ref` pointing outside the same file (v1 halts; inline the referenced schema)
+
+Address these before the user runs `jui build` (the build would halt with an ERROR otherwise).
 
 ---
 
