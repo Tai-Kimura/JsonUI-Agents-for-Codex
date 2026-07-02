@@ -70,6 +70,97 @@ project-root/
 
 **Shared components go in `common/`** — Headers, footers, and other truly reusable partials go in `common/`.
 
+## API Specifications + Data Model
+
+### Source
+
+Swagger / OpenAPI files live in `api_directory` (default: `docs/api/*.json`).
+
+For multi-app projects sharing one swagger, set `api_directory` to a relative path above project_root:
+
+```jsonc
+{
+  "api_directory": "../docs/api",          // shared swagger outside project_root
+  "platforms": { /* ... */ }
+}
+```
+
+### Generated outputs (per platform)
+
+Each enabled platform writes per-schema files into its source tree on `jui build`:
+
+| Platform | DTO (@generated, regenerated every build) | Domain (user-owned after first emit) |
+|---|---|---|
+| iOS | `<sources>/Model/Generated/{Name}Dto.swift` | `<sources>/Model/{Name}.swift` |
+| Android | `<src_dir>/kotlin/<pkg_path>/model/generated/{Name}Dto.kt` | `<src_dir>/kotlin/<pkg_path>/model/{Name}.kt` |
+| Web | `<src>/models/generated/{Name}Dto.ts` | `<src>/models/{Name}.ts` |
+
+Standalone enums (`type: string \| integer` + `enum: [...]`) emit alongside DTOs:
+
+| Platform | Enum file |
+|---|---|
+| iOS | `<sources>/Model/Generated/{EnumName}.swift` |
+| Android | `<src_dir>/kotlin/<pkg_path>/model/generated/{EnumName}.kt` |
+| Web | `<src>/models/generated/{EnumName}.ts` |
+
+Path resolution per platform:
+
+- **iOS**: `<sources>` = `<platforms.ios.root>/<sjui.config.json#source_directory>` (or the platform_root itself when sjui.config.json is missing)
+- **Android**: `<src_dir>` = `<platforms.android.root>/<kjui.config.json#source_directory>` (default `app/src/main`); `<pkg_path>` is dot-to-slash conversion of `kjui.config.json#package_name` (default `com.example.app`). The `kotlin/` sub-source-set is appended automatically; `java/` is used as fallback when `kotlin/` doesn't exist.
+- **Web**: `<src>` = `<platforms.web.root>/<rjui.config.json#source_directory>` or `<platforms.web.root>/src` by default
+
+### Config — `api.platforms.*`
+
+```jsonc
+{
+  "api": {
+    "platforms": {
+      "ios": {
+        "model_dir": "Model",           // under <sources>
+        "dto_subdir": "Generated"        // under model_dir
+      },
+      "android": {
+        "model_package": "model",        // bare → prepended with kjui's package_name
+        // (or "com.example.myapp.model" — full FQN if dot is present)
+        "dto_subpackage": "generated",   // under model_package
+        "serializer": "moshi"            // "moshi" | "kotlinx" | "none"
+      },
+      "web": {
+        "model_dir": "models",
+        "dto_subdir": "generated",
+        "case_convention": "snake_case"  // "snake_case" | "camelCase"
+      }
+    }
+  }
+}
+```
+
+### Filter — `api.schemas.*`
+
+For multi-app shared swaggers, scope each app's codegen to the endpoints it actually consumes:
+
+```jsonc
+{
+  "api": {
+    "schemas": {
+      "include_paths": ["/api/auth/*", "/api/user/*"],     // glob; * matches /
+      "exclude_paths": ["/api/admin/*"],
+      "include_schemas": ["ErrorResponse"],                 // shared types not reached by include_paths
+      "exclude_schemas": ["ItemLegacy*"],                   // glob; subtract after include
+      "skip_domain": ["LoginRequest"]                       // glob; DTO emit but no Domain scaffold
+    }
+  }
+}
+```
+
+See `docs/plans/2026-05-27-swagger-codegen-path-filter.md` v2 for filter semantics + transitive `$ref` resolution rules.
+
+### ⛔ NEVER edit DTO files (or Domain DTO content)
+
+DTOs carry the `@generated` banner and are rewritten on every `jui build`. Hand edits are lost.
+
+To change a DTO field shape: edit the swagger schema. To add a computed / proxy property: edit the **Domain** file (it's user-owned after first emit).
+
 ## ⛔ NEVER Edit Platform Copies Directly
 
 Each platform's `Layouts/` directory is overwritten by `jui build`. Any direct edits there will be lost.

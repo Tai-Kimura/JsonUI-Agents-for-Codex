@@ -1,6 +1,8 @@
-# Invariants — The 4 Rules
+# Invariants — The 4 Core Rules + 4 API Model Rules
 
-These four invariants apply to **every** JsonUI task. A task is not complete until all four hold. Everything else in this project is a means to satisfy them.
+The first four invariants apply to **every** JsonUI task. A task is not complete until all four hold. Everything else in this project is a means to satisfy them.
+
+Invariants 5–8 apply when the project uses swagger-driven Data Model codegen (any project with `docs/api/*.json` files).
 
 ---
 
@@ -73,7 +75,50 @@ jui lint-generated
 
 ---
 
-## Gate summary (CI triad + process gate)
+---
+
+## 5. DTO files are **regenerated** every build — never edit
+
+Files under the per-platform DTO directory carry `@generated` markers and are rewritten on every `jui build` from the swagger source:
+
+- iOS: `Model/Generated/*Dto.swift` (and `Model/Generated/{EnumName}.swift` for standalone enums)
+- Android: `<source_directory>/kotlin/<package_path>/<model_subpackage>/generated/*Dto.kt`
+- Web: `<source_directory>/models/generated/*Dto.ts`
+
+To change a DTO field shape, edit the swagger schema (`docs/api/*.json`). The DTO regenerates on the next build.
+
+---
+
+## 6. Domain scaffolds are **user-owned after first emit**
+
+Files at the Domain level — `Model/{Name}.swift` / `<package>/model/{Name}.kt` / `models/{Name}.ts` — are scaffolded **once** by `jui build` (containing just `let dto: {Name}Dto` + init/factory) and then **never touched** by codegen.
+
+- Add proxy properties, computed properties, stored properties, and methods directly to the Domain file
+- To regenerate a Domain scaffold from scratch (rare), delete the file and rerun `jui build`
+- `jui verify --fail-on-diff` does NOT check Domain drift — user editing is expected
+
+---
+
+## 7. `jui verify --fail-on-diff` checks **DTO drift only**
+
+`jui verify` regenerates the DTO bytes in memory and compares against the on-disk DTO files. A diff means swagger changed but `jui build` wasn't re-run, or someone hand-edited a DTO (violation of invariant 5).
+
+- Drift detected → run `jui build` (or `jui g api --dry-run --json` to see what would change without writing)
+- The drift check is independent of `jui build`; it runs even when the build pipeline hasn't been executed
+
+---
+
+## 8. Filter changes can **delete DTOs** via orphan prune
+
+`api.schemas.include_paths` / `exclude_paths` / `include_schemas` / `exclude_schemas` modifications change the kept schema set. DTOs that fall out of the kept set are **deleted on the next `jui build`** (orphan prune).
+
+- Domain scaffolds for those schemas are NOT auto-deleted (user code may still reference them)
+- `jui lint-generated --fail-on-orphan` (Phase 4 deliverable) flags orphan Domain scaffolds for cleanup
+- Filter changes are reversible — restore the previous filter and `jui build` regenerates the DTOs
+
+---
+
+## Gate summary (CI triad + process gate + API model)
 
 | # | Gate | Check | Enforced by |
 |---|------|-------|-------------|
@@ -81,5 +126,9 @@ jui lint-generated
 | 2 | Spec ↔ Layout alignment | `jui verify --fail-on-diff` | verify |
 | 3 | Generated file integrity | `jui lint-generated` | lint |
 | 4 | Localization complete | `jsonui-localize` skill ran | process |
+| 5 | DTO files unmodified by hand | `jui lint-generated` | lint |
+| 6 | Domain scaffold preservation | `jui build` skips existing | build toolchain |
+| 7 | DTO drift detection | `jui verify --fail-on-diff` | verify |
+| 8 | Orphan Domain awareness | `jui lint-generated --fail-on-orphan` | lint (Phase 4) |
 
-A screen is "done" only when all four hold.
+A screen is "done" only when invariants 1-4 hold (and 5-8 hold whenever the project uses swagger-driven Data Models).
