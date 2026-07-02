@@ -60,7 +60,7 @@ What this means in practice:
 
 | Field | Value |
 |---|---|
-| `metadata.layoutFile` | **required**. Snake_case, no extension (e.g. `"login"`, `"bar_list/bar_cell"`). |
+| `metadata.layoutFile` | **required**. Snake_case, no extension (e.g. `"login"`, `"item_list/item_cell"`). |
 | `structure.components` | **empty array `[]`**. |
 | `structure.layout` | **empty object `{}`**. |
 | `structure.collection` | `null` unless the screen IS a collection. If it is, `cell.layoutFile` references an external cell Layout JSON — not `cell.children`. |
@@ -171,11 +171,11 @@ Single-cell Collection:
   "components": [],
   "layout": {},
   "collection": {
-    "id": "bars_collection",
+    "id": "items_collection",
     "cell": {
       "viewName": "ItemCellView",
-      "root": "bar_cell_root",
-      "layoutFile": "bar_list/bar_cell",   // external Layout JSON
+      "root": "item_cell_root",
+      "layoutFile": "item_list/item_cell",   // external Layout JSON
       "generateCellLayout": true,          // true → jui writes the cell Layout JSON on generate
       "uiVariables": [
         { "name": "itemName", "type": "String", "description": "商品名", "defaultValue": "" },
@@ -458,7 +458,7 @@ Enforced by the schema. Violations are validation errors, not warnings:
 |---|---|---|
 | `version` | `^\d+\.\d+$` | `"1.0"` |
 | `metadata.name` | `^[A-Z][a-zA-Z0-9]*$` | `Login`, `ItemList` |
-| Any `component.id` | `^[a-z][a-z0-9_]*$` | `bar_cell_root` |
+| Any `component.id` | `^[a-z][a-z0-9_]*$` | `item_cell_root` |
 | `uiVariable.name` | `^[a-z][a-zA-Z0-9]*$` | `loadingVisibility` |
 | `eventHandler.name` | `^on[A-Z][a-zA-Z0-9]*$` | `onLoginTap` |
 
@@ -512,12 +512,12 @@ on `structure.collection.cell` using the same shape as the screen's
 
 ```json
 "collection": {
-  "id": "bars_collection",
+  "id": "items_collection",
   "cell": {
     "viewName": "ItemCellView",
-    "layoutFile": "bar_list/bar_cell",
+    "layoutFile": "item_list/item_cell",
     "generateCellLayout": true,
-    "root": "bar_cell_root",
+    "root": "item_cell_root",
     "uiVariables": [
       { "name": "itemName", "type": "String", "description": "商品名", "defaultValue": "" },
       { "name": "unitPrice", "type": "String?", "description": "単価" },

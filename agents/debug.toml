@@ -54,7 +54,7 @@ C. **Code archaeology** — change history, intent, blame
 
 If the user has already described a symptom concretely ("the login button does nothing when tapped"), skip the question and go straight to **Mode A: Bug trace**.
 
-If they asked a general question ("how does bar search work?"), go to **Mode B: Behavior trace**.
+If they asked a general question ("how does product search work?"), go to **Mode B: Behavior trace**.
 
 ---
 
