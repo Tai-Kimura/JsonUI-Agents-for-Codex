@@ -84,6 +84,32 @@ Extract:
 - `dataFlow.viewModel.vars` → observable state to verify
 - Layout JSON component IDs → selectors for assertions
 
+#### Fixture construction for API-backed flows
+
+When the VM method consumes a Domain model derived from a swagger schema
+(e.g. `User`, `Product`), build the test fixture by constructing the DTO first
+and wrapping with the Domain factory — the same path the Repository takes
+in production:
+
+```swift
+let dto = UserDto(id: "test", displayName: "Test User", ...)
+let user = User(dto: dto)
+```
+
+```kotlin
+val dto = UserDto(id = "test", displayName = "Test User", ...)
+val user = User(dto)
+```
+
+```typescript
+const dto: UserDto = { id: "test", display_name: "Test User", ... };
+const user = userFromDto(dto);
+```
+
+This keeps tests aligned with the Repository's actual conversion logic.
+DTOs are `Equatable` (Swift) / `data class` (Kotlin) / structurally
+typed (TS) — equality assertions work out of the box.
+
 ### A2. Draft the test cases
 
 For each eventHandler and each key displayLogic state, draft a test case:

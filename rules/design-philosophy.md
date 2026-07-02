@@ -76,6 +76,30 @@ The embedded screen requires **no spec changes** to be embeddable. VMs that impl
 
 See `specification-rules.md` (5) and `jsonui-cli/docs/plans/2026-05-11-embed-feature.md`.
 
+## Data Model Layering — DTO vs Domain
+
+Network I/O types (DTOs) and business / display logic live in **physically separate files** that have completely different ownership semantics:
+
+- **DTO** (`Model/Generated/*Dto.swift` and Android/Web counterparts) is **wire-shape only** — generated from the swagger schema on every `jui build`, carries the `@generated` banner, contains only the fields the API actually sends/receives. Codegen owns this file; user never edits it.
+- **Domain** (`Model/{Name}.swift` etc.) holds the type the rest of the codebase consumes. It wraps the DTO as `let dto: {Name}Dto` (struct/class member, not inheritance) and provides whatever proxies / computed properties / stored state the app needs. User owns this file from the first emit onwards — `jui build` skips it when it already exists.
+
+Why split the two:
+
+1. **Schema changes manifest as compile errors at the boundary**. When the swagger renames `displayName` to `name`, the DTO regenerates, every `dto.displayName` in the Domain wrapper fails to compile, the user fixes those lines and moves on. The break is localized to the Domain proxies — VM / Repository / View code that depends only on Domain getters is untouched.
+
+2. **No drift between wire format and code**. The DTO is the literal `CodingKeys` / `@Json(name=...)` / wire field set. Reading the DTO file tells you exactly what bytes will be sent / accepted. Reading the Domain tells you what the rest of the app sees — including any String-to-Date / String-to-UUID / enum coercion the user wrote as Domain proxy.
+
+3. **User extension freedom**. Domain is a plain struct/class/interface owned by the user — they can add `var localIsDirty: Bool` for UI state, override `Equatable`, etc. The wire shape isn't constrained by their additions.
+
+User code (VM, Repository, View) **only ever sees Domain types**. The DTO is implementation detail of the network/decode layer, exposed via `domain.dto` only when explicitly needed (rare). Repository methods decode bytes into DTO, then wrap into Domain in a single call:
+
+```swift
+let dto = try JSONDecoder().decode(UserDto.self, from: data)
+return User(dto: dto)
+```
+
+This pattern is mirrored on Android (Moshi/kotlinx) and Web (factory function `userFromDto`). See `invariants.md` (rules 5-8) for the editing contract and `file-locations.md` for the per-platform path layout.
+
 ## When in doubt
 
 Refer to the spec. If the spec is silent, ask the user — do not invent behavior. See `specification-rules.md`.

@@ -23,6 +23,9 @@ JsonUI agents call the `jsonui-mcp-server` (the `jui-tools` MCP) to interact wit
 | Validate spec | `mcp__jui-tools__doc_validate_spec`, `doc_validate_component` | — |
 | Generate docs | `mcp__jui-tools__doc_generate_spec`, `doc_generate_html` | — |
 | Lint @generated markers | — | `jui lint-generated` (CI only) |
+| List swagger / OpenAPI files | `mcp__jui-tools__list_api_specs` | `jui ls api-specs --json` |
+| List generated DTO + Domain files (with orphan detection) | `mcp__jui-tools__list_api_models` | `jui ls api-models --json` |
+| Preview swagger filter + emit plan without writing | `mcp__jui-tools__preview_api_model_sync` | `jui g api --dry-run --json` |
 
 Only **one** CLI command has no MCP equivalent today: `jui lint-generated`. Everything else goes through MCP.
 
