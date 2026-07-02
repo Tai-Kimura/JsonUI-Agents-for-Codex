@@ -73,8 +73,8 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 const router = createBrowserRouter([
   { path: '/',                  element: <LoginScreen /> },
   { path: '/home',              element: <HomeScreen /> },
-  { path: '/whisky/:id',        element: <WhiskyDetailScreen /> },
-  { path: '/tasting/:bottleId', element: <TastingFormScreen /> },
+  { path: '/product/:id',        element: <ProductDetailScreen /> },
+  { path: '/review/:productId', element: <ReviewFormScreen /> },
 ]);
 
 // App.tsx
@@ -85,7 +85,7 @@ Navigation in a component:
 
 ```tsx
 const navigate = useNavigate();
-const handleClick = () => navigate(`/whisky/${id}`);
+const handleClick = () => navigate(`/product/${id}`);
 
 // Reading params:
 const { id } = useParams<{ id: string }>();
@@ -99,8 +99,8 @@ Filesystem-based routing:
 src/app/
 ├── page.tsx                     ← Login
 ├── home/page.tsx                ← Home
-├── whisky/[id]/page.tsx         ← Whisky detail
-└── tasting/[bottleId]/page.tsx  ← Tasting form
+├── product/[id]/page.tsx         ← Product detail
+└── review/[productId]/page.tsx  ← Review form
 ```
 
 Navigation:
@@ -110,20 +110,20 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 // Declarative
-<Link href={`/whisky/${id}`}>Details</Link>
+<Link href={`/product/${id}`}>Details</Link>
 
 // Programmatic
 const router = useRouter();
-const handleClick = () => router.push(`/whisky/${id}`);
+const handleClick = () => router.push(`/product/${id}`);
 ```
 
 Dynamic params:
 
 ```tsx
-// app/whisky/[id]/page.tsx
+// app/product/[id]/page.tsx
 export default function Page({ params }: { params: { id: string } }) {
   const { id } = params;
-  return <WhiskyDetailScreen bottleId={id} />;
+  return <ProductDetailScreen productId={id} />;
 }
 ```
 
@@ -217,12 +217,12 @@ For Next.js, if a new route was created, the dev server (`npm run dev`) should p
 ## Navigation implemented (Web / {mode})
 
 ### Routes added
-- /whisky/:id  → WhiskyDetailScreen
-- /tasting/:bottleId → TastingFormScreen
+- /product/:id  → ProductDetailScreen
+- /review/:productId → ReviewFormScreen
 
 ### Files touched
 - (React Router) src/routes.tsx
-- (Next.js) src/app/whisky/[id]/page.tsx (new)
+- (Next.js) src/app/product/[id]/page.tsx (new)
 - src/screens/LoginScreen.tsx  (navigate on successful login)
 
 ### Modal routes
@@ -249,8 +249,8 @@ Same as iOS/Android: keep navigation glue minimal. If nav logic starts duplicati
 2. **Scroll position jumping** — wrap `<ScrollRestoration />` (React Router v6.4+) or configure `scrollBehavior` in Next.js.
 3. **Stale state after navigate** — `useEffect` dependencies must include `navigate` (stable) and state. Missing dep = stale closure.
 4. **Nested routes** — React Router requires `<Outlet />` in parent layout. Next.js uses `layout.tsx` in the parallel folder.
-5. **Dynamic segments colliding** — `/whisky/[id]` and `/whisky/new` in Next.js: literal routes take precedence, but be explicit.
-6. **Query params vs path params** — use path params for identifiers (`/whisky/[id]`), query for filters (`/search?q=...`).
+5. **Dynamic segments colliding** — `/product/[id]` and `/product/new` in Next.js: literal routes take precedence, but be explicit.
+6. **Query params vs path params** — use path params for identifiers (`/product/[id]`), query for filters (`/search?q=...`).
 7. **SSR hydration mismatch** (Next.js) — navigation state that differs between server and client causes hydration errors. Guard with `useEffect` for client-only logic.
 
 ---

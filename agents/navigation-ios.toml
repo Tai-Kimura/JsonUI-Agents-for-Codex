@@ -70,8 +70,8 @@ Pattern: one `NavigationStack` at the root, with a typed `NavigationPath` drivin
 ```swift
 enum Route: Hashable {
   case home
-  case whiskyDetail(id: String)
-  case tastingForm(bottle: Bottle)
+  case productDetail(id: String)
+  case reviewForm(product: Product)
 }
 
 // In root:
@@ -80,8 +80,8 @@ NavigationStack(path: $path) {
     .navigationDestination(for: Route.self) { route in
       switch route {
       case .home:                       HomeScreen()
-      case .whiskyDetail(let id):       WhiskyDetailScreen(bottleId: id)
-      case .tastingForm(let bottle):    TastingFormScreen(bottle: bottle)
+      case .productDetail(let id):       ProductDetailScreen(productId: id)
+      case .reviewForm(let product):    ReviewFormScreen(product: product)
       }
     }
 }
@@ -89,7 +89,7 @@ NavigationStack(path: $path) {
 // From a VM:
 @Environment(\.navigationPath) private var path  // or @EnvironmentObject
 // In a handler:
-path.wrappedValue.append(Route.whiskyDetail(id: "123"))
+path.wrappedValue.append(Route.productDetail(id: "123"))
 ```
 
 For modal presentations, prefer `.sheet(item:)` or `.fullScreenCover(item:)` bound to an `@State Route?`.
@@ -100,11 +100,11 @@ Pattern: push via `navigationController?.pushViewController(_:animated:)`. Optio
 
 ```swift
 // In a VM handler:
-let vc = WhiskyDetailViewController(bottleId: "123")
+let vc = ProductDetailViewController(productId: "123")
 navigationController?.pushViewController(vc, animated: true)
 
 // Modal:
-let nav = UINavigationController(rootViewController: TastingFormViewController())
+let nav = UINavigationController(rootViewController: ReviewFormViewController())
 present(nav, animated: true)
 ```
 
@@ -146,9 +146,9 @@ Structured plan before writing:
 
 | Change | Location | Why |
 |---|---|---|
-| Add case to `Route` enum | `Navigation/Route.swift` (or inline) | New target `WhiskyDetail` |
+| Add case to `Route` enum | `Navigation/Route.swift` (or inline) | New target `ProductDetail` |
 | Add `.navigationDestination` branch | `ContentView.swift` | Map Route → destination View |
-| Add path append in VM | `LoginViewModel.swift` handler `onWhiskyTap` | Trigger push |
+| Add path append in VM | `LoginViewModel.swift` handler `onProductTap` | Trigger push |
 
 Show this plan to the user if it's more than 3 changes.
 
@@ -189,8 +189,8 @@ Your changes are Swift source, not Layout JSON — `jui build` should still pass
 ## Navigation implemented (iOS / {mode})
 
 ### Routes added
-- Route.whiskyDetail(id: String) → WhiskyDetailScreen
-- Route.tastingForm(bottle: Bottle) → TastingFormScreen
+- Route.productDetail(id: String) → ProductDetailScreen
+- Route.reviewForm(product: Product) → ReviewFormScreen
 
 ### Files touched
 - {project}/Navigation/Route.swift
@@ -198,8 +198,8 @@ Your changes are Swift source, not Layout JSON — `jui build` should still pass
 - {project}/ViewModel/LoginViewModel.swift  (append path on successful login)
 
 ### Presentation styles
-- whiskyDetail: push
-- tastingForm: sheet
+- productDetail: push
+- reviewForm: sheet
 
 ### Deep links
 - Configured / skipped (per spec)

@@ -129,7 +129,7 @@ Before a screen spec references a custom component (`CodeBlock`, `NavLink`, `Col
 
 | Section | What to fill | Notes |
 |---|---|---|
-| `metadata` | `name` (PascalCase), `displayName`, `description`, `platforms`, **`layoutFile` (required)** | `layoutFile` is snake_case, no extension (e.g. `"login"`, `"bar_list"`) |
+| `metadata` | `name` (PascalCase), `displayName`, `description`, `platforms`, **`layoutFile` (required)** | `layoutFile` is snake_case, no extension (e.g. `"login"`, `"item_list"`) |
 | `structure.components` | `[]` | Always empty. UI lives in the Layout JSON. |
 | `structure.layout` | `{}` | Always empty for the same reason. |
 | `structure.collection` | `null`, or a Collection with `cellClasses: [...]` / `cell.layoutFile` / `sections[]` | See `rules/specification-rules.md` section "(2) Collection screen" for the three accepted shapes. `cellClasses` is an **array of strings** (Layout JSON refs). |

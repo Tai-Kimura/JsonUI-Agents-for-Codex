@@ -48,11 +48,13 @@ Consumer-project identifiers are genericized in this repo. Current list
 
 | File | Claude source | This repo |
 |---|---|---|
-| `rules/specification-rules.md` | `BarCellView` (2×) | `ItemCellView` |
+| `rules/specification-rules.md` | `BarCellView`, `bars_collection`, `bar_cell_root`, `barName`/`shotPrice` (+ JP labels), `bar_list/bar_cell` | `ItemCellView`, `items_collection`, `item_cell_root`, `itemName`/`unitPrice`, `item_list/item_cell` |
 | `rules/file-locations.md` | consumer FQN example / `BarLegacy*` | `com.example.myapp.model` / `ItemLegacy*` |
 | `skills/jsonui-layout/examples/strings-json.json` | whisky-flavored sample string | neutral wording |
 | `agents/implement.toml` | domain-flavored Domain accessor example (`displayAbv`/`abv`) | `displayRating`/`rating` |
 | `agents/test.toml` | fixture example schema `` `Bar` `` | `` `Product` `` |
+| `agents/navigation-{ios,android,web}.toml` | whisky-domain route examples (`WhiskyDetail`, `TastingForm`, `Bottle`, `/whisky/[id]`, `/tasting/…`) | `ProductDetail`, `ReviewForm`, `Product`, `/product/[id]`, `/review/…` |
+| `agents/debug.toml` / `agents/define.toml` | "bar search" example / `"bar_list"` layoutFile example | "product search" / `"item_list"` |
 | `rules/specification-rules.md` (5) | markdown link into JsonUIDocument's `.claude/` path | plain-prose reference |
 | `rules/specification-rules.md` HARD RULE | `jsonui-implement` agent ref | `/agent implement` |
 | `rules/mcp-policy.md` | Claude frontmatter example in "Declaring MCP tools in agents" | Codex-variant section (structural, per mapping table) |
