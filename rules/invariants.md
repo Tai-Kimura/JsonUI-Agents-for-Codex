@@ -17,6 +17,13 @@ jui build
 # Warnings: 0 ← required
 ```
 
+**What `jui build` does in order** (relevant for diagnosing failures):
+1. Distributes shared `layouts/` / `styles/` / `resources/` / `images/` to each platform.
+2. Syncs ViewModel Protocol/Base files from spec + Impl markers (hard-errors on drift).
+3. Runs `sjui build` / `kjui build` / `rjui build` per active platform.
+
+**`jui build` does NOT scaffold converters.** If a custom component's `type` appears in a Layout JSON but no converter exists for it, the build emits warnings / errors per platform. Run `jui g converter --from <name>.component.json` (or `--all`) explicitly to scaffold before building.
+
 ---
 
 ## 2. `jui verify --fail-on-diff` must pass with **no drift**

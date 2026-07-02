@@ -1,11 +1,14 @@
 {
-  "_comment": "WRONG - Never use logic/operators inside bindings",
+  "_comment": "WRONG - Never use logic/operators, and never prefix bindings with `data.`",
   "examples": [
     "@{selectedTab == 0 ? #D4A574 : #B8A894}",
     "@{isLoggedIn ? 'Logout' : 'Login'}",
     "@{items.count > 0}",
     "@{price * quantity}",
     "@{user.name + ' ' + user.lastName}",
-    "@{!isHidden}"
-  ]
+    "@{!isHidden}",
+    "@{data.titleKey}",
+    "@{data.onNavigate}"
+  ],
+  "_note_on_data_prefix": "The `data: [...]` block in a Collection cell Layout declares variable names + types. It is NOT a namespace. Bindings always reference the bare name (e.g. `@{titleKey}`, `@{onNavigate}`). Prefixing with `data.` breaks at runtime — the generated code emits direct property access."
 }
