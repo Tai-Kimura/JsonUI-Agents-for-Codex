@@ -226,7 +226,7 @@ let items = items.map { item in
         "price": "\(item.price)"
     ] as [String: Any]
 }
-data.itemItems = CollectionDataSource(section: .init(cellData: items))
+data.productItems = CollectionDataSource(section: .init(cellData: items))
 ```
 
 ```kotlin
@@ -238,7 +238,7 @@ val items = items.map { item ->
         "price" to "${item.price}"
     )
 }
-data.itemItems = CollectionDataSource(section = Section(cellData = items))
+data.productItems = CollectionDataSource(section = Section(cellData = items))
 ```
 
 ---

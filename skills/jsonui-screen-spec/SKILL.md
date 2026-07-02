@@ -184,16 +184,46 @@ Instead of `selectedTab == 0 ? "#FF0000" : "#000000"`, define:
 
 All conditional logic belongs in the ViewModel, not in bindings.
 
-#### 3.5 Data Flow (API, Repository, UseCase)
+#### 3.5 Data Flow (ViewModel + Repository + UseCase + API) — MANDATORY
+
+**🔴 This step is mandatory for any screen that has interaction or dynamic data.** Agents have shipped specs with empty or missing `dataFlow` — that is a bug. `doc_validate_spec` will NOT catch it.
+
 ```bash
 cat {skill_directory}/examples/data-flow.json
 ```
-Ask: "Does this screen call any APIs? If so, which ones?"
-→ Update `dataFlow.apiEndpoints`, `dataFlow.repositories`, then validate, then release example.
+
+Ask **all four** of the following, in order — do not skip any. If the user says "none" for one, record the empty state explicitly and move on:
+
+1. **ViewModel methods:** "What should the ViewModel do on each user action? (e.g., onLoginTap, onRefresh, onSubmit). I'll draft one method per action with the signature."
+   - For every `stateManagement.eventHandlers` entry that reaches the VM, a `dataFlow.viewModel.methods` entry is required.
+   - Pure-UI toggles (visibility-only, no VM work) stay as eventHandlers and do NOT go into viewModel.methods.
+
+2. **ViewModel vars (observable state):** "What state does the ViewModel own that the UI observes? (e.g., isLoading, errorMessage, fetchedItems, selectedCategory)."
+   - One entry per observable property, camelCase, typed.
+   - `stateManagement.uiVariables` is UI-bound data; `dataFlow.viewModel.vars` is the VM's source-of-truth. Some items appear in both — that is intentional.
+
+3. **Repositories (data access):** "Does this screen read/write anything outside the VM? APIs, local storage, keychain, cache, platform SDK (StoreKit, Firebase, CoreLocation)?"
+   - If yes, draft a Repository with `methods[]`. Each method gets `name`, `params`, `returnType`, `isAsync: true`, and `endpoint` (for API) or a description (for SDK).
+   - API calls via ViewModel directly are NOT allowed — route them through a Repository.
+
+4. **UseCases (orchestration):** "Does any single user action orchestrate multiple repos, run multi-step validation, or contain business logic that belongs outside the VM and outside a single Repo?"
+   - If yes, draft a UseCase and link it to Repositories via `useCase.repositories` or `methods[].calls`.
+   - Skip UseCase for simple 1-API screens — Repository alone is enough.
+
+→ Update `dataFlow.viewModel.methods`, `dataFlow.viewModel.vars`, `dataFlow.repositories`, `dataFlow.useCases`, `dataFlow.apiEndpoints`, then validate, then release example.
+
+**Completeness check before advancing:**
+
+- [ ] Every `eventHandlers` entry that reaches the VM has a matching `viewModel.methods` entry
+- [ ] Every observable piece of state is a `viewModel.vars` entry
+- [ ] Every API / SDK / storage access is declared in `repositories[]`
+- [ ] Every `repositories[*].methods[*].endpoint` has a matching `apiEndpoints[]` entry
+
+If any check fails because the user hasn't told you, **ask again** — do not invent method names, repo names, or endpoint shapes. They are part of the generated Protocol; renaming later breaks every platform.
+
+**Pure-static display screens (the ONE exception):** no interaction, no dynamic data, no observable state. Still record `dataFlow: { viewModel: { methods: [], vars: [] } }` explicitly — do NOT omit `dataFlow` entirely.
 
 **Repository / UseCase Architecture:**
-
-Define appropriate layers based on screen complexity:
 
 | Layer | Role | Example |
 |-------|------|---------|
@@ -203,7 +233,7 @@ Define appropriate layers based on screen complexity:
 - **Simple screens** (static display, single API call): Repository only, no UseCase needed
 - **Complex screens** (validation, multi-step flows, multiple APIs): UseCase that coordinates Repositories
 - ViewModel should depend on UseCase (or Repository directly for simple cases), never call APIs directly
-- Each Repository/UseCase should list its methods in the spec
+- Each Repository/UseCase must list its methods in the spec
 
 **⚠️ Mermaid Diagram: Quote API paths with slashes**
 
