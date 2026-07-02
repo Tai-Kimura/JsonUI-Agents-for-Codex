@@ -4,6 +4,8 @@ A curated set of 9 specialized agents and 11 authoring skills for Codex CLI, dri
 
 Claude Code variant: [JsonUI-Agents-for-claude](https://github.com/Tai-Kimura/JsonUI-Agents-for-claude). Design is identical; only the invocation syntax differs.
 
+The Claude repo is the **source of truth** for content; this repo mirrors it with Codex-shaped packaging. See [`SYNC_STATE.md`](SYNC_STATE.md) for the mirrored commit, the file-mapping rules, and `scripts/check_sync.sh` for drift detection.
+
 ## Installation
 
 ```bash
