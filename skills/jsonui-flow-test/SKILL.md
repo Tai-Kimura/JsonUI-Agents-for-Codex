@@ -27,6 +27,8 @@ Flow tests should **reuse screen tests** rather than duplicate test logic:
 
 ## Flow Test Structure
 
+> **Embed (`structure.embeds[]`) limitation in v1**: flow tests cannot cross the embed boundary in a single flow. If a user journey involves a parent screen and its embedded sub-screen, write **two screen tests** (one for the parent with `embeddedIn` omitted, one for the embedded screen with `embeddedIn: "Parent.regionId"`) and assert each independently. Flow-level support for embedded screens is deferred to v1.5. — See `rules/specification-rules.md` (5).
+
 ### Basic Structure with File References (Recommended)
 
 ```json

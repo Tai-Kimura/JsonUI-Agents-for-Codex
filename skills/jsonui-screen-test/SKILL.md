@@ -46,6 +46,26 @@ Screen tests are 1:1 with layouts - each layout JSON should have a corresponding
 }
 ```
 
+### Testing a screen that runs inside an Embed slot
+
+When the screen-under-test is hosted inside a parent screen via `Embed`, declare `embeddedIn` so the runner mounts it inside the parent's embed slot:
+
+```json
+{
+  "type": "screen",
+  "source": { "layout": "layouts/order_detail.json" },
+  "embeddedIn": "Dashboard.detailPane",
+  "metadata": { "name": "Order Detail (embedded)", "description": "..." },
+  "cases": [ ... ]
+}
+```
+
+Rules:
+- `embeddedIn` value is `{ParentScreenName}.{regionId}` — PascalCase parent + camelCase `regionId` (matches the parent spec's `structure.embeds[].regionId`).
+- In v1 `navigationMode: "delegate"`, navigation assertions for the embedded screen target the **parent's** NavController/Router. Assertions like `wait_for screen == "..."` resolve against the parent stack.
+- `pop` / `dismiss` / `navigateBack` from inside the embedded screen are bounded — they do not close the embed. Assert state on the embed instead.
+- Write a separate standalone test (without `embeddedIn`) when the same screen is also used standalone (phone). One assertion set per context.
+
 ## Available Actions & Assertions
 
 **For the complete and up-to-date list of actions and assertions, always check schema.py in the jsonui-test-runner repository:**

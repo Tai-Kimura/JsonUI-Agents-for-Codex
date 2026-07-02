@@ -226,6 +226,65 @@ root.json (TabView only)
 
 ---
 
+## Embed (Cross-Screen Embedding)
+
+Use `Embed` when a screen hosts another screen as a region of its layout (tablet master/detail, dashboard panels). **The embedded screen owns its own ViewModel** — completely independent from the parent VM. This is the core design contract; it is what separates `Embed` from `include` (which shares the parent VM) and `TabView` (which also shares).
+
+### When to use Embed
+
+- iPad master/detail: master list on the left, embed `OrderDetail` on the right
+- Dashboards: a dashboard screen hosting `RecentActivity`, `Calendar`, etc.
+- Same screen reused: phone shows it standalone, tablet embeds it inside a parent
+
+### Layout JSON shape
+
+```json
+{
+  "type": "View",
+  "id": "rootContainer",
+  "orientation": "horizontal",
+  "child": [
+    {
+      "type": "View",
+      "id": "masterPane",
+      "width": 320,
+      "child": [ /* master list */ ]
+    },
+    {
+      "type": "Embed",
+      "id": "detailPane",
+      "screen": "order_detail",
+      "params": { "orderId": "@{selectedOrderId}" },
+      "navigationMode": "delegate",
+      "weight": 1
+    }
+  ]
+}
+```
+
+### Attribute conventions
+
+| Attribute | Convention | Notes |
+|---|---|---|
+| `id` | **camelCase**, unique within the parent layout | Doubles as the Android `ViewModelStoreOwner` key — must be unique even when the same screen is embedded twice. |
+| `screen` | **snake_case layout JSON filename** (no extension) | E.g. `order_detail` loads `docs/screens/layouts/order_detail.json`. Codegen converts to PascalCase View class name. |
+| `params` | keys camelCase | Values: literal or `@{varName}` binding against the parent VM. Embedded VMs that implement `applyInitParams(_:)` consume them; others ignore. |
+| `navigationMode` | `"delegate"` (v1 only) | `"isolated"` deferred to v1.5. delegate forwards `navigate()` to the parent's NavController/Router. |
+
+### Rules
+
+- **Same screen multi-embed** is supported. Each Layout JSON `Embed.id` keys a separate VM instance. ID uniqueness is critical on Android.
+- **Embedded screen needs no changes** — its spec and layout stay as-is. The parent declares the embedding.
+- **Navigation bounded at the embed**: `pop` / `dismiss` / `navigateBack` from inside the embedded screen do NOT close the embed itself (runtime enforces this in delegate mode).
+- **No localize on the Embed node** — the node has no user-visible strings. The embedded screen is localized as part of its own implementation.
+- **Spec contract**: when adding an Embed to a Layout JSON, the parent spec must also declare `structure.embeds[]` with a matching `regionId` (camelCase same as the layout `id`), or `jui verify` will flag drift.
+
+→ Examples: `examples/embed.json` (parent layout), `examples/embed-spec-fragment.json` (spec side).
+
+See also `rules/specification-rules.md` (5) Section and `rules/design-philosophy.md` "VM isolation across embedded screens".
+
+---
+
 ## Include Syntax
 
 **Include is NOT a type** - It's a reference directive.

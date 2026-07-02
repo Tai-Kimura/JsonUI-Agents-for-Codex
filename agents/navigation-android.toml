@@ -242,6 +242,19 @@ Navigation is the prominent spec-external work. Keep the glue minimal. If naviga
 
 ---
 
+## Embed navigation (delegate mode, v1)
+
+When the spec contains `structure.embeds[]`, navigation behaves per the `navigationMode`:
+
+- **`delegate` (v1 default)** — embedded screen's `navigate(...)` drives the **parent's** `NavController`. The runtime threads `parentNavController` through `EmbedContainer`; no extra plumbing in the parent composable. Add any new destinations from the embedded screen's `userActions[]` to the parent's `NavHost`.
+  - `pop` / `dismiss` / `navigateBack` are **bounded at the embed** — calling them inside the embedded screen does NOT close the embed. Runtime enforces this; do not patch around it.
+  - VM isolation: `EmbedContainer` `remember(embedId)` a per-slot `ViewModelStoreOwner` so that the same embedded screen used in two slots gets two VM instances. **Do not bypass this** — `viewModel()` resolves against `LocalViewModelStoreOwner`, and the wrong owner means shared state.
+- **`isolated` (deferred to v1.5)** — would create a private `rememberNavController()` + `NavHost` inside the embed. Not implemented yet. Route user back to `/agent define` if asked.
+
+Generated Compose code from `kjui_tools` wires the per-slot `ViewModelStoreOwner` and `parentNavController` for you. Your job here is to make sure the parent's `NavHost` covers the destination set, including any destinations introduced by the embedded screen's `userActions[]`. The embedded screen is untouched.
+
+---
+
 ## Handoff
 
 ```

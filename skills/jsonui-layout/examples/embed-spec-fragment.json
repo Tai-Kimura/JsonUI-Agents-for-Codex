@@ -1,0 +1,53 @@
+{
+  "_comment": "Spec-side fragment that pairs with examples/embed.json. The parent screen declares structure.embeds[] in addition to its normal sections; the embedded 'order_detail' screen needs NO spec changes. doc_validate_spec checks regionId/screen naming, params binding resolution, events handler existence, and navigationMode enum.",
+  "type": "screen_spec",
+  "version": "1.0",
+  "metadata": {
+    "name": "Dashboard",
+    "displayName": "Dashboard",
+    "description": "Tablet dashboard with a master list and an embedded order detail pane.",
+    "layoutFile": "dashboard"
+  },
+  "structure": {
+    "components": [],
+    "layout": {},
+    "embeds": [
+      {
+        "regionId": "detailPane",
+        "screen": "order_detail",
+        "params": {
+          "orderId": "@{selectedOrderId}"
+        },
+        "events": {
+          "onOrderUpdated": "handleOrderUpdated"
+        },
+        "navigationMode": "delegate"
+      }
+    ]
+  },
+  "stateManagement": {
+    "uiVariables": [
+      {
+        "name": "selectedOrderId",
+        "type": "String",
+        "description": "Currently selected order id from the master list.",
+        "defaultValue": ""
+      }
+    ],
+    "eventHandlers": []
+  },
+  "dataFlow": {
+    "viewModel": {
+      "description": "Dashboard VM owns selection and reacts to embed events.",
+      "methods": [
+        {
+          "name": "handleOrderUpdated",
+          "params": [{ "name": "id", "type": "String" }],
+          "returnType": "Void",
+          "isAsync": false
+        }
+      ],
+      "vars": []
+    }
+  }
+}
