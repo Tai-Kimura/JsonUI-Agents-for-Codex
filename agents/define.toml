@@ -284,10 +284,21 @@ When multiple apps share one swagger file (e.g. `../docs/api/shared_swagger.json
 
 `mcp__jui-tools__list_api_specs` flags swagger files containing:
 
-- `has_one_of: true` — `oneOf` / `anyOf` / `discriminator` (v1 halts on these; user must remove or extract via $ref)
+- `has_one_of: true` — flagged when any `oneOf` / `anyOf` / `discriminator` keyword appears anywhere in the file. **Not all of these halt** — see breakdown below.
 - `has_multi_file_ref: true` — `$ref` pointing outside the same file (v1 halts; inline the referenced schema)
 
-Address these before the user runs `jui build` (the build would halt with an ERROR otherwise).
+What actually halts vs what works:
+
+| Construct | Status |
+|---|---|
+| Field-level `oneOf` + `discriminator` with explicit `mapping`, variants `$ref` top-level schemas, sibling discriminator property exists | **Supported** (codegens dispatch via Swift enum / Kotlin sealed class / TS discriminated union) |
+| Field-level `oneOf` without `discriminator` | Halts |
+| Field-level `oneOf` + `discriminator` but `mapping` missing / partial / pointing outside `oneOf` list | Halts |
+| Schema-level `oneOf` (top-level discriminated envelope) — with or without discriminator | Halts (v2) |
+| `discriminator` without `oneOf` | Halts |
+| `anyOf` anywhere | Halts (v2) |
+
+When `has_one_of: true` fires, open the swagger and verify each `oneOf` site matches the supported shape — only halt-shaped cases need rework before `jui build`.
 
 ---
 
