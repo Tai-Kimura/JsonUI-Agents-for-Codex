@@ -247,7 +247,7 @@ Wire UIAutomator-based driver:
 1. Add to `app/build.gradle.kts`:
 
    ```kotlin
-   androidTestImplementation("com.tai-kimura:jsonui-test-runner:1.0.0")
+   androidTestImplementation("io.github.tai-kimura:jsonui-test-runner-android:1.0.0")
    ```
 
 2. Create `app/src/androidTest/java/.../SmokeTest.kt`:
@@ -278,14 +278,14 @@ Wire Playwright:
 2. Add the JsonUI test runner package:
 
    ```bash
-   npm install --save-dev @tai-kimura/jsonui-test-runner-web
+   npm install --save-dev @jsonui/test-runner-web
    ```
 
 3. Create `tests/playwright/smoke.spec.ts`:
 
    ```ts
    import { test, expect } from '@playwright/test';
-   import { JsonUITestRunner } from '@tai-kimura/jsonui-test-runner-web';
+   import { JsonUITestRunner } from '@jsonui/test-runner-web';
 
    test('runner loads', async ({ page }) => {
      const runner = new JsonUITestRunner(page);
