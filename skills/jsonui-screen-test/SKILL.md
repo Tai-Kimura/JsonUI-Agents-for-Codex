@@ -68,14 +68,14 @@ Rules:
 
 ## Available Actions & Assertions
 
-**For the complete and up-to-date list of actions and assertions, always check schema.py in the jsonui-test-runner repository:**
+**For the complete and up-to-date list of actions and assertions, always check schema.py in the jsonui-cli repository (the `jsonui-test` CLI lives there):**
 
 ```bash
-# Find the schema.py file in the project
-find . -path "*/jsonui-test-runner/test_tools/jsonui_test_cli/schema.py" -o -path "*/test_tools/jsonui_test_cli/schema.py" 2>/dev/null | head -1 | xargs cat
+# Find the schema.py file (installed at ~/.jsonui-cli/test_tools, or in a jsonui-cli checkout)
+find . "$HOME/.jsonui-cli" -path "*/test_tools/jsonui_test_cli/schema.py" 2>/dev/null | head -1 | xargs cat
 ```
 
-Or view directly on GitHub: https://github.com/anthropics/jsonui-test-runner/blob/main/test_tools/jsonui_test_cli/schema.py
+Or view directly on GitHub: https://github.com/Tai-Kimura/jsonui-cli/blob/main/test_tools/jsonui_test_cli/schema.py
 
 This is the authoritative source for:
 - All supported actions and their required/optional parameters
@@ -748,7 +748,7 @@ which jsonui-test
 If the command is not found, install it:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/anthropics/jsonui-test-runner/main/test_tools/installer/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Tai-Kimura/jsonui-cli/main/test_tools/installer/bootstrap.sh | bash
 ```
 
 ### Step 3: Validate the Test File

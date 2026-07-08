@@ -196,7 +196,7 @@ Prerequisites: `target: app` setup has already run for the platform.
 
    ```bash
    which jsonui-test || \
-     curl -fsSL https://raw.githubusercontent.com/Tai-Kimura/jsonui-test-runner/main/test_tools/installer/bootstrap.sh | bash
+     curl -fsSL https://raw.githubusercontent.com/Tai-Kimura/jsonui-cli/main/test_tools/installer/bootstrap.sh | bash
    ```
 
    Requires Python 3.10+.
