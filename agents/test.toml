@@ -154,7 +154,7 @@ jsonui-test validate tests/screens/{screen}.test.json
 
 Fix any errors. For the full list of available actions/assertions and their
 parameters, see the `$jsonui-screen-test` skill's reference or read
-`test_tools/jsonui_test_cli/schema.py` in the jsonui-test-runner repo.
+`test_tools/jsonui_test_cli/schema.py` in the jsonui-cli repo.
 
 Note: assertions **auto-wait** (poll until the condition holds or `timeout`), so
 don't precede an assertion with `waitFor`. New capabilities available: `when`/`optional`
@@ -220,22 +220,24 @@ mcp__jui-tools__doc_generate_html with input_dir: "tests/", output_dir: "tests/h
 
 ## Flow D: Validation only
 
-Run `jsonui-test validate` on the target directory via Bash. Report errors; do not fix them blindly — understand each one. For the schema reference of available actions / assertions, see the `$jsonui-screen-test` skill or `test_tools/jsonui_test_cli/schema.py` in the jsonui-test-runner repo.
+Run `jsonui-test validate` on the target directory via Bash. Report errors; do not fix them blindly — understand each one. For the schema reference of available actions / assertions, see the `$jsonui-screen-test` skill or `test_tools/jsonui_test_cli/schema.py` in the jsonui-cli repo.
 
 ---
 
 ## CLI availability
 
-The `jsonui-test` CLI is a separate tool from `jui` / `jsonui-doc`. Check it's installed:
+The `jsonui-test` CLI is a separate binary from `jui` / `jsonui-doc`, but it ships
+from the same `jsonui-cli` monorepo (`test_tools/`) and is installed by the same
+`jsonui-cli` install.sh. Check it's installed:
 
 ```bash
 which jsonui-test
 ```
 
-If missing, instruct the user:
+If missing, instruct the user (standalone install; it also comes with a full jsonui-cli install):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Tai-Kimura/jsonui-test-runner/main/test_tools/installer/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Tai-Kimura/jsonui-cli/main/test_tools/installer/bootstrap.sh | bash
 ```
 
 Python 3.10+ required.
