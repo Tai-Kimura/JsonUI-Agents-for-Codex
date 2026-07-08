@@ -126,7 +126,8 @@ See [`docs/plans/agent-redesign.md`](https://github.com/Tai-Kimura/JsonUI-Agents
 - [jsonui-mcp-server](https://github.com/Tai-Kimura/jsonui-mcp-server) — MCP wrapper around `jui` and related tools
 
 ### Test runners
-- [jsonui-test-runner](https://github.com/Tai-Kimura/jsonui-test-runner) — CLI + HTML doc generator
+- [jsonui-test-runner](https://github.com/Tai-Kimura/jsonui-test-runner) — test schemas + platform drivers + examples (execution engine)
+- [jsonui-cli](https://github.com/Tai-Kimura/jsonui-cli) — the `jsonui-test` CLI (validate / generate / report / mock) lives in `test_tools/`
 - [jsonui-test-runner-ios](https://github.com/Tai-Kimura/jsonui-test-runner-ios) — XCUITest driver
 - [jsonui-test-runner-android](https://github.com/Tai-Kimura/jsonui-test-runner-android) — UIAutomator driver
 - [jsonui-test-runner-web](https://github.com/Tai-Kimura/jsonui-test-runner-web) — Playwright driver

@@ -399,10 +399,10 @@ The loader tries these locations in order:
 
 ## Available Actions & Assertions
 
-**For the complete and up-to-date list of actions and assertions, always check schema.py in the jsonui-test-runner repository:**
+**For the complete and up-to-date list of actions and assertions, always check schema.py in the jsonui-cli repository (the `jsonui-test` CLI lives there):**
 
 ```bash
-find . -path "*/jsonui-test-runner/test_tools/jsonui_test_cli/schema.py" -o -path "*/test_tools/jsonui_test_cli/schema.py" 2>/dev/null | head -1 | xargs cat
+find . "$HOME/.jsonui-cli" -path "*/test_tools/jsonui_test_cli/schema.py" 2>/dev/null | head -1 | xargs cat
 ```
 
 ### Common Actions for Flow Tests
@@ -708,7 +708,7 @@ which jsonui-test
 ### Step 2: Install if Not Found
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/anthropics/jsonui-test-runner/main/test_tools/installer/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Tai-Kimura/jsonui-cli/main/test_tools/installer/bootstrap.sh | bash
 ```
 
 ### Step 3: Validate the Test File
