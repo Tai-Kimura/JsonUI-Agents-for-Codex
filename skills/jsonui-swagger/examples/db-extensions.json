@@ -47,7 +47,7 @@
   },
 
   "x-foreign-key": {
-    "_description": "Foreign key reference (object or string format)",
+    "_description": "Foreign key reference (object or string format). Optional 'enforced': false declares a LOGICAL reference — the relation is documented (ERD edge, reference info) but the database is NOT expected to hold a FOREIGN KEY constraint, and `jsonui-doc check` skips the constraint comparison for that column. Omitted = true (a real DB constraint is expected). Composite FKs in the DB are matched positionally against per-column declarations.",
     "example_object": {
       "user_id": {
         "type": "integer",
@@ -63,6 +63,17 @@
         "type": "integer",
         "description": "User ID",
         "x-foreign-key": "users.id"
+      }
+    },
+    "example_logical_reference": {
+      "order_id": {
+        "type": "integer",
+        "description": "Audit-log subject; rows must survive hard-deletes of the referenced order",
+        "x-foreign-key": {
+          "table": "orders",
+          "column": "id",
+          "enforced": false
+        }
       }
     }
   },
@@ -161,6 +172,44 @@
       "info": {
         "x-erd-group": ["user", "order", "payment"],
         "x-erd-main": ["order", "payment"]
+      }
+    }
+  },
+
+  "x-indexes": {
+    "_description": "Composite indexes / composite UNIQUE constraints (at schema level, alongside properties). Use the property-level x-index / x-unique for single columns; this key is for multi-column indexes. 'name' is optional; the DB schema checker (jsonui-doc check) matches by column set.",
+    "example": {
+      "x-indexes": [
+        {
+          "columns": ["stall_id", "status", "start_at", "end_at"],
+          "name": "idx_reservation_overlap"
+        },
+        {
+          "columns": ["parking_id", "mode"],
+          "unique": true
+        }
+      ]
+    }
+  },
+
+  "x-db-type": {
+    "_description": "Exact dialect column type (at property level). OPTIONAL — when present, `jsonui-doc check` compares this column with exact type match instead of the default lenient type-family match. Write it only where precision matters (e.g. money columns).",
+    "example": {
+      "amount": {
+        "type": "number",
+        "description": "Fee amount",
+        "x-db-type": "DECIMAL(10,2)"
+      }
+    }
+  },
+
+  "x-external-ref": {
+    "_description": "Cross-DATABASE reference note (at property level) — NOT a foreign key. Format is exactly 3 dot-separated parts: {db}.{table}.{column} (no dots allowed inside each part). Used when a document in one database stores an ID from another database (e.g. a Firestore doc holding an RDB reservation id). Rendered as an EXT badge; reserved for future cross-ERD links.",
+    "example": {
+      "reservation_id": {
+        "type": "integer",
+        "description": "RDB reservation this document belongs to",
+        "x-external-ref": "main.reservations.id"
       }
     }
   }
