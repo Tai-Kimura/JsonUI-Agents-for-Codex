@@ -122,12 +122,10 @@ For each eventHandler and each key displayLogic state, draft a test case:
       "name": "successful_login",
       "description": "valid email + password → navigate to home",
       "steps": [
-        { "action": "tap", "target": "email_field" },
-        { "action": "type", "text": "user@example.com" },
-        { "action": "tap", "target": "password_field" },
-        { "action": "type", "text": "correct-horse-battery-staple" },
-        { "action": "tap", "target": "login_button" },
-        { "action": "wait_for", "condition": "screen == 'home'", "timeout": 5000 }
+        { "action": "input", "id": "email_field", "value": "user@example.com" },
+        { "action": "input", "id": "password_field", "value": "correct-horse-battery-staple" },
+        { "action": "tap", "id": "login_button" },
+        { "action": "waitFor", "id": "home_screen", "timeout": 5000 }
       ]
     },
     {
@@ -154,11 +152,14 @@ Use `Write` or `Edit` directly.
 jsonui-test validate tests/screens/{screen}.test.json
 ```
 
-Fix any errors. If you need the list of available actions/assertions:
+Fix any errors. For the full list of available actions/assertions and their
+parameters, see the `$jsonui-screen-test` skill's reference or read
+`test_tools/jsonui_test_cli/schema.py` in the jsonui-test-runner repo.
 
-```bash
-jsonui-test --schema
-```
+Note: assertions **auto-wait** (poll until the condition holds or `timeout`), so
+don't precede an assertion with `waitFor`. New capabilities available: `when`/`optional`
+step attributes, `repeat`/`retry` control steps, `readText` + `@{vars}`, `scrollUntilVisible`,
+`screenshot` visual-regression assertion, `state` assertion, and root-level `launch` config.
 
 ### A5. (Optional) Description + HTML
 
@@ -219,11 +220,7 @@ mcp__jui-tools__doc_generate_html with input_dir: "tests/", output_dir: "tests/h
 
 ## Flow D: Validation only
 
-Run `jsonui-test validate` on the target directory via Bash. Report errors; do not fix them blindly — understand each one. For the schema reference of available actions / assertions:
-
-```bash
-jsonui-test --schema
-```
+Run `jsonui-test validate` on the target directory via Bash. Report errors; do not fix them blindly — understand each one. For the schema reference of available actions / assertions, see the `$jsonui-screen-test` skill or `test_tools/jsonui_test_cli/schema.py` in the jsonui-test-runner repo.
 
 ---
 

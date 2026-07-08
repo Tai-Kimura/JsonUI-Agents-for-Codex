@@ -67,6 +67,24 @@ Execute all test cases defined in the screen test:
 ```
 When no `case` or `cases` is specified, all cases from the referenced screen test are executed in the order they are defined.
 
+#### Conditional Flow Steps (`when`)
+Any flow step (file reference, block, or inline) may carry a `when` pre-condition and is
+skipped when it is not satisfied. Same condition object as screen tests
+(`visible` / `notVisible` / `platform` / `state`, ANDed):
+```json
+{ "file": "product-detail", "case": "詳細表示", "when": { "platform": ["ios", "android"] } }
+```
+
+#### Launch Configuration (flow root)
+A flow test may declare a root-level `launch` object (`clearState` / `permissions` /
+`arguments`) applied before the flow starts — same shape as screen tests. See the
+jsonui-screen-test skill for details.
+
+#### Step-level Features
+Inline flow steps and block steps support the same step attributes as screen tests —
+`label`, `optional`, `when`, the `repeat` / `retry` control steps, `readText` + `@{vars}`,
+and the auto-wait assertion behavior. See the jsonui-screen-test skill for the full list.
+
 #### Overriding Args in File References
 
 When screen tests define `args` with default values, flow tests can override them:

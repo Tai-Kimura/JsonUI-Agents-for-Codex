@@ -86,22 +86,99 @@ This is the authoritative source for:
 
 | Action | Required | Optional |
 |--------|----------|----------|
-| `tap` | `id` | `text`, `timeout` |
+| `tap` | `id` | `text`, `retryTapIfNoChange`, `timeout` |
+| `doubleTap` | `id` | `timeout` |
+| `longPress` | `id` | `duration`, `timeout` |
 | `input` | `id`, `value` | `timeout` |
+| `clear` | `id` | `timeout` |
+| `scroll` | `id`, `direction` | `amount` |
+| `scrollUntilVisible` | `id` | `container`, `direction` (default `down`), `timeout` (default 20000) |
+| `swipe` | `id`, `direction` | |
 | `tapItem` | `id`, `index` | `timeout` |
-| `selectTab` | `index` | `id`, `timeout` |
+| `selectTab` | `id`, `index` | `timeout` |
 | `selectOption` | `id` | `value`, `label`, `index`, `timeout` |
 | `waitFor` | `id` | `timeout` |
 | `waitForAny` | `ids` | `timeout` |
 | `alertTap` | `button` | `timeout` |
+| `readText` | `id`, `variable` | `timeout` |
+| `repeat` | `steps` + (`times` and/or `while`) | |
+| `retry` | `steps` | `maxRetries` (0–3, default 1) |
+| `setLocation` | `latitude`, `longitude` | |
+| `addMedia` | `paths` | (Android only; iOS/Web fail) |
 
 ### Common Assertions (Quick Reference)
+
+**All assertions auto-wait**: they poll every 100ms until the condition holds or the
+timeout (default 5000ms, override with `timeout`) elapses. **Do NOT precede an assertion
+with `waitFor`** — the assertion already waits. Use `waitFor` only when the next step is
+an *action* (not an assertion) that needs the element present first.
 
 | Assertion | Required | Optional |
 |-----------|----------|----------|
 | `visible` | `id` | `timeout` |
 | `notVisible` | `id` | `timeout` |
+| `enabled` | `id` | `timeout` |
+| `disabled` | `id` | `timeout` |
 | `text` | `id` | `equals`, `contains`, `timeout` |
+| `count` | `id`, `equals` | `timeout` |
+| `state` | `path`, `equals` | `timeout` |
+| `screenshot` | `name` | `cropId`, `threshold` (default 98.0) |
+
+### Common Step Attributes (any action or assertion)
+
+| Attribute | Meaning |
+|-----------|---------|
+| `label` | Human-readable step name for logs/reports. **Exception**: on `selectOption`, `label` is the option text, not a step name. |
+| `optional` | `true` → a failure of this step becomes a warning and execution continues. |
+| `when` | Pre-condition; the step is skipped when not satisfied. Object with `visible` / `notVisible` (element id), `platform`, and/or `state` (`{path, equals}`), ANDed. |
+
+```json
+{ "action": "tap", "id": "tutorial_close", "when": { "visible": "tutorial_overlay" }, "optional": true }
+```
+
+### Control Steps
+
+- **`repeat`** — run `steps` `times` times, or `while` a condition holds (safety cap 100),
+  or both (`times` = cap). Nesting allowed.
+- **`retry`** — re-run the whole `steps` block on failure, up to `maxRetries` (0–3, default 1).
+  Do NOT wrap an entire case in `retry`; the cap of 3 is deliberate.
+
+```json
+{ "action": "repeat", "times": 3, "steps": [ { "action": "tap", "id": "add_item_button" } ] }
+```
+
+### Runtime Variables (`readText` + `@{name}`)
+
+`readText` stores an element's text in a runtime variable; later steps reference it with
+`@{name}` (resolved at execution time, after load-time `args`). Useful for carrying a value
+(order number, generated id) across screens for a later `text` assertion.
+
+```json
+{ "action": "readText", "id": "order_number_label", "variable": "orderNo" },
+{ "action": "tap", "id": "detail_link" },
+{ "assert": "text", "id": "detail_order_number", "equals": "@{orderNo}" }
+```
+
+### Launch Configuration (test root)
+
+A screen/flow test may declare a root-level `launch` object applied before the app starts:
+
+```json
+"launch": {
+  "clearState": true,
+  "permissions": { "camera": "allow", "location": "deny" },
+  "arguments": { "mockApi": true }
+}
+```
+
+`permissions` values are `allow` / `deny` / `unset`; names: camera, microphone, location,
+notifications, photos, contacts, calendar, bluetooth.
+
+### `state` Assertion vs. Visual State
+
+Prefer the `state` assertion (`{ "assert": "state", "path": "isLoading", "equals": true }`)
+to verify ViewModel state directly — it works on all three platforms and is more precise than
+inferring state from what is on screen. It requires the harness to expose a state provider.
 
 ## Element Identification (CRITICAL)
 
