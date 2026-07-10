@@ -90,6 +90,8 @@ This is the authoritative source for:
 | `doubleTap` | `id` | `timeout` |
 | `longPress` | `id` | `duration`, `timeout` |
 | `input` | `id`, `value` | `timeout` |
+| `typeText` | `value` | `timeout` |
+| `hideKeyboard` | — | |
 | `clear` | `id` | `timeout` |
 | `scroll` | `id`, `direction` | `amount` |
 | `scrollUntilVisible` | `id` | `container`, `direction` (default `down`), `timeout` (default 20000) |
@@ -105,6 +107,10 @@ This is the authoritative source for:
 | `retry` | `steps` | `maxRetries` (0–3, default 1) |
 | `setLocation` | `latitude`, `longitude` | |
 | `addMedia` | `paths` | (Android only; iOS/Web fail) |
+
+Keyboard notes:
+- **`typeText`** types on the software keyboard into the **currently-focused** field — it takes no `id`. Use it for focused-but-untargetable fields (e.g. an invisible code-entry input behind a custom 2FA/PIN UI). Focus must already be established (a prior `tap`, or the app focusing programmatically).
+- **`hideKeyboard`** dismisses the soft keyboard; it is a no-op when no keyboard is shown. Use it when the keyboard covers the next tap target and the field type has no return key (e.g. `number-pad`). On iOS the last-resort strategy is a drag-to-dismiss gesture, which only works when the enclosing ScrollView opts in via `"keyboardDismissMode": "interactive"` (or `"onDrag"`) in the layout JSON — coordinate with the layout when a screen needs this.
 
 ### Common Assertions (Quick Reference)
 
