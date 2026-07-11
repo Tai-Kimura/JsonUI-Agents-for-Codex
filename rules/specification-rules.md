@@ -544,6 +544,28 @@ Rules:
   (collection data source, visibility flags, toast messages…). Cell data
   belongs on the cell node, not on the screen.
 
+### Multiple Collections on one screen
+
+A screen with more than one Collection declares the extras in
+`structure.collections` (an **array** of the same collection shape).
+`structure.collection` stays the primary slot — only it participates in
+Layout JSON auto-generation — but every `collections[]` entry is
+first-class for validation (`jsonui-doc validate spec`), doc generation,
+and cell Layout generation (`jui g project` emits a cell Layout for each
+entry with `generateCellLayout: true`):
+
+```json
+"collection": { "id": "fee_sections_collection", "cell": { ... } },
+"collections": [
+  { "id": "cancel_policy_sections_collection", "cell": { ... } },
+  { "id": "gallery_thumbnail_row", "cell": { ... } }
+]
+```
+
+Screens using `collections` are expected to author the screen Layout JSON
+externally (`metadata.layoutFile`) — the auto-generated layout only places
+the primary `collection`.
+
 ## Collection: `lazy: true` (default) vs `lazy: false`
 
 `Collection` components default to lazy/virtualized containers
