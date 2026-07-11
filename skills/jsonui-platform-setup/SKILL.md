@@ -182,6 +182,22 @@ Same as `compose` except `--mode xml`. Generates Dynamic-mode Android Views with
    jui build --web-only
    ```
 
+6. Wire the generated Tailwind theme (once). `jui build` emits
+   `src/generated/theme.css` — a `@generated` `@theme { --color-<token> }`
+   block mirroring `colors.json`. Without it, generated `bg-<token>` /
+   `text-<token>` utility classes resolve to nothing under Tailwind v4 and
+   brand colors fall back to defaults. Add a single import to the project's
+   global stylesheet (e.g. `src/app/globals.css`), after the Tailwind import:
+
+   ```css
+   @import "tailwindcss";
+   @import "../generated/theme.css";   /* ← wires colors.json tokens */
+   ```
+
+   The build logs the exact relative path when it can find the stylesheet.
+   Re-running `jui build` regenerates theme.css, so token changes flow through
+   automatically — no further edits to globals.css.
+
 ### Mode: `nextjs`
 
 Same as `react` except `--framework nextjs`. Bootstraps a Next.js App Router project (`src/app/`), configures `next.config.js`, and generates page-level components that embed the Dynamic loader.
