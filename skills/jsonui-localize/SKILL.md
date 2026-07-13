@@ -56,6 +56,10 @@ Located at: `{layouts_directory}/Resources/strings.json`
 2. Identify all user-visible text strings:
    - `"text"` attributes with literal values (not bindings `@{...}`)
    - `"hint"` / `"placeholder"` attributes
+   - `"alt"` attributes on Image/NetworkImage (web; screen-reader text — resolves
+     strings.json keys like text/hint; decorative images should use `"alt": ""`).
+     Never register Image `"src"` / `"srcName"` values — image sources are not
+     user-visible text, and a src that collides with a strings key breaks the image
    - `"title"` attributes
    - Segment `"items"` arrays
    - ConfirmationDialog `"title"` values
