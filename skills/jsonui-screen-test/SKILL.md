@@ -106,7 +106,8 @@ This is the authoritative source for:
 | `repeat` | `steps` + (`times` and/or `while`) | |
 | `retry` | `steps` | `maxRetries` (0–3, default 1) |
 | `setLocation` | `latitude`, `longitude` | |
-| `addMedia` | `paths` | (Android only; iOS/Web fail) |
+| `addMedia` | `paths` | `id`, `timeout` (Android: device gallery; Web: sets files on a file input — `id` targets the input or an element containing one, else the first `input[type=file]`; paths resolve relative to the test file. iOS fails) |
+| `emitHook` | `name` | `hookArgs` (array). Calls a hook the app registered on `window.__jsonuiTestHooks` (e.g. an RTDB mock emitter). **Web only** — iOS/Android no-op with a warning; gate with `"when": {"platform": "web"}` |
 
 Keyboard notes:
 - **`typeText`** types on the software keyboard into the **currently-focused** field — it takes no `id`. Use it for focused-but-untargetable fields (e.g. an invisible code-entry input behind a custom 2FA/PIN UI). Focus must already be established (a prior `tap`, or the app focusing programmatically).
@@ -129,6 +130,7 @@ an *action* (not an assertion) that needs the element present first.
 | `count` | `id`, `equals` | `timeout` |
 | `state` | `path`, `equals` | `timeout` |
 | `screenshot` | `name` | `cropId`, `threshold` (default 98.0) |
+| `openedUrl` | `equals` or `contains` | `timeout`. Asserts the most recent `window.open` call (the runner spies it automatically). **Web only** — gate with `"when": {"platform": "web"}` |
 
 ### Common Step Attributes (any action or assertion)
 
