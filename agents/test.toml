@@ -161,6 +161,13 @@ don't precede an assertion with `waitFor`. New capabilities available: `when`/`o
 step attributes, `repeat`/`retry` control steps, `readText` + `@{vars}`, `scrollUntilVisible`,
 `screenshot` visual-regression assertion, `state` assertion, and root-level `launch` config.
 
+Artifacts: after a run, `jsonui-test artifacts pull` (or the `test_artifacts_pull`
+MCP tool, `project_dir` required) collects screenshots/recordings from the latest
+iOS xcresult and the Android device into the `test.artifacts.dir` of jui.config.json,
+organized per platform/test/case, and returns absolute file paths — use it when the
+user asks to see failure evidence. `jsonui-test artifacts status` shows the resolved
+config; `mock serve --artifacts` auto-pulls after each run target finishes.
+
 ### A5. (Optional) Description + HTML
 
 If the user asked for documentation:
