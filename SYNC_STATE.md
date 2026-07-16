@@ -6,10 +6,10 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: dbed606b3181420084b8e50bfe91274798387186
+source_commit: 85f0f54d36fd301f433fdb02a87eed879fc5de5b
 
-- **Last sync date:** 2026-07-08
-- **Source commit subject:** `docs(platform-setup): web driver npm name jsonui-test-runner-web (unscoped)`
+- **Last sync date:** 2026-07-16
+- **Source commit subject:** `docs(test agent): artifacts pull/status + test_artifacts_pull MCP tool`
 
 Run `scripts/check_sync.sh /path/to/JsonUI-Agents-for-claude` to see what has
 changed on the Claude side since the recorded commit.
