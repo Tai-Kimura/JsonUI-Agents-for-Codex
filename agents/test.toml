@@ -163,10 +163,13 @@ step attributes, `repeat`/`retry` control steps, `readText` + `@{vars}`, `scroll
 
 Artifacts: after a run, `jsonui-test artifacts pull` (or the `test_artifacts_pull`
 MCP tool, `project_dir` required) collects screenshots/recordings from the latest
-iOS xcresult and the Android device into the `test.artifacts.dir` of jui.config.json,
-organized per platform/test/case, and returns absolute file paths — use it when the
-user asks to see failure evidence. `jsonui-test artifacts status` shows the resolved
-config; `mock serve --artifacts` auto-pulls after each run target finishes.
+iOS xcresult, the Android device, and the web Playwright output into the
+`test.artifacts.dir` of jui.config.json, organized per platform/test/case, and
+returns absolute file paths — use it when the user asks to see failure evidence.
+Web recording/browser selection is Playwright-native: `use: { video: 'on' }` +
+`projects` in playwright.config, and pass `screenshotDir: testInfo.outputDir` to the
+runner so driver PNGs land next to the video. `jsonui-test artifacts status` shows
+the resolved config; `mock serve --artifacts` auto-pulls after each run target.
 
 ### A5. (Optional) Description + HTML
 
