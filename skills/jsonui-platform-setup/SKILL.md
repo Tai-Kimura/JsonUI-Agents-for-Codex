@@ -256,6 +256,23 @@ Wire the JsonUITestRunner XCUITest driver into the iOS project:
 
 6. Run `xcodebuild test` or in Xcode to verify.
 
+7. **If tests use `addMedia`** (photo-library seeding, simulator only):
+   - Set `test.install.ios.uitestBundleId` in the config to the UI test
+     target's bundle identifier (e.g. `com.example.AppUITests`) so
+     `jsonui-test pregrant` can derive the runner id
+     (`<uitestBundleId>.xctrunner`).
+   - Run `jsonui-test pregrant` after booting the simulator and **before**
+     `xcodebuild test` — it grants `photos-add` so no permission alert ever
+     appears (grant survives reinstalls; reset with
+     `xcrun simctl privacy <udid> reset photos-add`).
+   - Optionally add `NSPhotoLibraryAddUsageDescription` to the UI test
+     target (`INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription`) — not
+     required on the simulator, but documents intent and future-proofs a
+     possible real-device opt-in.
+   - Media fixtures live in `tests/media/` (`test.mediaDir`); `jsonui-test
+     validate` installs them into `<target_dir>/media/` automatically, and
+     the driver resolves basenames from there.
+
 ### Android test setup
 
 Wire UIAutomator-based driver:
