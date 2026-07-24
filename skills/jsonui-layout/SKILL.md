@@ -475,7 +475,7 @@ Priority: compound > landscape > regular > medium > compact > default
 - Only attribute overrides — `type`, `child`, `data` CANNOT be in responsive
 - Unspecified attributes keep the default value
 - Use for: orientation changes, spacing/padding adjustments, visibility toggling, fontSize changes
-- For completely different layouts, use variant files (`screen@tablet.json`) instead
+- For completely different structures, use variant files (`screen@regular.json`) — see below
 
 ### Common Patterns
 
@@ -493,6 +493,51 @@ Priority: compound > landscape > regular > medium > compact > default
 ```json
 { "spacing": 8, "responsive": { "regular": { "spacing": 24 }, "landscape": { "spacing": 16 } } }
 ```
+
+## Variant Files (whole-tree replacement per size class)
+
+When a size class needs a **structurally different** layout (not just
+attribute tweaks), ship a sibling variant file:
+
+```
+Layouts/home.json            ← base (REQUIRED, canonical)
+Layouts/home@regular.json    ← full replacement for the regular tier
+```
+
+**Vocabulary (v1):** `@compact` / `@medium` / `@regular` only.
+Landscape and combined forms stay in the inline `responsive` attribute.
+`@tablet` is not a size class — use `@regular`.
+
+**Resolution:** tier X renders `<base>@X.json` when it exists, otherwise
+the base. No cross-tier promotion (a medium window with only `@regular`
+shipped renders the base). Tier detection matches inline `responsive`:
+iOS horizontal size class (no medium on iOS — `@medium` folds into the
+compact tier, `@compact` wins when both exist), Android 600/840dp, web
+768/1024px.
+
+**Contract (enforced as `jui build` errors):**
+- The variant is a FULL replacement — no partial merge (share structure
+  via `include`/styles instead)
+- Variants must NOT declare a `data` section — the data contract is
+  base-canonical; every `@{binding}` in a variant must be declared in
+  the base's `data` section
+- Variants must NOT declare `platforms` (inherited from the base)
+- Screen-root layouts only: no variants of `partial: true` layouts or
+  Collection cell layouts
+- A real layout named `<base>_<class>_variant.json` collides with the
+  generated variant view name
+
+**State contract:** a size-class change swaps the whole tree — VM-owned
+state (bindings) survives (one VM instance spans the swap); view-local
+state (scroll position, unbound input, focus) is lost by design. Any
+input that must survive a Split View / foldable transition belongs in a
+VM binding.
+
+**Generated code:** the base screen's GeneratedView gains a size-class
+dispatch and each variant gets its own `<Base><Class>VariantGeneratedView`
+sharing the base's Data/ViewModel. Variants never generate their own
+VM/Data/spec. Old dynamic runtimes ignore variant files and render the
+base (graceful degradation).
 
 ---
 

@@ -365,6 +365,23 @@ Per-case platform override:
 }
 ```
 
+## Responsive Variant Screens
+
+Screens shipped with variant files (`home@regular.json`) render a
+different tree per size-class tier (compact < 768/600dp ≤ medium <
+1024/840dp ≤ regular). When you assert an element that exists only in a
+variant tree:
+
+- Gate the case (or step) with `when.responsive` so it runs on the tier
+  that actually renders that tree
+- Mobile devices cannot resize their window — `setViewport` is a no-op
+  there, so **variant-only ids must be asserted on a matching device
+  lane** (e.g. a tablet/regular device for `@regular`-only elements).
+  On web, `setViewport` steps can drive tier switches inside one test
+- VM-bound values survive a tier switch; view-local state (scroll,
+  focus, unbound input) does not — never assert view-local state across
+  a size-class change
+
 ## Initial State
 
 Set ViewModel state before tests:

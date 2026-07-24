@@ -221,6 +221,14 @@ If the wording must change with the number (singular/plural), do NOT use a
 format-specifier string — register a plural entry instead (see "Plural values"
 above) and resolve it from the ViewModel with a count.
 
+## Variant files
+
+Responsive variant layouts (`home@regular.json`) are scanned like any
+layout, but their strings register under the BASE screen's namespace
+(`home`) — the variant is the same screen, so shared wording dedupes
+into one key. When you localize a screen, scan its variant files too;
+variant-only strings still need entries.
+
 ## Output
 
 Report back to parent agent:
