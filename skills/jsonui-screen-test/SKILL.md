@@ -106,12 +106,18 @@ This is the authoritative source for:
 | `repeat` | `steps` + (`times` and/or `while`) | |
 | `retry` | `steps` | `maxRetries` (0–3, default 1) |
 | `setLocation` | `latitude`, `longitude` | |
-| `addMedia` | `paths` | `id`, `timeout` (Android: device gallery; Web: sets files on a file input — `id` targets the input or an element containing one, else the first `input[type=file]`; paths resolve relative to the test file. iOS fails) |
+| `addMedia` | `paths` | `id`, `timeout` (Android: device gallery, paths resolve against the on-device media fixtures dir; iOS: seeds the **simulator** photo library via PhotoKit — real devices fail with a clear error; Web: sets files on a file input — `id` targets the input or an element containing one, else the first `input[type=file]`, paths resolve relative to the test file. **Use basenames** — the iOS bundle is flat. See "addMedia notes" below) |
 | `emitHook` | `name` | `hookArgs` (array). Calls a hook the app registered on `window.__jsonuiTestHooks` (e.g. an RTDB mock emitter). **Web only** — iOS/Android no-op with a warning; gate with `"when": {"platform": "web"}` |
 
 Keyboard notes:
 - **`typeText`** types on the software keyboard into the **currently-focused** field — it takes no `id`. Use it for focused-but-untargetable fields (e.g. an invisible code-entry input behind a custom 2FA/PIN UI). Focus must already be established (a prior `tap`, or the app focusing programmatically).
 - **`hideKeyboard`** dismisses the soft keyboard; it is a no-op when no keyboard is shown. Use it when the keyboard covers the next tap target and the field type has no return key (e.g. `number-pad`). On iOS the last-resort strategy is a drag-to-dismiss gesture, which only works when the enclosing ScrollView opts in via `"keyboardDismissMode": "interactive"` (or `"onDrag"`) in the layout JSON — coordinate with the layout when a screen needs this.
+
+addMedia notes (gallery/photo-library seeding):
+- **Fixture placement**: put media files in `tests/media/` (override with `test.mediaDir` in the config). `jsonui-test validate` installs them automatically to the iOS UITest target (`<target_dir>/media/`); reference them by **basename** in `paths` (`"paths": ["icon.png"]`) — subdirectory paths work on Android but resolve by basename on iOS (the validator warns).
+- **Never assert counts** — seeding accumulates across runs on the same simulator/emulator (no automatic cleanup on any platform, by design). Assert existence, or better: pick and assert app state.
+- **Recommended flow**: `addMedia` first, **then** open the picker (tap your app's button). Picker contents live in a separate process and reflect with a small delay — give in-picker waits a generous `timeout`. The most robust assert is: tap a thumbnail → assert your app's post-pick state (selected-image view, count label, upload preview).
+- **iOS specifics**: simulator only (real devices error out — seeded assets would stay in the user's real library). The runner needs a `photos-add` pre-grant; `jsonui-test pregrant` does it automatically before `xcodebuild` (scans tests for addMedia, needs `test.install.ios.uitestBundleId` in config or `--bundle-id`). Without the pre-grant the driver falls back to auto-tapping the permission alert (en/ja labels only). **Your app's own photo-read permission alert is a different dialog** and stays the test author's job — handle it with `alertTap` after opening the picker, exactly like any other permission prompt.
 
 ### Common Assertions (Quick Reference)
 
