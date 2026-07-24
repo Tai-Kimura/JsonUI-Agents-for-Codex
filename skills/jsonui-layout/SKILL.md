@@ -316,17 +316,34 @@ The `data: [...]` block in a Collection cell Layout only DECLARES the variable n
 
 Only write `@{bindingName}`. Type definitions live in the spec's `stateManagement.uiVariables` and `dataFlow.viewModel.vars` — see the `jsonui-dataflow` skill.
 
+### Canonical Expression Forms (SwiftJsonUI ≥ 10.6.0 / KotlinJsonUI ≥ 2.13.0)
+
+The resolution semantics are SSoT-declared (`shared/core/binding_semantics.json`;
+`get_binding_rules` returns them under `semantics`). Canonical forms:
+
+- **Dot path / bracket index** (read-only value + text contexts, all platforms):
+  `@{profile.name}`, `@{items[0].title}`
+- **Default**: `@{title ?? "Untitled"}` or `?? 'Untitled'` — ONE `??` max;
+  string defaults in single or double quotes, `true`/`false`/number bare.
+  A resolved value (even `false`/`0`/`""`) always wins over the default.
+- **Negation**: `@{!isHidden}` — **boolean value attributes only**
+  (`hidden`, `enabled`, ...). Anywhere else it is a validator error.
+- **Two-way bindings** (TextField text, Switch isOn, ...) must be a single
+  flat identifier — no dots, brackets, `??`, or `!`.
+- Unresolved keys: text renders empty, typed values fall back to the
+  attribute default, Embed params drop the key (child defaults apply).
+
 ### No Logic in Bindings (Critical)
 
 **Prohibited patterns:**
 - `@{selectedTab == 0 ? #D4A574 : #B8A894}` - Ternary operators
 - `@{items.count > 0}` - Comparisons
 - `@{price * quantity}` - Calculations
-- `@{!isHidden}` - Negation
 
 **Allowed:**
 - `@{searchTabColor}` - ViewModel computed property
 - `@{onButtonTap}` - ViewModel function
+- `@{!isHidden}` - Negation, on boolean value attributes only
 
 → Examples: `examples/binding-correct.json`, `examples/binding-wrong.json`
 
