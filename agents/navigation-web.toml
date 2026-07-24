@@ -255,16 +255,21 @@ Same as iOS/Android: keep navigation glue minimal. If nav logic starts duplicati
 
 ---
 
-## Embed navigation (delegate mode, v1)
+## Embed navigation
 
 When the spec contains `structure.embeds[]`, navigation involving the embedded screen is handled per the `navigationMode`:
 
-- **`delegate` (v1 default)** — embedded component's `navigate(...)` drives the **parent's** router. The generated `<EmbedContainer>` either receives `routerOverride` (when isolation is needed by other parts of the system) or transparently uses the parent's `useRouter` / `useNavigate`. Add any new routes triggered by the embedded screen's `userActions[]` to the route tree as you normally would for the parent screen.
+- **`delegate` (default)** — embedded component's `navigate(...)` drives the **parent's** router. The generated `<EmbedContainer>` either receives `routerOverride` (when isolation is needed by other parts of the system) or transparently uses the parent's `useRouter` / `useNavigate`. Add any new routes triggered by the embedded screen's `userActions[]` to the route tree as you normally would for the parent screen.
   - `pop` / dismiss / `navigateBack` semantics are **bounded at the embed** — calling them inside the embedded component does NOT unmount the embed. Runtime enforces this; do not work around it.
   - VM isolation comes from hook closure scoping — embedding the same screen twice naturally yields two hook instances. No extra wiring needed on the web side.
-- **`isolated` (deferred to v1.5)** — would mount a `<MemoryRouter>` or a nested `<Outlet>` inside the embed. Not implemented yet. Route user back to `/agent define` if asked.
+- **`isolated` (requires `EmbedContainer.tsx` template v2)** — the embed owns a private **in-memory stack**: the URL is never synced, and the browser back button always drives the HOST history (measured 2026-07-24: back after an embed push moves only the host history; the embed stack stays put). Generated code emits `screenResolver={buildEmbedScreenResolver({ '<root>': RootComponent })}` and imports v2-only exports (`useEmbedNavigator`, `buildEmbedScreenResolver`) — type-checking against a v1 template **fails deliberately** (version-skew guard). The template lives in the consumer's `extensions/` which `jui sync_tool` preserves, so **existing projects must update the vendored template manually** (re-vendor from `rjui_tools/lib/react/templates/EmbedContainer.tsx`).
+  - Semantics (conformance-tested on all 3 platforms): push stays inside the embed; pop stops at the embed root — the embed never closes itself; the root child stays mounted under pushed entries so its hook state survives push/pop round trips; stack resets on unmount. Deep links address the host router only.
+  - Pushed-screen resolution: the per-embed `screenResolver` table (codegen emits the root screen only) is consulted first, then the **app-wide table** — call `registerEmbedScreens({ screen_name: Component, … })` once in app bootstrap to register every pushable screen instead of enumerating them at each call site. An unresolvable screen renders an explicit error box, never a silent no-op.
+  - In-embed access: `useEmbedNavigator()` (null in delegate/standalone). Access from OUTSIDE the embed (parent driving a pane): `getEmbedNavigator(embedId)` — registered while the isolated embed is mounted.
+  - **Escape hatch** (transitions OUT of the embed — logout, full-screen flows): pass a parent-VM callback through a `params` leaf binding (e.g. `"onExitRequested": "@{handleChildExit}"`). The child calls the callback; the PARENT performs the navigation. present-style transitions declared by a screen embedded in isolated mode are a **`jui build` hard error**.
+- **`params` nesting** (same release): `params` may be a nested object tree — intermediate nodes must be literal objects, `@{}` bindings only on scalar leaves, arrays not allowed. The validators enforce this (zero-warnings gate). Params reach the embedded component as its `data` prop (root child and pushed entries alike).
 
-Generated React/Next.js code from `rjui_tools` already emits `<EmbedContainer>` around the embedded screen component. Your job here is to make sure the parent's route definitions cover any destinations introduced by the embedded screen's `userActions[]`. The embedded screen component is untouched.
+Generated React/Next.js code from `rjui_tools` already emits `<EmbedContainer>` around the embedded screen component. Your job here is to make sure the parent's route definitions cover any destinations introduced by the embedded screen's `userActions[]`, and — for isolated embeds — that every pushable screen is reachable via `registerEmbedScreens` or the call-site resolver table. The embedded screen component is untouched.
 
 ---
 
