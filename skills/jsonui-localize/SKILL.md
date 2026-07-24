@@ -42,6 +42,36 @@ Located at: `{layouts_directory}/Resources/strings.json`
 - **Object value**: Language-specific values resolved per target file
   - Fallback order: target language → `en` → first available value → `""`
 
+### Plural values (CLDR cardinal)
+
+```json
+"items_count": {
+  "en": { "plural": { "one": "{count} item", "other": "{count} items" } },
+  "ja": { "plural": { "other": "{count}件" } }
+}
+```
+
+Rules (enforced by build validation — violations fail the build):
+
+- Categories are CLDR cardinal: `zero` / `one` / `two` / `few` / `many` / `other`.
+  `other` is **required** for every language.
+- Only write categories the language's CLDR rules actually select — e.g. `zero`
+  for `en` or `one` for `ja` is an **error** (the platform plural engines would
+  never pick them and displays would diverge). en uses `one`/`other`; ja/zh/ko
+  use `other` only.
+- `{count}` is the **only** placeholder (a single number; it may appear more
+  than once). printf-style specifiers (`%@`/`%s`/`%d`) are **not allowed**
+  inside plural forms — they stay reserved for non-plural keys.
+- A special wording for count=0 ("No items yet") is **not** a plural category —
+  write it as a separate key and branch in the ViewModel.
+- **Plural keys are VM-only (v1).** A layout string attribute (`text`, `hint`,
+  …) referencing a plural key is a build error, because layout strings are
+  inlined statically with no way to pass a count. Bind a computed ViewModel
+  value instead (e.g. `"text": "@{itemsCountText}"`).
+- The old idiom of separate singular/plural keys (`item_one` / `item_many`)
+  is no longer needed for new keys; existing keys of that shape are harmless
+  and need no migration.
+
 ### Key naming convention
 
 - Keys are `snake_case`
@@ -144,6 +174,23 @@ viewModel.updateData(mapOf("errorMessage" to context.getString(R.string.screen_n
 | Android (kjui) | `"Sign In"` | `stringResource(R.string.login_sign_in)` |
 | React (rjui) | `"Sign In"` | `t('login.signIn')` |
 
+### Plural key resolution (VM code only)
+
+| Platform | Mechanism | ViewModel usage |
+|----------|-----------|-----------------|
+| iOS (sjui) | auto-generated `Localizable.stringsdict` | `StringManager.Home.itemsCount(count: n)` |
+| Android (kjui) | `<plurals>` in `values*/strings.xml` (R.plurals) | `context.resources.getQuantityString(R.plurals.home_items_count, n, n)` / Compose: `pluralStringResource(R.plurals.home_items_count, n, n)` |
+| React (rjui) | generated plural tables + `Intl.PluralRules` | `StringManager.plural('home_items_count', n)` (`getDefaultPlural` for SSR-safe seed code) |
+
+Notes:
+
+- iOS `.stringsdict` files are **fully auto-generated** by `sjui build` from
+  strings.json. Never edit them, and never re-register keys that already exist
+  there — they are already covered by strings.json plural entries.
+- rjui: count-less access to a plural key (`$s.homeItemsCount`,
+  `getString('home_items_count')`) throws at runtime by design — always pass
+  the count through `plural()`.
+
 ## Special Cases
 
 ### Segment items
@@ -164,11 +211,15 @@ Use `\n` in strings.json values:
 ### Strings with parameters
 Use `%@` (iOS) / `%s` (Android) format specifiers:
 ```json
-"items_count": {
+"result_message": {
   "en": "%d items found",
   "ja": "%d件見つかりました"
 }
 ```
+
+If the wording must change with the number (singular/plural), do NOT use a
+format-specifier string — register a plural entry instead (see "Plural values"
+above) and resolve it from the ViewModel with a count.
 
 ## Output
 
