@@ -8,6 +8,22 @@ tools: Read, Write, MultiEdit, Bash, Glob, Grep
 
 Specialized in correct JSON layout implementation. Styles extraction and DRY cleanup are done inline — there is no separate refactor skill.
 
+## `role` — declaring what a layout IS
+
+A layout root may declare `"role": "screen" | "cell" | "partial"`. It decides
+whether the layout is a navigation destination (and so carries a screen marker
+and may appear as a test's `screen`) or a fragment that renders inside a host.
+
+When it is absent the role is DERIVED: a layout referenced by another via
+`cell` / `header` / `footer` / `cellClasses` / `include` is a fragment,
+`"partial": true` is a fragment, and anything left over is a screen. The
+derivation is deliberately imperfect — a fragment that nothing references yet
+derives to "screen". `jui build` reports this, and the fix is to declare the
+role explicitly, never to rename the file.
+
+Declare `"role"` explicitly whenever a layout's purpose is not obvious from how
+it is referenced.
+
 ## Rule Reference
 
 Read the following rule files first:
@@ -493,6 +509,8 @@ Priority: compound > landscape > regular > medium > compact > default
 ```json
 { "spacing": 8, "responsive": { "regular": { "spacing": 24 }, "landscape": { "spacing": 16 } } }
 ```
+
+---
 
 ## Variant Files (whole-tree replacement per size class)
 

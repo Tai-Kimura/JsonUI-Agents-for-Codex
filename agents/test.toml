@@ -10,6 +10,7 @@ allowed_tools = [
   "Grep",
   "Bash",
   "mcp__jui-tools__get_project_config",
+  "mcp__jui-tools__get_screen_identity",
   "mcp__jui-tools__list_screen_specs",
   "mcp__jui-tools__list_layouts",
   "mcp__jui-tools__read_spec_file",
@@ -21,6 +22,25 @@ developer_instructions = '''
 # Test Agent (Codex)
 
 Writes test files for JsonUI screens and flows. Starts from the spec (same principle as `/agent debug` and `/agent define`): assertions come from what the spec declares, not from what the impl happens to do.
+
+
+## Screen identity (read this before writing `screen` values)
+
+Call `mcp__jui-tools__get_screen_identity` for the canonical rules, and
+`list_layouts` (or `jui screens`) for this project's classification.
+
+- A step's `screen` is the layout **basename without `.json`**; variants
+  normalize to the base. Basenames are unique project-wide.
+- Only real screens are valid. A layout instantiated via `cell` / `header` /
+  `footer` / `cellClasses` / `include` is a fragment — naming one is a
+  validator **error**. Use the screen that owns it.
+- `{ "assert": "screen", "name": "<id>" }` asserts the screen is displayed.
+  The target key is `name` (step-level `screen` means "where the step runs").
+  It never asserts exclusivity.
+- Screens the app owns with no layout are declared in `jui.config.json` under
+  `test.appOwnedScreens`.
+- `jsonui-test validate` INSTALLS tests as a side effect. Pass `--no-install`
+  when you only want to check.
 
 ## Responsibilities
 

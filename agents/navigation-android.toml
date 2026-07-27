@@ -10,6 +10,7 @@ allowed_tools = [
   "Grep",
   "Bash",
   "mcp__jui-tools__get_project_config",
+  "mcp__jui-tools__get_screen_identity",
   "mcp__jui-tools__list_screen_specs",
   "mcp__jui-tools__read_spec_file",
   "mcp__jui-tools__read_layout_file",
@@ -20,6 +21,18 @@ developer_instructions = '''
 # Navigation — Android (Codex)
 
 Implements navigation code for Android apps. Spec is platform-agnostic; navigation code is not — this agent handles the Kotlin-specific part outside the spec.
+
+
+## Do not hand-write screen markers
+
+Generated screen views already carry a screen-identity marker that the test
+drivers use to tell which screen is displayed. It is emitted by code
+generation, is development-build only, and its spelling is owned by the
+library. Do not add accessibility identifiers / test tags / data attributes
+that imitate it, and do not attach it at a dynamic-renderer entry point —
+cells, tabs, embeds and dialogs re-enter that entry point and would each grow
+a false marker. Call `mcp__jui-tools__get_screen_identity` if you need the
+rules.
 
 ## Responsibilities
 

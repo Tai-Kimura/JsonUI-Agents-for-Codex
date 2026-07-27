@@ -65,6 +65,51 @@ optionally points at the spec document.
 ]
 ```
 
+### `screen` values are canonical screen ids
+
+A step's `screen` is the **layout basename without `.json`** — `home.json` →
+`"home"`, `settings/profile.json` → `"profile"`. Responsive variants normalize
+to the base (`home@regular.json` → `"home"`). Basenames are unique across the
+whole layout tree, so the id is unambiguous.
+
+**Only real screens are valid.** A layout that another layout instantiates via
+`cell` / `header` / `footer` / `cellClasses` / `include` is NOT a screen — it
+renders inside its host, potentially once per data row. Naming a cell as a
+step's `screen` is a validator **error**; use the screen that owns it.
+
+Run `jui screens` (or `list_layouts`) to see the classification, including HOW
+each role was decided. A layout that is really a fragment but that nothing
+references yet will show up as a screen with reason `default` — the fix is to
+declare `"role": "cell"` on its layout root, not to work around it in the test.
+
+Screens the app owns without a JsonUI layout (a hand-written page) are declared
+in `jui.config.json` under `test.appOwnedScreens`, otherwise they are rejected
+as unknown.
+
+### Asserting arrival: `assert: "screen"`
+
+```json
+{ "screen": "cart", "assert": "screen", "name": "cart" }
+```
+
+Asserts that the named screen **is displayed**. Note the target key is `name`,
+not `screen` — the step-level `screen` means "where this step runs", and during
+a transition the two legitimately differ.
+
+- It does NOT assert exclusivity. Split panes, tab hosts and embedded screens
+  legitimately show several screens at once.
+- Assertions already auto-wait, so there is no separate "wait for screen"
+  action. The default wait is longer than a normal assertion (10s) because
+  cross-screen waits genuinely are.
+- You usually do not need to write it. With `verifyScreenTransitions` enabled,
+  the driver verifies automatically wherever an inline step's `screen` changes.
+  Write it explicitly when you want the arrival to be the point of the step.
+
+The marker it looks for is emitted by code generation and only exists in
+**development builds**. A failure saying `marker-absent` means the app was
+built for production, or its generated code / library pin is stale — that is an
+infrastructure problem, not a test bug.
+
 **Do NOT use the legacy object-map form** (`"sources": { "login": "path/to/login.json" }`) —
 it passes as JSON but the iOS/Android drivers reject it at parse time, and
 `jsonui-test validate` now errors on it.

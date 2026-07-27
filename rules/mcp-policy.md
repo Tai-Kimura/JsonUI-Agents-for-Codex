@@ -12,6 +12,7 @@ JsonUI agents call the `jsonui-mcp-server` (the `jui-tools` MCP) to interact wit
 | List specs / layouts / components | `mcp__jui-tools__list_screen_specs`, `list_layouts`, `list_component_specs` | — |
 | Read spec / layout files | `mcp__jui-tools__read_spec_file`, `read_layout_file` | — |
 | Look up components / attributes | `mcp__jui-tools__lookup_component`, `lookup_attribute`, `search_components` | — |
+| Screen identity rules (what is a screen, ids, `assert:"screen"`) | `mcp__jui-tools__get_screen_identity` | `jui screens` |
 | Create spec / component template | `mcp__jui-tools__doc_init_spec`, `doc_init_component` | — |
 | Generate screen scaffold from spec | `mcp__jui-tools__jui_generate_screen` | `jui g screen` |
 | Generate Layout JSON + VM stubs | `mcp__jui-tools__jui_generate_project` | — |
