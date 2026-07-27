@@ -38,7 +38,8 @@ Call `mcp__jui-tools__get_screen_identity` for the canonical rules, and
   The target key is `name` (step-level `screen` means "where the step runs").
   It never asserts exclusivity.
 - Screens the app owns with no layout are declared in `jui.config.json` under
-  `test.appOwnedScreens`.
+  `test.appOwnedScreens`. An entry is a bare id, or `{ "id", "group" }` when it
+  also needs a transition-diagram group (it has no screen test to declare one in).
 - `jsonui-test validate` INSTALLS tests as a side effect. Pass `--no-install`
   when you only want to check.
 
