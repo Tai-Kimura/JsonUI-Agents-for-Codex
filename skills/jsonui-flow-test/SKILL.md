@@ -84,7 +84,18 @@ declare `"role": "cell"` on its layout root, not to work around it in the test.
 
 Screens the app owns without a JsonUI layout (a hand-written page) are declared
 in `jui.config.json` under `test.appOwnedScreens`, otherwise they are rejected
-as unknown.
+as unknown. An entry is a bare id, or an object when the screen also needs a
+transition-diagram group — it has no screen test to carry `metadata.group`, so
+without one it stays in the diagram's ungrouped bucket:
+
+```jsonc
+"test": {
+  "appOwnedScreens": [
+    "licenses",                              // ungrouped
+    { "id": "tokushoho", "group": "static" } // grouped
+  ]
+}
+```
 
 ### Asserting arrival: `assert: "screen"`
 
