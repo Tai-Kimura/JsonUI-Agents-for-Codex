@@ -101,14 +101,16 @@ a transition the two legitimately differ.
 - Assertions already auto-wait, so there is no separate "wait for screen"
   action. The default wait is longer than a normal assertion (10s) because
   cross-screen waits genuinely are.
-- You usually do not need to write it. With `verifyScreenTransitions` enabled,
-  the driver verifies automatically wherever an inline step's `screen` changes.
-  Write it explicitly when you want the arrival to be the point of the step.
+- You usually do not need to write it. `verifyScreenTransitions` is **on by
+  default**, so the driver verifies automatically wherever an inline step's
+  `screen` changes. Write it explicitly when you want the arrival to be the
+  point of the step.
 
 The marker it looks for is emitted by code generation and only exists in
 **development builds**. A failure saying `marker-absent` means the app was
-built for production, or its generated code / library pin is stale — that is an
-infrastructure problem, not a test bug.
+built for production, or its generated code / library pin is stale. That names
+the **cause** — it is still a hard failure, and the fix is `jui build` plus a
+current library pin, not a change to the test.
 
 **Do NOT use the legacy object-map form** (`"sources": { "login": "path/to/login.json" }`) —
 it passes as JSON but the iOS/Android drivers reject it at parse time, and

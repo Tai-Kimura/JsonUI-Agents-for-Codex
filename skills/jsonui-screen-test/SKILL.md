@@ -19,7 +19,8 @@ than working around it.
 To assert arrival at a screen, use `{ "assert": "screen", "name": "<id>" }` —
 the target key is `name`. It means "this screen is displayed", never
 "exclusively displayed". The underlying marker exists in development builds
-only, so `marker-absent` indicates a stale build rather than a test bug.
+only, so `marker-absent` names a stale or production build as the cause — it
+still fails the step, and the fix is to rebuild rather than edit the test.
 
 ## Your Role
 
