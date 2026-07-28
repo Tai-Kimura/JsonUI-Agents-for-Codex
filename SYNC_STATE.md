@@ -48,12 +48,12 @@ Consumer-project identifiers are genericized in this repo. Current list
 
 | File | Claude source | This repo |
 |---|---|---|
-| `rules/specification-rules.md` | `BarCellView`, `bars_collection`, `bar_cell_root`, `itemName`/`unitPrice` (+ JP labels), `bar_list/bar_cell` | `ItemCellView`, `items_collection`, `item_cell_root`, `itemName`/`unitPrice`, `item_list/item_cell` |
+| `rules/specification-rules.md` | `BarCellView`, `bars_collection`, `bar_cell_root`, `itemName`/`unitPrice` (domain-flavored source names) (+ JP labels), `bar_list/bar_cell` | `ItemCellView`, `items_collection`, `item_cell_root`, `itemName`/`unitPrice`, `item_list/item_cell` |
 | `rules/file-locations.md` | consumer FQN example / `BarLegacy*` | `com.example.myapp.model` / `ItemLegacy*` (upstream genericized the FQN to `com.example.app.model` in 7db7a9e — spelling-only difference) |
-| `skills/jsonui-layout/examples/strings-json.json` | item-flavored sample string | neutral wording |
+| `skills/jsonui-layout/examples/strings-json.json` | domain-flavored sample string | neutral wording |
 | `agents/implement.toml` | domain-flavored Domain accessor example (`displayAbv`/`abv`) | `displayRating`/`rating` |
 | `agents/test.toml` | fixture example schema `` `Bar` `` | `` `Product` `` |
-| `agents/navigation-{ios,android,web}.toml` | item-domain route examples (`ItemDetail`, `ReviewForm`, `Item`, `/item/[id]`, `/review/…`) | `ProductDetail`, `ReviewForm`, `Product`, `/product/[id]`, `/review/…` |
+| `agents/navigation-{ios,android,web}.toml` | domain-flavored route examples (product detail / review form / product routes) | `ProductDetail`, `ReviewForm`, `Product`, `/product/[id]`, `/review/…` |
 | `agents/debug.toml` / `agents/define.toml` | "bar search" example / `"bar_list"` layoutFile example | "product search" / `"item_list"` |
 | `rules/specification-rules.md` (5) | markdown link into JsonUIDocument's `.claude/` path | plain-prose reference |
 | `rules/specification-rules.md` HARD RULE | `jsonui-implement` agent ref | `/agent implement` |
@@ -72,6 +72,6 @@ When the Claude side genericizes these itself, drop the corresponding row.
 5. Gates before committing:
    - `python3 -c 'import tomllib,glob; [tomllib.load(open(f,"rb")) for f in glob.glob("agents/*.toml")]'`
    - `grep -rn '\.claude/' agents/ rules/ skills/ AGENTS.md` → must be empty
-   - grep for consumer identifiers (downstream identifiers, project
-     domain nouns, `/Users/` paths) → must be empty
+   - grep for downstream identifiers (project names and product-domain nouns —
+     the concrete list is kept privately, not in this repo — plus `/Users/` paths) → must be empty
 6. Update `source_commit` + date in this file.
