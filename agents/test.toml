@@ -224,6 +224,14 @@ difference as `[NAME]`, which is informational, not drift.
   `source` route from the swagger, keeping its other scenarios untouched. This
   is the fix for reported body drift; do NOT hand-edit the body to match.
 
+**A `[NOTE]` is not a failure.** A mock that merely omits OPTIONAL fields is a
+valid instance of the contract — it is under-specified, not wrong. Do **not**
+fill those fields in to make the note go away: a mechanical merge from the
+generated body puts `null` into non-nullable slots and manufactures real
+violations. Only `[BODY]` (required missing / wrong type / bad enum / a field
+the contract does not have) needs action. `strict: true` (or
+`mock.checkOptionalFields`) is the opt-in for teams that do want full coverage.
+
 **`mock serve` also checks the requests the app sends** against the operation's
 `requestBody` and query parameters. Violations do not fail the request — they
 are recorded and reported with a non-zero exit at the end of the run. So a green
