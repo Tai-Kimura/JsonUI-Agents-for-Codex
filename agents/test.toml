@@ -220,9 +220,19 @@ difference as `[NAME]`, which is informational, not drift.
 - `mcp__jui-tools__test_mock_generate` — regenerate `generated/`
 - `... check: true` — report drift. Findings under `generated/` are warnings
   (regenerating fixes them); findings in hand-written mocks are errors.
-- `... update_default: true` — rewrite a hand-written mock's `default` body and
-  `source` route from the swagger, keeping its other scenarios untouched. This
-  is the fix for reported body drift; do NOT hand-edit the body to match.
+- `... update_default: true` — repair a hand-written mock's `default` scenario:
+  it ADDS the required fields the contract has and the body lacks, and changes
+  nothing else. No existing value is overwritten, nothing is removed, other
+  scenarios are untouched. `dry_run: true` shows what it would add first.
+
+`default` is where a project keeps the data its tests assert on — scaffolding
+creates `default` and nothing else, so there is nowhere else for it to live.
+Never replace a body wholesale to satisfy the check, by tool or by hand: the
+values in it are what the assertions read.
+
+A violation `update_default` cannot fix — a value of the wrong TYPE, or a
+field the contract does not have — is reported for a person. Fix those by
+editing the offending field only, keeping the surrounding fixture data.
 
 **A `[NOTE]` is not a failure.** A mock that merely omits OPTIONAL fields is a
 valid instance of the contract — it is under-specified, not wrong. Do **not**
