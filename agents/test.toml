@@ -173,7 +173,13 @@ Use `Write` or `Edit` directly.
 jsonui-test validate tests/screens/{screen}.test.json
 ```
 
-Fix any errors. For the full list of available actions/assertions and their
+Fix any errors. When the project config declares `mock.swagger` + `mock.mockDir`,
+this gate **also** regenerates `<mockDir>/generated/` if it is stale and fails on
+mock contract drift — so a failure here is not necessarily about the test file.
+Read the output before assuming the test is wrong; `--no-mock-check` isolates the
+test-file half.
+
+For the full list of available actions/assertions and their
 parameters, see the `$jsonui-screen-test` skill's reference or read
 `test_tools/jsonui_test_cli/schema.py` in the jsonui-cli repo.
 
@@ -191,6 +197,42 @@ Web recording/browser selection is Playwright-native: `use: { video: 'on' }` +
 `projects` in playwright.config, and pass `screenshotDir: testInfo.outputDir` to the
 runner so driver PNGs land next to the video. `jsonui-test artifacts status` shows
 the resolved config; `mock serve --artifacts` auto-pulls after each run target.
+
+### A4b. API mocks (only when the screen calls an API)
+
+Mocks live in two places and the distinction matters:
+
+```
+<mockDir>/<tag>/*.mock.json             hand-written — yours, never rewritten
+<mockDir>/generated/<tag>/*.mock.json   generated — wiped and rewritten from swagger
+```
+
+`generated/` is a pure function of the swagger, so it is safe to gitignore and
+is rebuilt automatically. **Write only the scenarios your test drives** into the
+hand-written side; `mock serve` overlays them on the generated ones per scenario
+name, so `default` / `empty` / `error_404` keep coming from the contract for
+free. A hand-written file still needs its `source` block — that is what routes it.
+
+Mocks are identified by `source.method` + `source.path`, never by filename, so
+existing projects keep whatever naming they have. `--check` reports a naming
+difference as `[NAME]`, which is informational, not drift.
+
+- `mcp__jui-tools__test_mock_generate` — regenerate `generated/`
+- `... check: true` — report drift. Findings under `generated/` are warnings
+  (regenerating fixes them); findings in hand-written mocks are errors.
+- `... update_default: true` — rewrite a hand-written mock's `default` body and
+  `source` route from the swagger, keeping its other scenarios untouched. This
+  is the fix for reported body drift; do NOT hand-edit the body to match.
+
+**`mock serve` also checks the requests the app sends** against the operation's
+`requestBody` and query parameters. Violations do not fail the request — they
+are recorded and reported with a non-zero exit at the end of the run. So a green
+suite plus a contract summary means "the tests pass but the screen sends
+something the real API would reject (422)", which is a bug in the screen, not in
+the test. Escape hatches: `mock.validateRequests: false`, or
+`"skipRequestValidation": true` on one scenario.
+
+`mock.swagger` in jui.config.json takes a path or a list of paths.
 
 ### A5. (Optional) Description + HTML
 
