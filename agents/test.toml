@@ -252,6 +252,20 @@ the test. Escape hatches: `mock.validateRequests: false`, or
 
 `mock.swagger` in jui.config.json takes a path or a list of paths.
 
+**Only the endpoints this project consumes are checked.** When a swagger is
+shared by several front-ends, `api.schemas.include_paths` / `exclude_paths`
+(the same keys the DTO codegen filters on) narrow what counts. Endpoints
+outside the scope are not scaffolded and are not `[MISSING]` — another realm's
+endpoints are not this project's missing mocks. A mock serving an out-of-scope
+route is reported as `[SCOPE]`, an unused file that is safe to delete, and does
+not fail; `[ORPHAN]` still means "no such endpoint in the swagger at all" and
+still fails. `mock.includePaths` / `mock.excludePaths` override when the mock
+scope differs from the DTO scope.
+
+If a check reports a large number of `[MISSING]` mocks, read the paths before
+writing any: endpoints from a realm this app cannot reach mean the scope is
+undeclared, and the fix is one config key, not N mock files.
+
 ### A5. (Optional) Description + HTML
 
 If the user asked for documentation:
