@@ -1,6 +1,6 @@
 ---
 name: jsonui-test-doc
-description: Creates detailed test case descriptions and generates HTML documentation for JsonUI test files. Works after jsonui-test-implement to add rich documentation.
+description: Creates detailed test case descriptions and generates HTML documentation for JsonUI test files. Works after jsonui-screen-test / jsonui-flow-test to add rich documentation.
 tools: Read, Write, Bash, Glob, Grep
 ---
 

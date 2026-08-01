@@ -74,7 +74,7 @@ description = "..."
 config_file = "agents/define.toml"
 ```
 
-**Avoid:** wildcard `mcp__jui-tools__*`. It loads all 30 tool schemas into the prompt, wasting tokens and increasing agent confusion.
+**Avoid:** wildcard `mcp__jui-tools__*`. It loads all 42 tool schemas into the prompt, wasting tokens and increasing agent confusion.
 
 **Avoid:** allowing every built-in tool. Only grant `Write` / `Edit` / `Bash` when the agent genuinely needs them.
 
@@ -86,13 +86,13 @@ config_file = "agents/define.toml"
 
 | Agent | MCP tools |
 |---|---|
-| `conductor` | `get_project_config`, `list_screen_specs`, `list_layouts`, `list_component_specs` |
-| `define` | `doc_init_spec`, `doc_init_component`, `doc_validate_spec`, `doc_validate_component`, `doc_generate_spec`, `read_spec_file`, `lookup_component`, `lookup_attribute`, `search_components`, `jui_verify` |
-| `ground` | `jui_init`, `jui_sync_tool`, `get_project_config` |
-| `implement` | `jui_generate_project`, `jui_build`, `jui_verify`, `read_spec_file`, `read_layout_file`, `list_layouts`, `lookup_component`, `lookup_attribute`, `get_binding_rules`, `get_modifier_order`, `get_platform_mapping` |
-| `navigation-ios` / `navigation-android` / `navigation-web` | `read_spec_file`, `read_layout_file`, `list_screen_specs`, `get_platform_mapping` |
-| `test` | `list_screen_specs`, `read_spec_file`, `doc_generate_html` |
-| `debug` (READ-ONLY) | `get_project_config`, `list_screen_specs`, `list_layouts`, `read_spec_file`, `read_layout_file`, `jui_verify`, `jui_build`, `doc_validate_spec`, `lookup_component`, `lookup_attribute`, `search_components` (+ `Read, Bash, Glob, Grep` for impl grep) |
+| `conductor` | `get_project_config`, `list_screen_specs`, `list_layouts`, `list_component_specs`, `list_api_specs`, `list_api_models` |
+| `define` | `get_project_config`, `list_screen_specs`, `list_component_specs`, `read_spec_file`, `doc_init_spec`, `doc_init_component`, `doc_validate_spec`, `doc_validate_component`, `doc_generate_spec`, `doc_generate_component`, `doc_rules_init`, `doc_rules_show`, `jui_verify`, `lookup_component`, `lookup_attribute`, `search_components`, `list_api_specs`, `preview_api_model_sync` |
+| `ground` | `get_project_config`, `jui_init` |
+| `implement` | `get_project_config`, `list_screen_specs`, `list_layouts`, `read_spec_file`, `read_layout_file`, `jui_generate_project`, `jui_build`, `jui_verify`, `lookup_component`, `lookup_attribute`, `search_components`, `get_binding_rules`, `get_modifier_order`, `get_platform_mapping`, `list_api_specs`, `list_api_models` |
+| `navigation-ios` / `navigation-android` / `navigation-web` | `get_project_config`, `list_screen_specs`, `read_spec_file`, `read_layout_file`, `get_platform_mapping`, `get_screen_identity` |
+| `test` | `get_project_config`, `list_screen_specs`, `list_layouts`, `read_spec_file`, `read_layout_file`, `doc_generate_html`, `get_screen_identity`, `test_artifacts_pull`, `test_mock_generate` |
+| `debug` (READ-ONLY) | `get_project_config`, `list_screen_specs`, `list_layouts`, `list_component_specs`, `read_spec_file`, `read_layout_file`, `jui_verify`, `jui_build`, `doc_validate_spec`, `lookup_component`, `lookup_attribute`, `search_components`, `get_platform_mapping`, `list_api_specs`, `list_api_models`, `preview_api_model_sync` (+ `Read, Bash, Glob, Grep` for impl grep) |
 
 Agents that do not appear in this table should still follow the "explicit enumeration" pattern.
 
