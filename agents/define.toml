@@ -481,7 +481,7 @@ Batching hides validation errors and makes HTML generation skippable. Don't allo
 When one or more specs are done and validated:
 
 ```
-Please switch to `/agent implement` (or `jsonui-screen-impl` during Phase 3 transition) with:
+Please switch to `/agent implement` with:
 - specification: docs/screens/json/{screen}.spec.json
 - platform: {iOS / Android / Web}
 - mode: {swiftui / uikit / compose / xml / react}

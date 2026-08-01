@@ -129,6 +129,5 @@ Files at the Domain level — `Model/{Name}.swift` / `<package>/model/{Name}.kt`
 | 5 | DTO files unmodified by hand | `jui lint-generated` | lint |
 | 6 | Domain scaffold preservation | `jui build` skips existing | build toolchain |
 | 7 | DTO drift detection | `jui verify --fail-on-diff` | verify |
-| 8 | Orphan Domain awareness | `jui lint-generated --fail-on-orphan` | lint (Phase 4) |
 
-A screen is "done" only when invariants 1-4 hold (and 5-8 hold whenever the project uses swagger-driven Data Models).
+A screen is "done" only when invariants 1-4 hold (and 5-7 hold whenever the project uses swagger-driven Data Models).

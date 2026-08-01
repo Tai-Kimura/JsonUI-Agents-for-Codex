@@ -252,13 +252,13 @@ Quote the relevant parts in the report.
 
 After the report, you will usually recommend one of:
 
-| Fix location | Agent to route to (transitional; Phase 3) |
+| Fix location | Agent to route to |
 |---|---|
-| spec | `jsonui-spec` → (future: `/agent define`) |
-| Layout JSON / Styles | `jsonui-screen-impl` → (future: `/agent implement`) |
-| VM method body, Repository/UseCase body | `jsonui-screen-impl` or `jsonui-modify` → (future: `/agent implement`) |
-| Navigation (spec-external) | Platform-specific (`jsonui-screen-impl` for now → future: `navigation-{ios,android,web}`) |
-| spec + impl together | `jsonui-modify` (existing) |
+| spec | `/agent define` |
+| Layout JSON / Styles | `/agent implement` |
+| VM method body, Repository/UseCase body | `/agent implement` |
+| Navigation (spec-external) | `navigation-{ios,android,web}` |
+| spec + impl together | `/agent define` (spec first), then `/agent implement` |
 
 Do not launch the fix agent yourself. Tell the user which one to launch next.
 '''
