@@ -19,6 +19,7 @@ allowed_tools = [
   "mcp__jui-tools__test_artifacts_pull",
   "mcp__jui-tools__test_artifacts_status",
   "mcp__jui-tools__test_mock_generate",
+  "mcp__jui-tools__test_validate",
 ]
 
 developer_instructions = '''
@@ -43,8 +44,11 @@ Call `mcp__jui-tools__get_screen_identity` for the canonical rules, and
 - Screens the app owns with no layout are declared in `jui.config.json` under
   `test.appOwnedScreens`. An entry is a bare id, or `{ "id", "group" }` when it
   also needs a transition-diagram group (it has no screen test to declare one in).
-- `jsonui-test validate` INSTALLS tests as a side effect. Pass `--no-install`
-  when you only want to check.
+- Validation goes through the `test_validate` MCP tool, **always with
+  `no_install: true`** — the underlying CLI installs tests as a side effect by
+  default, and authoring-time validation must not consume the files. The Bash
+  form `jsonui-test validate --no-install` is the human/CI fallback, not the
+  agent path.
 
 ## Responsibilities
 
@@ -172,14 +176,14 @@ Use `Write` or `Edit` directly.
 
 ### A4. Validate
 
-```bash
-jsonui-test validate tests/screens/{screen}.test.json
+```
+mcp__jui-tools__test_validate with files: ["tests/screens/{screen}.test.json"], no_install: true
 ```
 
 Fix any errors. When the project config declares `mock.swagger` + `mock.mockDir`,
 this gate **also** regenerates `<mockDir>/generated/` if it is stale and fails on
 mock contract drift — so a failure here is not necessarily about the test file.
-Read the output before assuming the test is wrong; `--no-mock-check` isolates the
+Read the output before assuming the test is wrong; `no_mock_check: true` isolates the
 test-file half.
 
 For the full list of available actions/assertions and their
@@ -312,7 +316,7 @@ Invoke `$jsonui-flow-test` for the flow schema.
 ```
 tests/flows/{flow}.test.json
 
-jsonui-test validate tests/flows/{flow}.test.json
+mcp__jui-tools__test_validate with files: ["tests/flows/{flow}.test.json"], no_install: true
 ```
 
 ---
@@ -329,7 +333,7 @@ mcp__jui-tools__doc_generate_html with input_dir: "tests/", output_dir: "tests/h
 
 ## Flow D: Validation only
 
-Run `jsonui-test validate` on the target directory via Bash. Report errors; do not fix them blindly — understand each one. For the schema reference of available actions / assertions, see the `$jsonui-screen-test` skill or `test_tools/jsonui_test_cli/schema.py` in the jsonui-cli repo.
+Call `test_validate` with the target directory in `files` and `no_install: true`. Report errors; do not fix them blindly — understand each one. For the schema reference of available actions / assertions, see the `$jsonui-screen-test` skill or `test_tools/jsonui_test_cli/schema.py` in the jsonui-cli repo.
 
 ---
 
@@ -419,7 +423,7 @@ Same rule as `/agent define` and `/agent implement`: finish the full cycle (draf
 - tests/html/ — (if regenerated)
 
 ### Validation
-- ✅ jsonui-test validate: pass
+- ✅ test_validate (no_install: true): pass
 - ⚠ (any warnings noted)
 
 ### Coverage
@@ -436,7 +440,7 @@ Same rule as `/agent define` and `/agent implement`: finish the full cycle (draf
 
 1. **Asserting impl details not in spec** — all assertions must trace to a spec section.
 2. **Referring to a screen test that doesn't exist in a flow test** — verify with `list_screen_specs` + filesystem before writing the flow.
-3. **Skipping `jsonui-test validate`** — the CLI catches schema errors early.
+3. **Skipping `test_validate`** — the validator catches schema errors early.
 4. **Trying to run tests from this agent** — test execution is out of scope; point to platform docs.
 5. **Writing setup code here** — `/agent ground` owns test environment setup.
 '''

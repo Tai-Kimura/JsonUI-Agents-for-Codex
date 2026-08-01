@@ -30,9 +30,9 @@ JsonUI agents call the `jsonui-mcp-server` (the `jui-tools` MCP) to interact wit
 | Pull run artifacts (screenshots / recordings) | `mcp__jui-tools__test_artifacts_pull` | `jsonui-test artifacts pull` |
 | Show artifacts config + already-pulled files | `mcp__jui-tools__test_artifacts_status` | `jsonui-test artifacts status` |
 | Regenerate API mocks from swagger | `mcp__jui-tools__test_mock_generate` | `jsonui-test mock generate` |
-| Validate test files | — | `jsonui-test validate --no-install` (deliberate, see "Test tooling" below) |
+| Validate test files (always `no_install: true`) | `mcp__jui-tools__test_validate` | `jsonui-test validate --no-install` |
 
-Only **one** `jui` subcommand has no MCP equivalent today: `jui lint-generated`. The `jsonui-test` CLI keeps one deliberate CLI-only operation of its own: `validate` (rationale below). Everything else goes through MCP.
+Only **one** `jui` subcommand has no MCP equivalent today: `jui lint-generated`. Everything else goes through MCP.
 
 ---
 
@@ -101,7 +101,7 @@ Generated from each agent's `allowed_tools` in `agents/*.toml` — the `allowed_
 | `navigation-android` | `get_platform_mapping`, `get_project_config`, `get_screen_identity`, `jui_build`, `list_screen_specs`, `read_layout_file`, `read_spec_file` |
 | `navigation-ios` | `get_platform_mapping`, `get_project_config`, `get_screen_identity`, `jui_build`, `list_screen_specs`, `read_layout_file`, `read_spec_file` |
 | `navigation-web` | `get_platform_mapping`, `get_project_config`, `get_screen_identity`, `jui_build`, `list_screen_specs`, `read_layout_file`, `read_spec_file` |
-| `test` | `doc_generate_html`, `get_project_config`, `get_screen_identity`, `list_layouts`, `list_screen_specs`, `read_layout_file`, `read_spec_file`, `test_artifacts_pull`, `test_artifacts_status`, `test_mock_generate` |
+| `test` | `doc_generate_html`, `get_project_config`, `get_screen_identity`, `list_layouts`, `list_screen_specs`, `read_layout_file`, `read_spec_file`, `test_artifacts_pull`, `test_artifacts_status`, `test_mock_generate`, `test_validate` |
 <!-- inventory:end -->
 
 ---
@@ -114,10 +114,10 @@ The MCP server exposes eight `test_*` tools. Agent consumption is deliberate, no
 
 - `test_artifacts_pull` / `test_artifacts_status` — collect and inspect run artifacts
 - `test_mock_generate` — regenerate `generated/` mocks from the swagger
+- `test_validate` — validate test files, **always with `no_install: true`**. The wrapper's default (like the CLI's) installs tests as a side effect, and authoring-time validation must not consume the files. Servers built before 2026-08-01 do not know the parameter and **silently drop it** (the SDK's zod validation strips unknown keys), so the install runs anyway — if validation appears to install despite `no_install: true`, update `~/.jsonui-mcp-server` (`bash ~/.jsonui-mcp-server/install.sh`) and restart before trusting this path.
 
 **Deliberately not agent-consumed:**
 
-- `test_validate` — the MCP wrapper does not expose `--no-install`, and `jsonui-test validate` installs tests as a side effect by default. Agents must control that side effect, so the `test` agent runs `jsonui-test validate --no-install` via Bash instead.
 - `test_generate_screen` / `test_generate_flow` / `test_generate_description` — template scaffolders for humans working without the pack. Agents author complete files via the `jsonui-screen-test` / `jsonui-flow-test` / `jsonui-test-doc` skills; a skeleton adds nothing.
 - `test_report` — converts run results to JUnit / HTML. That is a runner / CI stage after execution, outside agent authoring scope.
 
@@ -131,7 +131,7 @@ Include `Bash` in the `tools:` frontmatter when the agent needs the one remainin
 - `debug`: needs Bash for impl-side grep and CI-style checks
 - `navigation-*`: may need Bash for platform-native build verification
 - `implement`: may need Bash for platform-native runs alongside the MCP build gate
-- `test`: needs Bash for `jsonui-test validate --no-install` (the deliberate CLI-only operation above) and for running platform test suites
+- `test`: needs Bash for running platform test suites (`jsonui-test validate --no-install` stays available as the human/CI fallback, but agent validation goes through `test_validate`)
 
 `conductor` and `define` stay Bash-free.
 
