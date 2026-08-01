@@ -489,33 +489,70 @@ The loader tries these locations in order:
 
 ## Available Actions & Assertions
 
-**For the complete and up-to-date list of actions and assertions, always check schema.py in the jsonui-cli repository (the `jsonui-test` CLI lives there):**
+**The canonical step inventory is `schemas/actions.schema.json` in the
+jsonui-test-runner repository** — the tables below are **generated from it**
+at the pin recorded in each table's stamp line (regenerate:
+`node scripts/gen-skill-action-tables.mjs --fix`). For validator-side
+parameter details, `test_tools/jsonui_test_cli/schema.py` in jsonui-cli
+remains the `jsonui-test validate` reference.
 
-```bash
-find . "$HOME/.jsonui-cli" -path "*/test_tools/jsonui_test_cli/schema.py" 2>/dev/null | head -1 | xargs cat
-```
+### Actions
 
-### Common Actions for Flow Tests
+<!-- generated:actions -->
+_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/43046c737adbe1511e7aa2e7aee029ac80847534/schemas/actions.schema.json) @ jsonui-test-runner `43046c7` (28 actions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
 
-| Action | Required | Optional | Use Case |
-|--------|----------|----------|----------|
-| `waitFor` | `id` | `timeout` | Wait for screen transition |
-| `wait` | `ms` | - | Wait for animations/loading |
-| `tap` | `id` | `text`, `timeout` | Navigate between screens |
-| `back` | - | - | Navigate back |
-| `typeText` | `value` | `timeout` | Type into the currently-focused field (no `id`) |
-| `hideKeyboard` | - | - | Dismiss soft keyboard before tapping a covered target |
-| `screenshot` | `name` | - | Document flow state |
+| Action | 説明 | Required | Optional | Platform notes |
+|---|---|---|---|---|
+| `tap` | 要素をタップ | `id` | `text`, `retryTapIfNoChange=false` | `retryTapIfNoChange`（ゴーストタップ緩和）は Web では受理のみ・no-op |
+| `doubleTap` | 要素をダブルタップ | `id` | - | - |
+| `longPress` | 要素を長押し | `id` | `duration=500` | - |
+| `input` | 指定要素にテキスト入力 | `id`, `value` | - | - |
+| `typeText` | フォーカス中の欄へキーボード入力（要素 id 不要。不可視のコード入力欄など向け） | `value` | `timeout` | - |
+| `clear` | 入力内容をクリア | `id` | - | - |
+| `scroll` | 指定方向へスクロール | `id`, `direction` | `amount` | - |
+| `scrollUntilVisible` | 要素が見えるまでスクロール（終端到達で即失敗） | `id` | `container`, `direction=down`, `timeout=20000` | - |
+| `swipe` | 要素をスワイプ | `id`, `direction` | - | - |
+| `waitFor` | 要素の出現を待機 | `id` | `timeout=5000` | - |
+| `waitForAny` | いずれかの要素の出現を待機 | `ids` | `timeout=5000` | - |
+| `wait` | 指定時間待機 | `ms` | - | - |
+| `back` | 戻る操作 | - | - | - |
+| `hideKeyboard` | ソフトキーボードを閉じる（未表示なら no-op） | - | - | - |
+| `screenshot` | スクリーンショットを保存 | `name` | - | - |
+| `alertTap` | アラート／ダイアログのボタンをタップ | `button` | `timeout=5000` | - |
+| `selectOption` | ドロップダウン／ピッカーから選択 | `id` | `value`, `index`, `timeout=5000` | - |
+| `tapItem` | コレクション内のアイテムをタップ | `id`, `index` | `timeout=5000` | - |
+| `selectTab` | タブを選択 | `id`, `index` | `timeout=5000` | - |
+| `readText` | 要素のテキストを実行時変数に読む（`@{変数名}` で後続参照） | `id`, `variable` | `timeout=5000` | - |
+| `repeat` | ステップ群を繰り返す（`times`／`while` 併用可、安全上限 100 回） | `steps` | `times`, `while` | - |
+| `retry` | 失敗時にブロック全体を再実行 | `steps` | `maxRetries=1` | - |
+| `setLocation` | モック位置情報を設定 | `latitude`, `longitude` | - | iOS: SDK 依存 ／ Android: best effort ／ Web: setGeolocation |
+| `addMedia` | メディアフィクスチャを端末に追加（png/jpg/jpeg/gif/mp4。蓄積するため件数でなく存在を検証） | `paths` | `id`, `timeout` | Android: ギャラリー（MediaStore）／ iOS: PhotoKit〈シミュレータ限定・photos-add 許可は CLI が自動付与〉／ Web: file input |
+| `setMocks` | エンドポイント（operationId）ごとのモックシナリオを切り替え | `mocks` | - | - |
+| `setViewport` | ビューポートをリサイズ（レスポンシブ検証） | `width`, `height` | - | Web のみ。iOS/Android は警告付き no-op（`when.responsive` でゲート） |
+| `setOrientation` | 画面の向きを変更 | `orientation` | - | iOS: XCUIDevice ／ Android: UiDevice ／ Web: モバイルエミュレーション時のみ（他は警告付き no-op） |
+| `emitHook` | アプリが登録したテストフックを呼び出す（`window.__jsonuiTestHooks`） | `name` | `hookArgs` | Web のみ。iOS/Android は警告付き no-op（`when.platform` でゲート） |
+<!-- /generated:actions -->
 
-(Inline usage of any action requires `screen`; see the schema.py reference above for the full action list.)
+(Inline usage of any action requires `screen` — see "Inline Steps" above.)
 
-### Common Assertions for Flow Tests
+### Assertions
 
-| Assertion | Required | Optional | Use Case |
-|-----------|----------|----------|----------|
-| `visible` | `id` | `timeout` | Verify screen loaded |
-| `notVisible` | `id` | `timeout` | Verify screen dismissed |
-| `text` | `id` | `equals`, `contains`, `timeout` | Verify data persistence |
+<!-- generated:assertions -->
+_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/43046c737adbe1511e7aa2e7aee029ac80847534/schemas/actions.schema.json) @ jsonui-test-runner `43046c7` (10 assertions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
+
+| Assertion | 説明 | Required | Optional | Platform notes |
+|---|---|---|---|---|
+| `visible` | 要素が表示されている | `id` | `timeout` | - |
+| `notVisible` | 要素が非表示または不存在 | `id` | `timeout` | - |
+| `enabled` | 要素が有効 | `id` | `timeout` | - |
+| `disabled` | 要素が無効 | `id` | `timeout` | - |
+| `text` | テキストを検証（`equals`／`contains`） | `id` | `equals`, `contains`, `timeout` | - |
+| `count` | 要素数を検証（`equals: 0` は不存在で成立） | `id`, `equals` | `timeout` | - |
+| `state` | ViewModel 状態を検証（`path` はドット記法、StateProvider 必須） | `path`, `equals` | `timeout` | - |
+| `screenshot` | ベースライン画像とのビジュアル比較（ベースライン無しは新規作成＋警告） | `name` | `cropId`, `threshold=98` | - |
+| `openedUrl` | 直近の `window.open` 呼び出しの URL を検証 | - | `equals`, `contains`, `timeout` | Web のみ（`when.platform: web` でゲート） |
+| `screen` | 指定画面の表示を検証（排他は主張しない — 埋め込み／タブ等で複数同時あり得る） | `name` | `timeout` | - |
+<!-- /generated:assertions -->
 
 ## Workflow (CRITICAL)
 

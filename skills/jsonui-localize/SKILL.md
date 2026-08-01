@@ -165,6 +165,12 @@ viewModel.updateData(mapOf("errorMessage" to context.getString(R.string.screen_n
 1. Run build: `{tools_directory}/bin/{cli} build`
 2. Verify no warnings about missing strings
 3. Verify all string references resolve correctly
+4. **The completion gate is `jui lint-strings` — exit 0 required.** It
+   machine-checks the layout surface (raw literals that don't resolve via
+   `strings.json`); this skill is the repair tool for its findings, and
+   VM-side strings remain this skill's territory that the lint cannot see.
+   Intentional non-localized literals go in `.jui-strings-allowlist.json`
+   with a reason (see `rules/invariants.md` invariant 4).
 
 ## Platform-Specific String Resolution
 
