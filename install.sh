@@ -3,11 +3,18 @@
 # JsonUI Agents Installer for Codex CLI
 # This script installs JsonUI agents and skills to Codex CLI's directories
 #
+# The pack is fetched as a single tarball and its contents are enumerated
+# from disk, so new files (agents, skills, examples, rules) ship without
+# touching this script.
+#
 # Usage:
 #   ./install.sh                    # Install from main branch
 #   ./install.sh -b develop         # Install from specific branch
 #   ./install.sh -c abc123          # Install from specific commit
 #   ./install.sh -v 1.0.0           # Install from specific version tag
+#
+# Testing: set JSONUI_AGENTS_TARBALL_URL to any curl-able tarball URL
+# (e.g. file:///tmp/pack.tar.gz built with `git archive --prefix=x/ HEAD`).
 
 set -e
 
@@ -47,44 +54,45 @@ while getopts "b:c:v:h" opt; do
     esac
 done
 
-REPO_URL="https://raw.githubusercontent.com/Tai-Kimura/JsonUI-Agents-for-Codex/$REF"
+TARBALL_URL="${JSONUI_AGENTS_TARBALL_URL:-https://codeload.github.com/Tai-Kimura/JsonUI-Agents-for-Codex/tar.gz/$REF}"
 CODEX_DIR=".codex"
 AGENTS_DIR="agents"
 SKILLS_DIR="skills"
 RULES_DIR="rules"
 
-# Agent config files (9-agent layout)
-AGENT_FILES="conductor.toml debug.toml define.toml ground.toml implement.toml navigation-android.toml navigation-ios.toml navigation-web.toml test.toml"
-
-# Skill directories (11 skills; each contains SKILL.md and optionally examples/)
-SKILL_DIRS="jsonui-component-spec jsonui-dataflow jsonui-flow-test jsonui-layout jsonui-localize jsonui-platform-setup jsonui-screen-spec jsonui-screen-test jsonui-swagger jsonui-test-doc jsonui-viewmodel-impl"
-
-# Rule files (5 invariants / policy / philosophy / placement / spec authoring)
-RULE_FILES="invariants.md mcp-policy.md design-philosophy.md file-locations.md specification-rules.md"
-
-# Function to get examples for a skill (Bash 3.2 compatible - no associative arrays)
-get_skill_examples() {
-    case "$1" in
-        jsonui-layout)
-            echo "binding-correct.json binding-wrong.json collection-swiftui-basic.json collection-swiftui-full.json collection-uikit.json collection-wrong.json color-correct.json color-wrong.json id-naming-correct.json id-naming-wrong.json include-correct.json include-wrong.json screen-root-structure.json screen-root-wrong.json strings-json.json tabview.json tabview-wrong.json"
-            ;;
-        jsonui-screen-spec)
-            echo "component.json data-flow.json layout.json state-management.json transitions.json user-actions.json validation.json"
-            ;;
-        jsonui-swagger)
-            echo "db-extensions.json db-model-template.json property-types.json"
-            ;;
-        jsonui-viewmodel-impl)
-            echo "collection-kotlin.kt collection-swift.swift colormanager-kotlin.kt colormanager-swift.swift event-handler-kotlin.kt event-handler-swift.swift hardcode-correct.kt hardcode-correct.swift hardcode-wrong.kt hardcode-wrong.swift logger-correct.swift logger-wrong.swift repository-pattern.swift stringmanager-swift.swift strings-kotlin.kt viewmodel-kotlin.kt viewmodel-swift.swift"
-            ;;
-        *)
-            echo ""
-            ;;
-    esac
-}
-
 echo "Installing JsonUI Agents for Codex CLI..."
 echo "  Source: $REF_TYPE '$REF'"
+
+# Fetch the pack once
+TMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TMP_DIR"' EXIT
+echo ""
+echo "Fetching the pack tarball..."
+if ! curl -sLf "$TARBALL_URL" -o "$TMP_DIR/pack.tar.gz"; then
+    echo "Error: Failed to download the pack ($TARBALL_URL)." >&2
+    echo "Please check if the $REF_TYPE '$REF' exists." >&2
+    exit 1
+fi
+mkdir "$TMP_DIR/src"
+if ! tar -xzf "$TMP_DIR/pack.tar.gz" -C "$TMP_DIR/src" --strip-components=1; then
+    echo "Error: Failed to extract the pack tarball." >&2
+    exit 1
+fi
+SRC="$TMP_DIR/src"
+
+# Sanity-check the pack layout before writing anything
+for d in "$SRC/agents" "$SRC/skills" "$SRC/rules"; do
+    if [ ! -d "$d" ]; then
+        echo "Error: unexpected pack layout — missing ${d#"$SRC"/}" >&2
+        exit 1
+    fi
+done
+for f in "$SRC/.codex/config.toml" "$SRC/AGENTS.md"; do
+    if [ ! -f "$f" ]; then
+        echo "Error: unexpected pack layout — missing ${f#"$SRC"/}" >&2
+        exit 1
+    fi
+done
 
 # Create directories
 for dir in "$CODEX_DIR" "$AGENTS_DIR" "$SKILLS_DIR" "$RULES_DIR"; do
@@ -97,85 +105,63 @@ done
 # Count items
 agent_count=0
 skill_count=0
+example_count=0
 rule_count=0
 
-# Download config.toml
+# Install config.toml
 echo ""
-echo "Downloading Codex configuration..."
+echo "Installing Codex configuration..."
 echo "  - .codex/config.toml"
-if ! curl -sLf "$REPO_URL/.codex/config.toml" -o "$CODEX_DIR/config.toml"; then
-    echo "Error: Failed to download .codex/config.toml" >&2
-    echo "Please check if the $REF_TYPE '$REF' exists." >&2
-    exit 1
-fi
+cp "$SRC/.codex/config.toml" "$CODEX_DIR/config.toml"
 
-# Download agent config files
+# Install agent config files (enumerated from the pack)
 echo ""
-echo "Downloading agent configurations..."
-for file in $AGENT_FILES; do
-    echo "  - agents/$file"
-    if ! curl -sLf "$REPO_URL/agents/$file" -o "$AGENTS_DIR/$file"; then
-        echo "Error: Failed to download agents/$file" >&2
-        echo "Please check if the $REF_TYPE '$REF' exists." >&2
-        exit 1
-    fi
+echo "Installing agent configurations..."
+for file in "$SRC"/agents/*.toml; do
+    name=$(basename "$file")
+    echo "  - agents/$name"
+    cp "$file" "$AGENTS_DIR/$name"
     agent_count=$((agent_count + 1))
 done
 
-# Download skill files
+# Install skills (each skill directory ships wholesale — SKILL.md, examples/,
+# and whatever the pack adds later)
 echo ""
-echo "Downloading skills..."
-for skill in $SKILL_DIRS; do
-    echo "  - skills/$skill/SKILL.md"
+echo "Installing skills..."
+for sdir in "$SRC"/skills/*/; do
+    skill=$(basename "$sdir")
+    echo "  - skills/$skill/"
     mkdir -p "$SKILLS_DIR/$skill"
-    if ! curl -sLf "$REPO_URL/skills/$skill/SKILL.md" -o "$SKILLS_DIR/$skill/SKILL.md"; then
-        echo "Error: Failed to download skills/$skill/SKILL.md" >&2
-        echo "Please check if the $REF_TYPE '$REF' exists." >&2
-        exit 1
-    fi
+    cp -R "${sdir}." "$SKILLS_DIR/$skill/"
     skill_count=$((skill_count + 1))
-
-    # Download examples if they exist for this skill
-    examples=$(get_skill_examples "$skill")
-    if [ -n "$examples" ]; then
-        mkdir -p "$SKILLS_DIR/$skill/examples"
-        for example in $examples; do
-            echo "    - examples/$example"
-            if ! curl -sLf "$REPO_URL/skills/$skill/examples/$example" -o "$SKILLS_DIR/$skill/examples/$example" 2>/dev/null; then
-                echo "    (skipped - not found)"
-            fi
-        done
+    if [ -d "${sdir}examples" ]; then
+        n=$(find "${sdir}examples" -type f | wc -l | tr -d ' ')
+        example_count=$((example_count + n))
     fi
 done
 
-# Download rule files (Phase 5)
+# Install rule files (enumerated from the pack)
 echo ""
-echo "Downloading rules..."
-for file in $RULE_FILES; do
-    echo "  - rules/$file"
-    if ! curl -sLf "$REPO_URL/rules/$file" -o "$RULES_DIR/$file"; then
-        echo "Error: Failed to download rules/$file" >&2
-        echo "Please check if the $REF_TYPE '$REF' exists." >&2
-        exit 1
-    fi
+echo "Installing rules..."
+for file in "$SRC"/rules/*.md; do
+    name=$(basename "$file")
+    echo "  - rules/$name"
+    cp "$file" "$RULES_DIR/$name"
     rule_count=$((rule_count + 1))
 done
 
-# Download AGENTS.md to project root
+# Install AGENTS.md to project root
 echo ""
-echo "Downloading AGENTS.md..."
-if ! curl -sLf "$REPO_URL/AGENTS.md" -o "AGENTS.md"; then
-    echo "Warning: Failed to download AGENTS.md (optional)" >&2
-else
-    echo "  - AGENTS.md (project root)"
-fi
+echo "Installing AGENTS.md..."
+cp "$SRC/AGENTS.md" "AGENTS.md"
+echo "  - AGENTS.md (project root)"
 
 echo ""
 echo "Installation complete!"
 echo ""
 echo "Installed:"
 echo "  Agent configs: $agent_count"
-echo "  Skills: $skill_count"
+echo "  Skills: $skill_count (with $example_count example files)"
 echo "  Rules: $rule_count"
 echo ""
 echo "Files installed to:"
@@ -206,9 +192,6 @@ echo "2: modify existing, 3: investigate, 4: backend). The first"
 echo "three all route to /agent conductor, which inspects the repo"
 echo "via MCP and tells you which specialized agent to switch to"
 echo "(define / ground / implement / navigation-* / test / debug)."
-echo ""
-echo "Legacy /agent jsonui-orchestrator is still available during"
-echo "the transition period but deprecated. Prefer /agent conductor."
 echo ""
 echo "========================================"
 echo ""
