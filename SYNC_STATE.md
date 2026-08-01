@@ -6,10 +6,10 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: fad36974fb2c49c1adbcdaef330282dc07c21ad0
+source_commit: 93e0a6b54e225bc05ecda841d2743942586e426f
 
 - **Last sync date:** 2026-08-01
-- **Source commit subject:** `policy(test_validate): agent-consumed with no_install: true, now that the wrapper exposes it`
+- **Source commit subject:** `docs(invariants): the localize gate is machine-checked by jui lint-strings`
 
 Run `scripts/check_sync.sh /path/to/JsonUI-Agents-for-claude` to see what has
 changed on the Claude side since the recorded commit.

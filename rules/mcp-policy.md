@@ -24,6 +24,7 @@ JsonUI agents call the `jsonui-mcp-server` (the `jui-tools` MCP) to interact wit
 | Validate spec | `mcp__jui-tools__doc_validate_spec`, `doc_validate_component` | — |
 | Generate docs | `mcp__jui-tools__doc_generate_spec`, `doc_generate_html` | — |
 | Lint @generated markers | — | `jui lint-generated` (CI only) |
+| Localize gate — raw layout literals vs strings.json | — | `jui lint-strings` (also `jui build --lint-strings`) |
 | List swagger / OpenAPI files | `mcp__jui-tools__list_api_specs` | `jui ls api-specs --json` |
 | List generated DTO + Domain files (with orphan detection) | `mcp__jui-tools__list_api_models` | `jui ls api-models --json` |
 | Preview swagger filter + emit plan without writing | `mcp__jui-tools__preview_api_model_sync` | `jui g api --dry-run --json` |
@@ -32,7 +33,7 @@ JsonUI agents call the `jsonui-mcp-server` (the `jui-tools` MCP) to interact wit
 | Regenerate API mocks from swagger | `mcp__jui-tools__test_mock_generate` | `jsonui-test mock generate` |
 | Validate test files (always `no_install: true`) | `mcp__jui-tools__test_validate` | `jsonui-test validate --no-install` |
 
-Only **one** `jui` subcommand has no MCP equivalent today: `jui lint-generated`. Everything else goes through MCP.
+**Two** `jui` subcommands have no MCP equivalent today: `jui lint-generated` and `jui lint-strings` (both lint gates, Bash-invoked). Everything else goes through MCP.
 
 ---
 
@@ -125,7 +126,7 @@ The MCP server exposes eight `test_*` tools. Agent consumption is deliberate, no
 
 ## Bash tool policy
 
-Include `Bash` in the `tools:` frontmatter when the agent needs the one remaining uncovered CLI command (`jui lint-generated`, typically CI-only), or needs to run platform-specific native commands (e.g. `xcodebuild`, `./gradlew`, `npm run dev`, `git`, `rbenv` diagnostics). Every other `jui` / `jsonui-doc` operation is an MCP call — prefer that.
+Include `Bash` in the `tools:` frontmatter when the agent needs one of the two uncovered CLI commands (`jui lint-generated`, typically CI-only; `jui lint-strings`, the localize gate), or needs to run platform-specific native commands (e.g. `xcodebuild`, `./gradlew`, `npm run dev`, `git`, `rbenv` diagnostics). Every other `jui` / `jsonui-doc` operation is an MCP call — prefer that.
 
 - `ground`: needs Bash for initial platform scaffolding
 - `debug`: needs Bash for impl-side grep and CI-style checks
