@@ -65,13 +65,19 @@ jui lint-generated
 
 ---
 
-## 4. `jsonui-localize` skill **must run** before declaring a screen done
+## 4. Localization is **machine-checked** — `jui lint-strings` must be clean
 
-`jui build` does not detect hardcoded user-visible strings that should live in `strings.json`. This is the one check that has no build-time gate — so it is enforced as a process rule.
+`jui lint-strings` scans the Layout JSON (style-merged, alias-canonicalized) for user-visible string attributes whose value is a raw literal that does not resolve through `strings.json`. Exit 0 is the gate; the `jsonui-localize` skill is the **repair tool** you run when the lint reports findings.
 
-- Every screen completion must include a `jsonui-localize` pass
-- The skill scans Layout JSON + VM impl, reports unregistered strings, and registers them in `strings.json`
-- Skipping localize, even "just this once", is a gate violation
+```bash
+jui lint-strings
+# Exit 0 ← required. 2 = raw literals / stale allowlist entries
+```
+
+- Every screen completion must end with a clean `jui lint-strings` (and a `jsonui-localize` pass for the VM-side strings the layout scan cannot see)
+- Intentional non-localized literals (brand names, format scaffolding) go in `.jui-strings-allowlist.json` — one entry per (layout, path, value), **reason required**. The ledger fails in both directions: an unlisted raw literal, and a stale entry whose literal is gone
+- `jui build --lint-strings` (or `"lint": {"strings": true}` in jui.config.json) runs the same check inside the build, where findings ride the warning stream and gate via invariant 1
+- VM-side strings (error messages, alert titles) are still the `jsonui-localize` skill's territory — the lint covers the layout surface
 
 ---
 
@@ -125,7 +131,7 @@ Files at the Domain level — `Model/{Name}.swift` / `<package>/model/{Name}.kt`
 | 1 | Layout correctness | `jui build` 0 warnings | build toolchain |
 | 2 | Spec ↔ Layout alignment | `jui verify --fail-on-diff` | verify |
 | 3 | Generated file integrity | `jui lint-generated` | lint |
-| 4 | Localization complete | `jsonui-localize` skill ran | process |
+| 4 | Localization complete | `jui lint-strings` exit 0 (layout) + `jsonui-localize` pass (VM strings) | lint + process |
 | 5 | DTO files unmodified by hand | `jui lint-generated` | lint |
 | 6 | Domain scaffold preservation | `jui build` skips existing | build toolchain |
 | 7 | DTO drift detection | `jui verify --fail-on-diff` | verify |
