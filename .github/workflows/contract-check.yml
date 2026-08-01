@@ -9,3 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 scripts/contract_check.py
+      # Generated action/assertion tables in the two test skills must match
+      # the jsonui-test-runner step inventory at the pin recorded in the
+      # script (drift → fail; `--fix` regenerates).
+      - run: node scripts/gen-skill-action-tables.mjs

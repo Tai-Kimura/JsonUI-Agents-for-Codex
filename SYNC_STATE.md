@@ -6,10 +6,10 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: 93e0a6b54e225bc05ecda841d2743942586e426f
+source_commit: 9cb6e2b59d3376ade919abfb9f0a5f8487a0b6e7
 
 - **Last sync date:** 2026-08-01
-- **Source commit subject:** `docs(invariants): the localize gate is machine-checked by jui lint-strings`
+- **Source commit subject:** `feat(skills): action/assertion tables are generated from the runner schema`
 
 Run `scripts/check_sync.sh /path/to/JsonUI-Agents-for-claude` to see what has
 changed on the Claude side since the recorded commit.
@@ -22,6 +22,7 @@ changed on the Claude side since the recorded commit.
 | `.claude/jsonui-rules/<name>.md` | `rules/<name>.md` | verbatim, except two `mcp-policy.md` spots: the "Declaring MCP tools in agents" section (rewritten as Codex variant: `allowed_tools` array + `.codex/config.toml` registration) and the generated inventory block's prose/marker (frontmatter/`contract_check.sh` → `allowed_tools`/`contract_check.py`; regenerate with `scripts/contract_check.py --fix`, table rows come out identical) |
 | `.claude/jsonui-workflow.md` | `AGENTS.md` | rewritten as the Codex workflow entry (multi-agent `/agent` model); keep routing content aligned when the Claude side changes |
 | `skills/<name>/SKILL.md` (+ `examples/`) | `skills/<name>/SKILL.md` (+ `examples/`) | verbatim (skills already use `rules/...` paths and CLI names) |
+| `scripts/gen-skill-action-tables.mjs` | `scripts/gen-skill-action-tables.mjs` | verbatim (repo-root-relative by design; regenerates the marker blocks in the two test skills from the jsonui-test-runner pin recorded inside it — both CIs run it in check mode) |
 | `.claude/commands/jsonui.md` | — (covered by `AGENTS.md` + `/agent conductor`) | not mirrored |
 | `.claude/settings.json` | — | not mirrored (Claude-harness-only) |
 | `install.sh`, `installer/` | `install.sh` | independent per-repo installers; not content-synced |
