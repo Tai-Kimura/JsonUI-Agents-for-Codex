@@ -27,8 +27,12 @@ JsonUI agents call the `jsonui-mcp-server` (the `jui-tools` MCP) to interact wit
 | List swagger / OpenAPI files | `mcp__jui-tools__list_api_specs` | `jui ls api-specs --json` |
 | List generated DTO + Domain files (with orphan detection) | `mcp__jui-tools__list_api_models` | `jui ls api-models --json` |
 | Preview swagger filter + emit plan without writing | `mcp__jui-tools__preview_api_model_sync` | `jui g api --dry-run --json` |
+| Pull run artifacts (screenshots / recordings) | `mcp__jui-tools__test_artifacts_pull` | `jsonui-test artifacts pull` |
+| Show artifacts config + already-pulled files | `mcp__jui-tools__test_artifacts_status` | `jsonui-test artifacts status` |
+| Regenerate API mocks from swagger | `mcp__jui-tools__test_mock_generate` | `jsonui-test mock generate` |
+| Validate test files | — | `jsonui-test validate --no-install` (deliberate, see "Test tooling" below) |
 
-Only **one** CLI command has no MCP equivalent today: `jui lint-generated`. Everything else goes through MCP.
+Only **one** `jui` subcommand has no MCP equivalent today: `jui lint-generated`. The `jsonui-test` CLI keeps one deliberate CLI-only operation of its own: `validate` (rationale below). Everything else goes through MCP.
 
 ---
 
@@ -84,17 +88,38 @@ config_file = "agents/define.toml"
 
 ## Per-agent MCP tool inventory
 
+Generated from each agent's `allowed_tools` in `agents/*.toml` — the `allowed_tools` array is canonical. After changing an agent's tools, run `scripts/contract_check.py --fix` to refresh this table (CI fails on drift). Tool names are sorted; non-MCP tools (Read, Bash, ...) are governed by the sections below, and `debug` is READ-ONLY by contract regardless of this table.
+
+<!-- inventory:begin — generated from agent allowed_tools; edit the agent .toml, then run scripts/contract_check.py --fix -->
 | Agent | MCP tools |
 |---|---|
-| `conductor` | `get_project_config`, `list_screen_specs`, `list_layouts`, `list_component_specs`, `list_api_specs`, `list_api_models` |
-| `define` | `get_project_config`, `list_screen_specs`, `list_component_specs`, `read_spec_file`, `doc_init_spec`, `doc_init_component`, `doc_validate_spec`, `doc_validate_component`, `doc_generate_spec`, `doc_generate_component`, `doc_rules_init`, `doc_rules_show`, `jui_verify`, `lookup_component`, `lookup_attribute`, `search_components`, `list_api_specs`, `preview_api_model_sync` |
-| `ground` | `get_project_config`, `jui_init` |
-| `implement` | `get_project_config`, `list_screen_specs`, `list_layouts`, `read_spec_file`, `read_layout_file`, `jui_generate_project`, `jui_build`, `jui_verify`, `lookup_component`, `lookup_attribute`, `search_components`, `get_binding_rules`, `get_modifier_order`, `get_platform_mapping`, `list_api_specs`, `list_api_models` |
-| `navigation-ios` / `navigation-android` / `navigation-web` | `get_project_config`, `list_screen_specs`, `read_spec_file`, `read_layout_file`, `get_platform_mapping`, `get_screen_identity` |
-| `test` | `get_project_config`, `list_screen_specs`, `list_layouts`, `read_spec_file`, `read_layout_file`, `doc_generate_html`, `get_screen_identity`, `test_artifacts_pull`, `test_mock_generate` |
-| `debug` (READ-ONLY) | `get_project_config`, `list_screen_specs`, `list_layouts`, `list_component_specs`, `read_spec_file`, `read_layout_file`, `jui_verify`, `jui_build`, `doc_validate_spec`, `lookup_component`, `lookup_attribute`, `search_components`, `get_platform_mapping`, `list_api_specs`, `list_api_models`, `preview_api_model_sync` (+ `Read, Bash, Glob, Grep` for impl grep) |
+| `conductor` | `get_project_config`, `list_api_models`, `list_api_specs`, `list_component_specs`, `list_layouts`, `list_screen_specs` |
+| `debug` | `doc_validate_spec`, `get_platform_mapping`, `get_project_config`, `jui_build`, `jui_verify`, `list_api_models`, `list_api_specs`, `list_component_specs`, `list_layouts`, `list_screen_specs`, `lookup_attribute`, `lookup_component`, `preview_api_model_sync`, `read_layout_file`, `read_spec_file`, `search_components` |
+| `define` | `doc_generate_component`, `doc_generate_spec`, `doc_init_component`, `doc_init_spec`, `doc_rules_init`, `doc_rules_show`, `doc_validate_component`, `doc_validate_spec`, `get_project_config`, `jui_verify`, `list_api_specs`, `list_component_specs`, `list_screen_specs`, `lookup_attribute`, `lookup_component`, `preview_api_model_sync`, `read_spec_file`, `search_components` |
+| `ground` | `get_project_config`, `jui_build`, `jui_init` |
+| `implement` | `get_binding_rules`, `get_modifier_order`, `get_platform_mapping`, `get_project_config`, `jui_build`, `jui_generate_project`, `jui_verify`, `list_api_models`, `list_api_specs`, `list_layouts`, `list_screen_specs`, `lookup_attribute`, `lookup_component`, `read_layout_file`, `read_spec_file`, `search_components` |
+| `navigation-android` | `get_platform_mapping`, `get_project_config`, `get_screen_identity`, `jui_build`, `list_screen_specs`, `read_layout_file`, `read_spec_file` |
+| `navigation-ios` | `get_platform_mapping`, `get_project_config`, `get_screen_identity`, `jui_build`, `list_screen_specs`, `read_layout_file`, `read_spec_file` |
+| `navigation-web` | `get_platform_mapping`, `get_project_config`, `get_screen_identity`, `jui_build`, `list_screen_specs`, `read_layout_file`, `read_spec_file` |
+| `test` | `doc_generate_html`, `get_project_config`, `get_screen_identity`, `list_layouts`, `list_screen_specs`, `read_layout_file`, `read_spec_file`, `test_artifacts_pull`, `test_artifacts_status`, `test_mock_generate` |
+<!-- inventory:end -->
 
-Agents that do not appear in this table should still follow the "explicit enumeration" pattern.
+---
+
+## Test tooling: agent use of the test_* MCP tools
+
+The MCP server exposes eight `test_*` tools. Agent consumption is deliberate, not implied — a tool not listed as agent-consumed stays unused by agents until this policy changes:
+
+**Agent-consumed** (declared by `test`):
+
+- `test_artifacts_pull` / `test_artifacts_status` — collect and inspect run artifacts
+- `test_mock_generate` — regenerate `generated/` mocks from the swagger
+
+**Deliberately not agent-consumed:**
+
+- `test_validate` — the MCP wrapper does not expose `--no-install`, and `jsonui-test validate` installs tests as a side effect by default. Agents must control that side effect, so the `test` agent runs `jsonui-test validate --no-install` via Bash instead.
+- `test_generate_screen` / `test_generate_flow` / `test_generate_description` — template scaffolders for humans working without the pack. Agents author complete files via the `jsonui-screen-test` / `jsonui-flow-test` / `jsonui-test-doc` skills; a skeleton adds nothing.
+- `test_report` — converts run results to JUnit / HTML. That is a runner / CI stage after execution, outside agent authoring scope.
 
 ---
 
@@ -105,8 +130,10 @@ Include `Bash` in the `tools:` frontmatter when the agent needs the one remainin
 - `ground`: needs Bash for initial platform scaffolding
 - `debug`: needs Bash for impl-side grep and CI-style checks
 - `navigation-*`: may need Bash for platform-native build verification
+- `implement`: may need Bash for platform-native runs alongside the MCP build gate
+- `test`: needs Bash for `jsonui-test validate --no-install` (the deliberate CLI-only operation above) and for running platform test suites
 
-All other agents should not declare Bash.
+`conductor` and `define` stay Bash-free.
 
 ---
 

@@ -8,19 +8,19 @@ You are an expert in creating comprehensive test documentation for JsonUI test f
 
 ## Your Role
 
-After test files are created by `jsonui-test-implement`, you add detailed documentation by:
+After test files are created by `jsonui-screen-test` / `jsonui-flow-test`, you add detailed documentation by:
 1. Creating description JSON files for each test case
 2. Linking descriptions to test files via `descriptionFile`
 3. Generating HTML documentation for all tests
 
-**You do NOT create test files** - use `jsonui-test-implement` for that.
+**You do NOT create test files** - use `jsonui-screen-test` / `jsonui-flow-test` for that.
 
 ## Workflow
 
 ### Standard Documentation Workflow
 
 ```
-1. jsonui-test-implement creates test.json
+1. jsonui-screen-test / jsonui-flow-test creates test.json
           ↓
 2. jsonui-test-doc creates descriptions
           ↓
@@ -215,7 +215,7 @@ docs/html/
 
 ### Step 1: After test implementation
 
-Assuming `jsonui-test-implement` created:
+Assuming `jsonui-screen-test` created:
 ```
 tests/screens/login/login.test.json
 ```
