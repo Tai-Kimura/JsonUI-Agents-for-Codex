@@ -499,7 +499,7 @@ remains the `jsonui-test validate` reference.
 ### Actions
 
 <!-- generated:actions -->
-_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/43046c737adbe1511e7aa2e7aee029ac80847534/schemas/actions.schema.json) @ jsonui-test-runner `43046c7` (28 actions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
+_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.10.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.10.0` (28 actions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
 
 | Action | 説明 | Required | Optional | Platform notes |
 |---|---|---|---|---|
@@ -538,7 +538,7 @@ _Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/js
 ### Assertions
 
 <!-- generated:assertions -->
-_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/43046c737adbe1511e7aa2e7aee029ac80847534/schemas/actions.schema.json) @ jsonui-test-runner `43046c7` (10 assertions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
+_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.10.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.10.0` (10 assertions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
 
 | Assertion | 説明 | Required | Optional | Platform notes |
 |---|---|---|---|---|

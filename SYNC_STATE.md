@@ -6,9 +6,9 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: 9cb6e2b59d3376ade919abfb9f0a5f8487a0b6e7
+source_commit: b3b9b4c17bdab714f8349a49561dd2b2c5f93cc5
 
-- **Last sync date:** 2026-08-01
+- **Last sync date:** 2026-08-02
 - **Source commit subject:** `feat(skills): action/assertion tables are generated from the runner schema`
 
 Run `scripts/check_sync.sh /path/to/JsonUI-Agents-for-claude` to see what has
@@ -49,7 +49,7 @@ Consumer-project identifiers are genericized in this repo. Current list
 
 | File | Claude source | This repo |
 |---|---|---|
-| `rules/specification-rules.md` | `BarCellView`, `bars_collection`, `bar_cell_root`, `itemName`/`unitPrice` (domain-flavored source names) (+ JP labels), `bar_list/bar_cell` | `ItemCellView`, `items_collection`, `item_cell_root`, `itemName`/`unitPrice`, `item_list/item_cell` |
+| `rules/specification-rules.md` | `jsonui-implement` (Claude agent name in the dataFlow prose) | `/agent implement` (Codex invocation; the consumer-flavored examples were genericized on the Claude side too in b3b9b4c — vocabulary now matches verbatim) |
 | `rules/file-locations.md` | consumer FQN example / `BarLegacy*` | `com.example.myapp.model` / `ItemLegacy*` (upstream genericized the FQN to `com.example.app.model` in 7db7a9e — spelling-only difference) |
 | `skills/jsonui-layout/examples/strings-json.json` | domain-flavored sample string | neutral wording |
 | `agents/implement.toml` | domain-flavored Domain accessor example (`displayAbv`/`abv`) | `displayRating`/`rating` |

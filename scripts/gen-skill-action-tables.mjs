@@ -35,7 +35,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const PIN = "43046c737adbe1511e7aa2e7aee029ac80847534"; // jsonui-test-runner main, 28 actions + 10 assertions
+const PIN = "v1.10.0"; // jsonui-test-runner release tag (drivers web 1.8.2 / android 1.8.3 / ios 1.9.2), 28 actions + 10 assertions
 const REPO = "Tai-Kimura/jsonui-test-runner";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
