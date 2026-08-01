@@ -17,6 +17,7 @@ allowed_tools = [
   "mcp__jui-tools__read_layout_file",
   "mcp__jui-tools__doc_generate_html",
   "mcp__jui-tools__test_artifacts_pull",
+  "mcp__jui-tools__test_artifacts_status",
   "mcp__jui-tools__test_mock_generate",
 ]
 
@@ -197,8 +198,9 @@ iOS xcresult, the Android device, and the web Playwright output into the
 returns absolute file paths — use it when the user asks to see failure evidence.
 Web recording/browser selection is Playwright-native: `use: { video: 'on' }` +
 `projects` in playwright.config, and pass `screenshotDir: testInfo.outputDir` to the
-runner so driver PNGs land next to the video. `jsonui-test artifacts status` shows
-the resolved config; `mock serve --artifacts` auto-pulls after each run target.
+runner so driver PNGs land next to the video. `jsonui-test artifacts status` (or
+the `test_artifacts_status` MCP tool) shows the resolved config and what has
+already been pulled; `mock serve --artifacts` auto-pulls after each run target.
 
 ### A4b. API mocks (only when the screen calls an API)
 

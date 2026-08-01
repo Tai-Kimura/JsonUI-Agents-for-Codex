@@ -11,6 +11,7 @@ allowed_tools = [
   "Bash",
   "mcp__jui-tools__get_project_config",
   "mcp__jui-tools__jui_init",
+  "mcp__jui-tools__jui_build",
 ]
 
 developer_instructions = '''

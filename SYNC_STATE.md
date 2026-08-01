@@ -6,10 +6,10 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: 16125c7c90e581ff3701deee2b4ccf9cbc031661
+source_commit: 6bde41152071dfa92234cfd559cdd7cf246acc55
 
 - **Last sync date:** 2026-08-01
-- **Source commit subject:** `fix(navigation agents): declare get_screen_identity the body already instructs`
+- **Source commit subject:** `feat(install): fetch the pack as one tarball, enumerate contents from disk`
 
 Run `scripts/check_sync.sh /path/to/JsonUI-Agents-for-claude` to see what has
 changed on the Claude side since the recorded commit.
@@ -19,7 +19,7 @@ changed on the Claude side since the recorded commit.
 | Claude (source of truth) | Codex (this repo) | Transform |
 |---|---|---|
 | `.claude/agents/jsonui-<name>.md` | `agents/<name>.toml` | YAML frontmatter → TOML shell (`allowed_tools`, `model_reasoning_effort`, `sandbox_mode`); markdown body → `developer_instructions = '''...'''` with reference adaptations (below) |
-| `.claude/jsonui-rules/<name>.md` | `rules/<name>.md` | verbatim, except `mcp-policy.md` "Declaring MCP tools in agents" section (rewritten as Codex variant: `allowed_tools` array + `.codex/config.toml` registration) |
+| `.claude/jsonui-rules/<name>.md` | `rules/<name>.md` | verbatim, except two `mcp-policy.md` spots: the "Declaring MCP tools in agents" section (rewritten as Codex variant: `allowed_tools` array + `.codex/config.toml` registration) and the generated inventory block's prose/marker (frontmatter/`contract_check.sh` → `allowed_tools`/`contract_check.py`; regenerate with `scripts/contract_check.py --fix`, table rows come out identical) |
 | `.claude/jsonui-workflow.md` | `AGENTS.md` | rewritten as the Codex workflow entry (multi-agent `/agent` model); keep routing content aligned when the Claude side changes |
 | `skills/<name>/SKILL.md` (+ `examples/`) | `skills/<name>/SKILL.md` (+ `examples/`) | verbatim (skills already use `rules/...` paths and CLI names) |
 | `.claude/commands/jsonui.md` | — (covered by `AGENTS.md` + `/agent conductor`) | not mirrored |
@@ -57,7 +57,7 @@ Consumer-project identifiers are genericized in this repo. Current list
 | `agents/debug.toml` / `agents/define.toml` | "bar search" example / `"bar_list"` layoutFile example | "product search" / `"item_list"` |
 | `rules/specification-rules.md` (5) | markdown link into JsonUIDocument's `.claude/` path | plain-prose reference |
 | `rules/specification-rules.md` HARD RULE | `jsonui-implement` agent ref | `/agent implement` |
-| `rules/mcp-policy.md` | Claude frontmatter example in "Declaring MCP tools in agents" | Codex-variant section (structural, per mapping table) |
+| `rules/mcp-policy.md` | Claude frontmatter example in "Declaring MCP tools in agents"; inventory prose/marker names frontmatter + `contract_check.sh` | Codex-variant section; inventory prose/marker names `allowed_tools` + `contract_check.py` (structural, per mapping table) |
 
 When the Claude side genericizes these itself, drop the corresponding row.
 
@@ -65,11 +65,15 @@ When the Claude side genericizes these itself, drop the corresponding row.
 
 1. `scripts/check_sync.sh <claude-checkout>` → list of changed source files.
 2. For skills: copy changed files verbatim (re-apply any divergence rows above).
-3. For rules: copy verbatim except the `mcp-policy.md` Codex-variant section.
+3. For rules: copy verbatim except the two `mcp-policy.md` spots above; after
+   copying it, re-run `scripts/contract_check.py --fix` so the inventory block
+   carries this repo's marker and matches `allowed_tools`.
 4. For agents: apply the Claude commit diff hunk-by-hunk onto the matching
    `agents/<name>.toml` `developer_instructions`, applying the reference
    adaptations table; mirror `tools:` frontmatter changes into `allowed_tools`.
 5. Gates before committing:
+   - `python3 scripts/contract_check.py` → OK (tool declarations, name
+     resolution, example existence, inventory table)
    - `python3 -c 'import tomllib,glob; [tomllib.load(open(f,"rb")) for f in glob.glob("agents/*.toml")]'`
    - `grep -rn '\.claude/' agents/ rules/ skills/ AGENTS.md` → must be empty
    - grep for downstream identifiers (project names and product-domain nouns —

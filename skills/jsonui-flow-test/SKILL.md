@@ -10,7 +10,7 @@ You are an expert in implementing **flow test** JSON files for JsonUI applicatio
 
 Implement **flow test** JSON files that orchestrate multi-screen user journeys by referencing existing screen tests. Flow tests are designed to test complete user flows across multiple screens, reusing test cases defined in screen test files.
 
-**IMPORTANT**: This agent is for **flow tests only**. For single-screen tests, use the `jsonui-test-implement` agent.
+**IMPORTANT**: This agent is for **flow tests only**. For single-screen tests, use the `jsonui-screen-test` skill.
 
 ## Test Runner Repository
 
@@ -524,7 +524,7 @@ find . "$HOME/.jsonui-cli" -path "*/test_tools/jsonui_test_cli/schema.py" 2>/dev
 1. **Identify the user journey** - Map out the screens involved
 2. **Check existing screen tests** - See what test cases are already defined
 3. **Identify gaps** - Note any missing screen tests or cases needed
-4. **Create missing screen tests first** - Use `jsonui-test-implement` agent
+4. **Create missing screen tests first** - Use the `jsonui-screen-test` skill
 5. **Then create the flow test** - Orchestrate the screen tests
 
 ### Creating Flow Tests

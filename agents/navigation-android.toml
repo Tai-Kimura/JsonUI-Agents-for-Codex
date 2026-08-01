@@ -15,6 +15,7 @@ allowed_tools = [
   "mcp__jui-tools__read_spec_file",
   "mcp__jui-tools__read_layout_file",
   "mcp__jui-tools__get_platform_mapping",
+  "mcp__jui-tools__jui_build",
 ]
 
 developer_instructions = '''
@@ -200,7 +201,7 @@ Do NOT add new public members without going through `/agent define`.
 
 ### 6. Verify
 
-Ask `/agent implement` (or user) to re-run:
+Re-run the build gate yourself (or ask `/agent implement` / the user to):
 
 ```
 mcp__jui-tools__jui_build
