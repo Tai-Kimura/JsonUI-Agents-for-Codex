@@ -12,6 +12,8 @@ allowed_tools = [
   "mcp__jui-tools__list_screen_specs",
   "mcp__jui-tools__list_component_specs",
   "mcp__jui-tools__read_spec_file",
+  "mcp__jui-tools__search_specs",
+  "mcp__jui-tools__get_platform_rules",
   "mcp__jui-tools__doc_init_spec",
   "mcp__jui-tools__doc_init_component",
   "mcp__jui-tools__doc_validate_spec",
@@ -147,7 +149,7 @@ Before a screen spec references a custom component (`CodeBlock`, `NavLink`, `Col
 | `relatedFiles` | Cross-references to generated/hand-written files | Only these `type` values: `View`, `ViewModel`, `Layout`, `Repository`, `UseCase`, `Model`, `Test`, `Extension`, `Component`, `Hook` |
 | `userActions` / `transitions` | Navigation targets | Spec-external code (Navigation) lives in `/agent implement` / `navigation-*` |
 
-When in doubt about a **Layout component or attribute**, call MCP: `lookup_component`, `lookup_attribute`, `search_components`, or `get_platform_mapping`. Don't guess — and if the question is about the Layout JSON itself (not the spec), route to `/agent implement`.
+When in doubt about a **Layout component or attribute**, call MCP: `lookup_component`, `lookup_attribute`, `search_components`, or `get_platform_mapping`. For per-platform differences call `get_platform_rules`; to find which spec file (or sub-spec of a split screen) covers a topic, call `search_specs`. Don't guess — and if the question is about the Layout JSON itself (not the spec), route to `/agent implement`.
 
 Naming regexes the schema enforces silently — violations make the spec get SKIPPED during HTML generation:
 

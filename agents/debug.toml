@@ -12,6 +12,8 @@ allowed_tools = [
   "mcp__jui-tools__list_layouts",
   "mcp__jui-tools__list_component_specs",
   "mcp__jui-tools__read_spec_file",
+  "mcp__jui-tools__search_specs",
+  "mcp__jui-tools__get_platform_rules",
   "mcp__jui-tools__read_layout_file",
   "mcp__jui-tools__jui_verify",
   "mcp__jui-tools__jui_build",
@@ -233,6 +235,8 @@ When the user's investigation involves "what does this Layout attribute do?" or 
 - `mcp__jui-tools__lookup_attribute` with the attribute name
 - `mcp__jui-tools__search_components` for keyword search
 - `mcp__jui-tools__get_platform_mapping` for cross-platform value conversion
+- `mcp__jui-tools__get_platform_rules` for per-platform overrides (node `platform` directive) when a symptom is platform-specific
+- `mcp__jui-tools__search_specs` to locate which spec (or sub-spec of a split screen) owns a topic
 
 Quote the relevant parts in the report.
 

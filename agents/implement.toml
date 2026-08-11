@@ -13,6 +13,8 @@ allowed_tools = [
   "mcp__jui-tools__list_screen_specs",
   "mcp__jui-tools__list_layouts",
   "mcp__jui-tools__read_spec_file",
+  "mcp__jui-tools__search_specs",
+  "mcp__jui-tools__get_platform_rules",
   "mcp__jui-tools__read_layout_file",
   "mcp__jui-tools__jui_generate_project",
   "mcp__jui-tools__jui_build",
@@ -116,6 +118,8 @@ Use MCP for authoritative references instead of guessing:
 - `get_binding_rules` — `@{...}` syntax rules (two-way vs read-only)
 - `get_modifier_order` — platform-specific modifier order (critical for rendering)
 - `get_platform_mapping` — cross-platform value conversion (e.g. `matchParent` → `"1fr"` on Web)
+- `get_platform_rules` — per-platform styling/visibility: the node-level `platform` directive (e.g. change `fontColor` on iOS only), root `platforms` whitelist, vs `responsive`
+- `search_specs` — keyword search across ALL spec files (including a split screen's sub-specs) to find which spec covers a topic
 
 #### Extracting styles
 
