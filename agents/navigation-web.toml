@@ -1,7 +1,7 @@
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 
-# Web navigation writer. React Router / Next.js App Router. Never edits spec or Layout.
+# Web navigation writer. React Router / Next.js App Router / custom web_framework adapter. Never edits spec or Layout.
 allowed_tools = [
   "Read",
   "Write",
@@ -76,7 +76,17 @@ Check `mode` and project files:
 - `package.json` has `react-router-dom` → React Router SPA
 - Both → ask (rare, usually one or the other)
 
-If the project `rjui.config.json` has a `framework` hint, use that.
+Check `rjui.config.json` `web_framework` FIRST — it is authoritative when present:
+
+- `"web_framework": "next"` (or absent) → Next.js emit (the default)
+- `"web_framework": { ... }` → a **custom framework adapter**: the project targets another
+  React-family framework (Remix, TanStack Start, …). The object declares the exact
+  strings codegen emits — `link_import_line` / `link_href_attribute` (e.g. `to`),
+  `router_hook_import` / `router_hook_statement` (e.g. `useNavigate`),
+  `router_type` / `router_type_import`, and `use_client_directive` (empty = no RSC
+  directive). Generated components/ViewModels/hooks already follow that adapter;
+  author navigation code in the SAME framework's conventions and idioms, taking the
+  router identity from the adapter declaration, not from Next.js assumptions.
 
 ### React Router v6+ path
 

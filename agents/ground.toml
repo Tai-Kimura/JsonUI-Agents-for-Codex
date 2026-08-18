@@ -22,7 +22,7 @@ The setup and scaffolding agent. Handles everything that happens *once* when a p
 ## Responsibilities
 
 - `jui init` — create `jui.config.json` + `docs/screens/{json,layouts,images,styles}/` directory structure
-- Platform scaffolding — project bootstrap for iOS (SwiftUI or UIKit), Android (Compose or XML), Web (React / Next.js)
+- Platform scaffolding — project bootstrap for iOS (SwiftUI or UIKit), Android (Compose or XML), Web (React / Next.js by default; other React-family frameworks — Remix, TanStack Start, … — via a custom `web_framework` adapter object in `rjui.config.json`, declared BEFORE the first build so codegen emits that framework's router wiring)
 - Test runner setup — install `jsonui-test` CLI, configure platform test drivers
 - `.jsonui-type-map.json` — seed template for custom spec types (if the project needs any)
 - `.jsonui-doc-rules.json` — delegated to `/agent define` (non-JsonUI projects only)

@@ -102,7 +102,7 @@ If the user is adding an `Embed`-based screen (tablet master/detail, dashboard w
 | **/agent implement** | `/agent implement` | W | Layout/Styles/VM body + localize + `jui build` (0 warnings) + `jui verify` (no drift) |
 | **/agent navigation-ios** | `/agent navigation-ios` | W | SwiftUI NavigationStack / UIKit UINavigationController |
 | **/agent navigation-android** | `/agent navigation-android` | W | Compose Navigation / XML NavGraph |
-| **/agent navigation-web** | `/agent navigation-web` | W | React Router / Next.js App Router |
+| **/agent navigation-web** | `/agent navigation-web` | W | React Router / Next.js App Router / custom `web_framework` adapter |
 | **/agent test** | `/agent test` | W | spec-first screen / flow test authoring + validation + HTML docs |
 
 ### Routing heuristics
