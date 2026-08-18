@@ -1,6 +1,6 @@
 ---
 name: jsonui-platform-setup
-description: Unified platform setup skill. Handles iOS (SwiftUI / UIKit), Android (Compose / XML), Web (React / Next.js), and test runner setup (XCUITest / UIAutomator / Playwright) via mode argument. Invoked by the `ground` agent.
+description: Unified platform setup skill. Handles iOS (SwiftUI / UIKit), Android (Compose / XML), Web (React / Next.js, or any React-family framework via the rjui.config.json web_framework adapter), and test runner setup (XCUITest / UIAutomator / Playwright) via mode argument. Invoked by the `ground` agent.
 tools: Read, Write, Bash, Glob, Grep
 ---
 
