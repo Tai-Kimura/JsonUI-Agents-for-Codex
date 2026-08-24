@@ -32,6 +32,26 @@ Agents have been caught shipping specs with empty or missing `dataFlow` on scree
 
 **Pure-static display is the one exception.** Even then, write `viewModel: { methods: [], vars: [] }` explicitly — don't omit `dataFlow`.
 
+### `endpoint` is checked against the API document — spell it the canonical way
+
+`repositories[*].methods[*].endpoint` is `"<VERB> <path>"`, and `doc_validate_spec`
+compares it with the OpenAPI documents under `api_directory`. Copy the path from
+the API document rather than typing what the route "should" be: the check warns on
+a path that appears nowhere, on a verb the document does not declare for that path,
+and on **parameter names that differ** (`/api/bars/{barUuid}` against a document
+that says `{bar_uuid}`). Warnings do not fail validation, but each one is a spec
+that has drifted from the API it claims to call — and the same declaration is what
+`test_generate_branch_tests` binds mock scenarios through, so a drifted spelling
+becomes a hard error the moment anyone generates branch tests.
+
+A non-HTTP verb (`WS`, a realtime-database read, a GraphQL operation) is legal here
+and simply not checked — the OpenAPI documents do not describe those transports.
+
+**Declare `params` on a method whose arguments a contract will pin.** `arg.<name>`
+in `branchContracts` binds to `methods[].params`, and nowhere else:
+`stateManagement.eventHandlers` is View-layer by design and carries no signature,
+so a handler-only method cannot take contracted arguments.
+
 **Do not guess method / var / repo names from the screen description alone.** They become part of the generated Protocol that every platform must implement, and renaming is a breaking change. If the user didn't volunteer the detail, ASK with the template in `rules/specification-rules.md` → "How to ask the user when they didn't volunteer this info".
 
 ---

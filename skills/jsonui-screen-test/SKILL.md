@@ -28,6 +28,39 @@ Implement **screen test** JSON files that can be run by `jsonui-test-runner` to 
 
 **IMPORTANT**: This skill is for **screen tests only**. For multi-screen flow tests, use the `jsonui-flow-test` skill.
 
+### Screen tests are not the only kind — check which one the user needs
+
+A screen test drives the built app through the runner and asserts what is on
+screen. It is the wrong tool for "make sure the 402 response shows the
+server's message and does not navigate": that is a **branch test**, generated
+rather than authored.
+
+| The user wants to pin… | Use |
+|---|---|
+| what the screen looks like and how it responds to taps | this skill |
+| a journey across screens | `jsonui-flow-test` |
+| **what a ViewModel method does per branch — which API was called, what state resulted, whether it navigated** | **branch tests**, below |
+
+**Branch tests** come from a spec's `branchContracts` section, via
+`test_generate_branch_tests` (`platform: web | android | ios`). One
+declaration produces vitest, Kotlin JUnit4 + Robolectric, and Swift XCTest,
+and **only the HTTP boundary is mocked** — the ViewModel, UseCase, Repository
+and response decoding all run for real, so they catch the class of defect
+where a 2xx arrives but its body is mapped wrong.
+
+- The spec must already declare `branchContracts` — a screen without it is an
+  **error**, not a no-op. Authoring the declaration is `jsonui-screen-spec`'s job;
+  send the user there first.
+- The generated test file and its runtime are `@generated`. The **harness** is
+  written once as a skeleton and then belongs to the project: it is where
+  reading and writing VM state, invoking the method, and resolving `@key`
+  strings are wired up. Edit that, never the generated file.
+- Android needs `package`, iOS needs `module` (the `@testable import` target).
+- A generated test is only worth its green: **break the line it claims to pin
+  and confirm that branch — and only that branch — goes red.** If it stays
+  green, the probe missed the observation surface the contract actually reads;
+  vary the depth of the mutation rather than assuming the test is fine.
+
 ## Test Runner Repository
 
 - **GitHub**: https://github.com/Tai-Kimura/jsonui-test-runner

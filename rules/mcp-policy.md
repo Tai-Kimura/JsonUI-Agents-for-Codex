@@ -32,8 +32,9 @@ JsonUI agents call the `jsonui-mcp-server` (the `jui-tools` MCP) to interact wit
 | Show artifacts config + already-pulled files | `mcp__jui-tools__test_artifacts_status` | `jsonui-test artifacts status` |
 | Regenerate API mocks from swagger | `mcp__jui-tools__test_mock_generate` | `jsonui-test mock generate` |
 | Validate test files (always `no_install: true`) | `mcp__jui-tools__test_validate` | `jsonui-test validate --no-install` |
+| Generate branch tests from a spec's branchContracts | `mcp__jui-tools__test_generate_branch_tests` | `jsonui-test generate branch-tests` |
 
-**Two** `jui` subcommands have no MCP equivalent today: `jui lint-generated` and `jui lint-strings` (both lint gates, Bash-invoked). Everything else goes through MCP.
+**Two** `jui` subcommands have no MCP equivalent today: `jui lint-generated` and `jui lint-strings` (both lint gates, Bash-invoked). Everything else goes through MCP — including every `jsonui-test` operation an agent performs.
 
 ---
 
@@ -102,7 +103,7 @@ Generated from each agent's `allowed_tools` in `agents/*.toml` — the `allowed_
 | `navigation-android` | `get_platform_mapping`, `get_project_config`, `get_screen_identity`, `jui_build`, `list_screen_specs`, `read_layout_file`, `read_spec_file` |
 | `navigation-ios` | `get_platform_mapping`, `get_project_config`, `get_screen_identity`, `jui_build`, `list_screen_specs`, `read_layout_file`, `read_spec_file` |
 | `navigation-web` | `get_platform_mapping`, `get_project_config`, `get_screen_identity`, `jui_build`, `list_screen_specs`, `read_layout_file`, `read_spec_file` |
-| `test` | `doc_generate_html`, `get_project_config`, `get_screen_identity`, `list_layouts`, `list_screen_specs`, `read_layout_file`, `read_spec_file`, `search_specs`, `test_artifacts_pull`, `test_artifacts_status`, `test_mock_generate`, `test_validate` |
+| `test` | `doc_generate_html`, `get_project_config`, `get_screen_identity`, `list_layouts`, `list_screen_specs`, `read_layout_file`, `read_spec_file`, `search_specs`, `test_artifacts_pull`, `test_artifacts_status`, `test_generate_branch_tests`, `test_mock_generate`, `test_validate` |
 <!-- inventory:end -->
 
 ---
@@ -119,7 +120,7 @@ The MCP server exposes eight `test_*` tools. Agent consumption is deliberate, no
 
 **Deliberately not agent-consumed:**
 
-- `test_generate_screen` / `test_generate_flow` / `test_generate_description` — template scaffolders for humans working without the pack. Agents author complete files via the `jsonui-screen-test` / `jsonui-flow-test` / `jsonui-test-doc` skills; a skeleton adds nothing.
+- `test_generate_screen` / `test_generate_flow` / `test_generate_description` — template scaffolders for humans working without the pack. Agents author complete files via the `jsonui-screen-test` / `jsonui-flow-test` / `jsonui-test-doc` skills; a skeleton adds nothing. `test_generate_branch_tests` is **not** in this group: branch tests are generated output, never authored, so the agent that needs them calls the tool.
 - `test_report` — converts run results to JUnit / HTML. That is a runner / CI stage after execution, outside agent authoring scope.
 
 ---
