@@ -339,6 +339,70 @@ Files created:
 - {project_directory}/docs/screens/html/{screen_name}.html
 ```
 
+## Optional: `branchContracts` — declare the branches, get the tests
+
+A spec may carry a `branchContracts` section: a decision table per ViewModel
+method, from which `test_generate_branch_tests` generates real unit tests for
+web, Android and iOS **from the one declaration**. It is entirely opt-in —
+a spec without the section behaves exactly as before — so **do not add it
+unprompted**. Offer it when the user describes a screen whose error handling,
+optimistic updates, or state transitions matter, and write it only for
+branches they can state as fact.
+
+```jsonc
+"branchContracts": {
+  "conditions": {                       // named predicates, optional
+    "needsPayment": {
+      "meaning": "an amount is due now",
+      "witness_true":  { "payNowAmount": 1000 },   // state that makes it hold
+      "witness_false": { "payNowAmount": 0 }
+    }
+  },
+  "methods": {
+    "onConfirmTap": {
+      "baseline": { "isAgreed": true },  // arranged before every branch
+      "branches": [
+        { "when": { "data.isAgreed": false }, "then": { "api": "none" } },
+        { "when": { "api.createOrder": "declined" },
+          "then": { "data.errorMessage": "@response.error.message" } },
+        { "when": { "cond": "needsPayment" },
+          "then": { "transition": "payment" } },
+        { "note": "3DS polling is out of scope" }   // escape hatch
+      ]
+    }
+  }
+}
+```
+
+**`when`** — `data.<field>` (a declared UI variable / VM var / state),
+`arg.<name>` (**must be a declared param of that method** —
+`stateManagement.eventHandlers` carries no signature), `api.<op>` (the name of
+a mock scenario), or `cond` (a named condition, `!` to negate).
+
+**`then`** — a literal, `transition`, `api: "none"` (no declared route was
+called), `api.<op>: "called" | "not-called"`, `api.<op>.request` (partial match
+of what was sent), or one of three `@` references:
+
+| Reference | Means | Resolved by |
+|---|---|---|
+| `@some_strings_key` | text the project's strings table owns | the test harness |
+| `@data.<field>` | the field's value **before** the call | captured at arrange time |
+| `@response.<path>` | the value the server sent in this branch's scenario | read out of the mock at generation time |
+
+**`note`** is the honest escape hatch for a branch that cannot be stated —
+it stays visible and counted in the generated decision table. Prefer a note
+over a contract you are guessing at.
+
+**Scope the claim to what is invariant.** A branch that only holds because
+some unrelated axis (a plan tier, a locale, a clock) happens to have one
+value pins that axis too, and goes red later for a reason that is not a
+regression. If you cannot say "this holds however that other thing changes",
+declare the weaker fact that does.
+
+`doc_validate_spec` lints the whole vocabulary — unknown keys, ghost
+conditions, unbindable arguments, and witnesses nothing gates on are errors
+or warnings there, before anyone generates a test.
+
 ## Important Rules
 
 - **Use `jsonui-doc init spec` to create files** - Never create files manually

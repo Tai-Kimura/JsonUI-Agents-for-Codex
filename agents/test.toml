@@ -19,6 +19,7 @@ allowed_tools = [
   "mcp__jui-tools__doc_generate_html",
   "mcp__jui-tools__test_artifacts_pull",
   "mcp__jui-tools__test_artifacts_status",
+  "mcp__jui-tools__test_generate_branch_tests",
   "mcp__jui-tools__test_mock_generate",
   "mcp__jui-tools__test_validate",
 ]
@@ -88,11 +89,19 @@ Which kind of test?
 
 1. **Screen test** — one screen: functionality, rendering, interactions
 2. **Flow test** — multi-screen user journey (e.g. login → home → checkout)
-3. **Test documentation** — add description JSON + HTML docs to existing tests
-4. **Test validation** — check whether existing tests pass the CLI schema
+3. **Branch test** — what a ViewModel method does per branch (which API was
+   called, what state resulted, whether it navigated), generated from the
+   spec's branchContracts
+4. **Test documentation** — add description JSON + HTML docs to existing tests
+5. **Test validation** — check whether existing tests pass the CLI schema
 ```
 
 If the user says something like "write tests for screen X", skip the question.
+
+**Watch for requests that are really branch tests.** "Make sure the 402 shows
+the server's message and does not navigate", "prove the rollback happens when
+the save fails", "check the error branches" — those pin ViewModel behaviour,
+not what is on screen, and a screen test is the wrong instrument for them.
 
 ---
 
@@ -319,6 +328,63 @@ tests/flows/{flow}.test.json
 
 mcp__jui-tools__test_validate with files: ["tests/flows/{flow}.test.json"], no_install: true
 ```
+
+---
+
+## Flow B2: Branch test (generated, not authored)
+
+Branch tests come out of the spec's `branchContracts` decision table. You do
+not write the assertions — you generate them, then make sure the harness the
+project owns is wired and that a green result means something.
+
+### B2.1 Confirm the declaration exists
+
+```
+mcp__jui-tools__read_spec_file with file: "{screen}.spec.json"
+```
+
+No `branchContracts` section → **stop and route to `/agent define`**. The
+generator errors on such a screen rather than producing an empty suite, and
+authoring the decision table is spec work. Do not invent one here.
+
+### B2.2 Generate
+
+```
+mcp__jui-tools__test_generate_branch_tests with screen: "{screen}", platform: "web"
+mcp__jui-tools__test_generate_branch_tests with screen: "{screen}", platform: "android", package: "com.example.app"
+mcp__jui-tools__test_generate_branch_tests with screen: "{screen}", platform: "ios", module: "AppModule"
+```
+
+Generate for the platforms the project actually has. Only the HTTP boundary
+is mocked, so the ViewModel, UseCase, Repository and decoding all run for
+real — which is why these catch "the response arrived but was mapped wrong",
+a class screen tests cannot see.
+
+An error here is usually a declaration that cannot be bound, and the message
+names the fix: a scenario the mock file does not define, an `arg.<name>` the
+method does not declare as a param, a `@response.<path>` absent from the
+scenario body. Those belong back in the spec — route to `/agent define`.
+
+### B2.3 Wire the harness (once per screen)
+
+The generated test + runtime are `@generated`. The **harness** is written
+once as a skeleton and is then the project's: it wires reading and writing VM
+state, invoking the method, expecting transitions, and resolving `@key`
+strings. Fill in its typed switches — and keep them **closed**, failing loudly
+on an unknown name. A lenient default (`?? "open"`) turns a dropped value into
+a passing test of the wrong case.
+
+### B2.4 Prove the tests can fail
+
+Green on first run is not evidence. Break the implementation line the branch
+claims to pin and confirm **that branch, and only that branch, goes red**;
+then restore it. If it stays green, the mutation missed the surface the
+contract observes — mutate deeper (at the mapping stage rather than the
+surface value) rather than concluding the test is fine.
+
+Report which branches you verified this way. Running the tests themselves is
+the user's job (`npm run test:unit`, `./gradlew test`, `xcodebuild test`) —
+same boundary as the runner-based flows above.
 
 ---
 

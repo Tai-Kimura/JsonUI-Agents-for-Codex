@@ -167,10 +167,26 @@ viewModel.updateData(mapOf("errorMessage" to context.getString(R.string.screen_n
 3. Verify all string references resolve correctly
 4. **The completion gate is `jui lint-strings` — exit 0 required.** It
    machine-checks the layout surface (raw literals that don't resolve via
-   `strings.json`); this skill is the repair tool for its findings, and
-   VM-side strings remain this skill's territory that the lint cannot see.
+   `strings.json`); this skill is the repair tool for its findings.
    Intentional non-localized literals go in `.jui-strings-allowlist.json`
    with a reason (see `rules/invariants.md` invariant 4).
+5. **`jui lint-strings --usage` additionally checks the VM surface**, and is
+   worth running on any screen this skill touched. It reads references on
+   every declared platform — web `StringManager` props, iOS
+   `StringManager` accessors / `"key".localized()` / `NSLocalizedString` /
+   `String(localized:)`, Android `R.string` — plus a spec's
+   `branchContracts` `@key` expectations, and reports three directions:
+
+   | Finding | Meaning |
+   |---|---|
+   | `missing-key` | a reference resolving in neither `strings.json` nor the platform's own catalogs (`Localizable.strings` / `.xcstrings` / `.stringsdict`) — **the raw key reaches the screen** |
+   | `unused-key` | a table entry no face references |
+   | `dynamic-ref` | a lookup whose key is not a literal and whose statement names no `*_STRING_KEYS` map — the closure that makes the other two trustworthy |
+
+   It is opt-in per run (or per project via `lint.stringsUsage`). What it
+   does **not** see is a literal that was never routed through the table at
+   all — a hardcoded display string in VM source is still this skill's
+   territory to find by reading.
 
 ## Platform-Specific String Resolution
 

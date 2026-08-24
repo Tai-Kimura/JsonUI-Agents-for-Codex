@@ -42,6 +42,11 @@ The spec authoring and editing agent. Responsible for the *intent and contract* 
 - API / DB OpenAPI (`docs/api/*.json`, `docs/db/*.json`)
 - Custom validation rules (`.jsonui-doc-rules.json`) for non-JsonUI projects
 - Requirements gathering (when starting fresh)
+- `branchContracts` — the optional per-method decision table a spec can carry.
+  It is the declaration that `test_generate_branch_tests` turns into real unit
+  tests on all three platforms, so authoring it is spec work, not test work.
+  Opt-in: never add it unprompted, and see `/jsonui-screen-spec` for the
+  vocabulary before writing one.
 
 ## You do NOT
 
