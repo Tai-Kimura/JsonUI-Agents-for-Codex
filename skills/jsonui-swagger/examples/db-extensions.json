@@ -181,11 +181,11 @@
     "example": {
       "x-indexes": [
         {
-          "columns": ["stall_id", "status", "start_at", "end_at"],
-          "name": "idx_reservation_overlap"
+          "columns": ["room_id", "status", "start_at", "end_at"],
+          "name": "idx_booking_overlap"
         },
         {
-          "columns": ["parking_id", "mode"],
+          "columns": ["venue_id", "kind"],
           "unique": true
         }
       ]

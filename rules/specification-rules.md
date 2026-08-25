@@ -557,7 +557,7 @@ entry with `generateCellLayout: true`):
 ```json
 "collection": { "id": "fee_sections_collection", "cell": { ... } },
 "collections": [
-  { "id": "cancel_policy_sections_collection", "cell": { ... } },
+  { "id": "shipping_terms_sections_collection", "cell": { ... } },
   { "id": "gallery_thumbnail_row", "cell": { ... } }
 ]
 ```
