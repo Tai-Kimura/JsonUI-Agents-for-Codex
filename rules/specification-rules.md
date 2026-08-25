@@ -557,7 +557,7 @@ entry with `generateCellLayout: true`):
 ```json
 "collection": { "id": "items_collection", "cell": { ... } },
 "collections": [
-  { "id": "terms_collection", "cell": { ... } },
+  { "id": "notes_collection", "cell": { ... } },
   { "id": "thumbnails_collection", "cell": { ... } }
 ]
 ```
