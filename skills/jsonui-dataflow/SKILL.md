@@ -84,6 +84,14 @@ name (including one that differs only in case):
   `snake_case`). Set it before converting a project: without it, a canon
   written in `snake_case` produces `venue_id` where the spec said `venueId`,
   and those names are argument labels in generated code on three platforms.
+- **パス変数も引数として展開されます。** `in` で絞っていないので
+  `/api/venues/{venue_id}` の `venue_id` はシグネチャに入ります。**つまり正本側の
+  パス変数の改名は、参照している全 spec の生成シグネチャを動かします** —
+  route の照合は綴り差を正規化して吸収するので、**同じ改名が「解決には無影響・
+  展開には影響」**という分かれ方をします。
+- **`requestBody.required` が付いていないと、schema 側の `required: [...]` は
+  生成に効きません**(両者の AND)。body ごと省略できる以上、中身を無条件必須には
+  できないため正しい挙動ですが、理由が症状から遠いので**警告が出ます**。
 - **`returnType` takes `@canonical.wire`, never `@canonical`.** A spec's return
   type is the domain type and the document's is the wire type, and they
   legitimately differ (`[ItemSummary]` against `ItemSearchResponse`). Only
