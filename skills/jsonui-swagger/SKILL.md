@@ -135,6 +135,26 @@ API specification files (`docs/api/*.json`) are not just documentation — `jui 
 
 After authoring or editing a swagger file, the user can verify the codegen impact with `mcp__jui-tools__preview_api_model_sync` (dry-run, no writes) before running `jui build`.
 
+## Screen specs read these operations directly
+
+A screen spec method that declares `endpoint` may write `"params": "@canonical"`
+instead of restating the operation's arguments, and `"returnType":
+"@canonical.wire"` for the schema its success response names. Both expand from
+the documents you author here, so editing an operation changes every spec that
+references it — which is the point, and which makes two things load-bearing that
+were previously only documentation:
+
+- **`required` on a parameter or a request-body property** decides whether the
+  generated signature is `String` or `String?`. Marking everything optional
+  produces optional arguments in three platforms' generated code.
+- **A named success-response schema** (`$ref`) is what `@canonical.wire` lifts.
+  An operation whose 200 body is described inline has no name to lift, and a
+  spec asking for it fails validation with that reason.
+
+Renaming a parameter is therefore a change to every spec that references the
+operation. That is visible — `doc_validate_spec` re-expands on the next run —
+but it is not silent-safe: run it after renames rather than assuming.
+
 ## Contract checks (`jsonui-doc check`)
 
 Projects can declare contract checks in `jui.config.json` (top-level
