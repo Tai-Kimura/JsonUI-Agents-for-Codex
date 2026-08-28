@@ -317,6 +317,18 @@ Agents have shipped specs with empty or missing `dataFlow` even when the screen 
 | `dataFlow.useCases[]` | Screen has orchestration across multiple repositories, multi-step validation, or business logic that doesn't belong in either the VM or a Repo. | Declare the UseCase and link it to Repositories via `useCase.repositories` or `methods[].calls`. Skip the UseCase for 1-API single-repo screens. |
 | `dataFlow.apiEndpoints[]` | Every endpoint referenced by `repositories[*].methods[*].endpoint` must have a matching entry here. | `{path, method, request, response, notes}`. Paths must match repo entries exactly. |
 
+**Reference the API document rather than copying it.** Once a method declares
+`endpoint`, write `"params": "@canonical"` instead of restating the operation's
+parameters; `doc_validate_spec` and `jui build` expand it from one shared
+implementation. Mix in hand-written entries for arguments the API never declares
+(`["@canonical", {"name": "onProgress", ...}]`), and write the list out in full
+when the method deliberately differs from the document. `returnType` takes
+`@canonical.wire` — never plain `@canonical` — because a spec's return type is
+the domain type and the document's is the wire type. An unresolvable mark is an
+ERROR, and omitting `params` still means "no parameters", not "resolve it".
+Naming follows `spec.canonical_param_case` in `jui.config.json` (`asIs` by
+default; set it before converting a project). Full rules: `jsonui-dataflow` skill.
+
 > **Swagger-driven Data Models** — When a Repository method's `returnType` (or a param type) is the name of a schema declared under `docs/api/*.json#components.schemas.*`, the type resolves to the **Domain wrapper** (`User`), not the DTO (`UserDto`). `jui build` auto-registers swagger schema names in TypeMapper, so no manual `.jsonui-type-map.json` entry is needed. To declare a return type as the raw DTO, write `returnType: "UserDto"` explicitly. See `file-locations.md` (API Specifications + Data Model section) for the DTO ↔ Domain layout and `invariants.md` (rules 5-8) for the editing contract.
 
 **Pure-static display screens** (no interaction, no dynamic data, no observable state — e.g. a help page with hard-coded text) are the ONE exception. For those, still write `dataFlow.viewModel: { methods: [], vars: [] }` **explicitly** — do not omit the `dataFlow` key entirely, so the next editor can see it was a considered choice rather than a skip.

@@ -38,14 +38,64 @@ Agents have been caught shipping specs with empty or missing `dataFlow` on scree
 compares it with the OpenAPI documents under `api_directory`. Copy the path from
 the API document rather than typing what the route "should" be: the check warns on
 a path that appears nowhere, on a verb the document does not declare for that path,
-and on **parameter names that differ** (`/api/bars/{barUuid}` against a document
-that says `{bar_uuid}`). Warnings do not fail validation, but each one is a spec
+and on **parameter names that differ** (`/api/venues/{venueId}` against a document
+that says `{venue_id}`). Warnings do not fail validation, but each one is a spec
 that has drifted from the API it claims to call — and the same declaration is what
 `test_generate_branch_tests` binds mock scenarios through, so a drifted spelling
 becomes a hard error the moment anyone generates branch tests.
 
 A non-HTTP verb (`WS`, a realtime-database read, a GraphQL operation) is legal here
 and simply not checked — the OpenAPI documents do not describe those transports.
+
+### `params: "@canonical"` — reference the API document instead of copying it
+
+Once `endpoint` names an operation, the operation already says what the method
+takes. Write the reference rather than the copy:
+
+```jsonc
+{ "name": "getBookmarks",
+  "endpoint": "GET /api/user/bookmarks",
+  "params": "@canonical",
+  "returnType": "BookmarkListResponse" }
+```
+
+`doc_validate_spec` and `jui build` both expand it, from one implementation, to
+the operation's `parameters` plus its JSON request-body properties. A parameter
+the document marks `required` is emitted without `?`.
+
+**Mix the mark with hand-written entries** when the method takes something the
+API never declares — a progress callback, a cancellation token. The mark expands
+where it sits, and a hand-written name wins over a canonical one of the same
+name (including one that differs only in case):
+
+```jsonc
+"params": ["@canonical", { "name": "onProgress", "type": "((Int) -> Void)?" }]
+```
+
+**Rules that matter when you use it:**
+
+- **Omitting `params` is not the mark.** An absent `params` means "no
+  parameters" and always has. Only the written mark asks for resolution.
+- **An unresolvable mark is an ERROR, not an empty list.** If the endpoint
+  names no operation, or names a non-HTTP transport, validation fails rather
+  than generating a method with no arguments.
+- **Naming follows `spec.canonical_param_case` in `jui.config.json`**
+  (`asIs` — the document's own spelling — by default, or `camelCase` /
+  `snake_case`). Set it before converting a project: without it, a canon
+  written in `snake_case` produces `venue_id` where the spec said `venueId`,
+  and those names are argument labels in generated code on three platforms.
+- **`returnType` takes `@canonical.wire`, never `@canonical`.** A spec's return
+  type is the domain type and the document's is the wire type, and they
+  legitimately differ (`[ItemSummary]` against `ItemSearchResponse`). Only
+  `@canonical.wire` — "the wire type is what I mean" — lifts it, and it fails
+  when the operation describes its response body inline, because there is then
+  no name to lift.
+
+**When NOT to use it.** Write the value directly when the method deliberately
+says something the document does not: an object argument standing in for a
+group of flat fields, a client-side callback, a domain return type. The mark is
+for the declarations that were copying the document, which is most of them but
+not all — do not force the ones that were saying something.
 
 **Declare `params` on a method whose arguments a contract will pin.** `arg.<name>`
 in `branchContracts` binds to `methods[].params`, and nowhere else:
@@ -201,6 +251,8 @@ Multi-line signatures use consecutive marker lines:
 |---|---|
 | `endpoint` | single API endpoint the method calls; format `"METHOD /path"` |
 | `endpoints` | array of endpoints (if one method calls multiple); same format |
+| `params` | list of `{name, type}`, or `"@canonical"` / `["@canonical", …]` to take them from the operation `endpoint` names |
+| `returnType` | the domain type, or `"@canonical.wire"` for the schema the operation's success response names |
 
 Both are optional, but declaring them lets the auto-Mermaid diagram draw explicit edges instead of fan-out guesses. See `get_dataflow_linkage_rules` (MCP, Phase 4 future) for rules, or `jui_tools_README.md`.
 
