@@ -132,6 +132,47 @@ not all — do not force the ones that were saying something.
 
 `contractViolations`(mock)と同型です。
 
+### 語彙 — `renamed` 以外の 3 つ
+
+`renamed` は「同じ引数が別名になっている」しか言えません。実測では手書き宣言 37 件のうち
+**その形は 7 件だけ**で、残り 30 件(最長のものは正本 20〜33 フィールドを 1 オブジェクトに
+まとめたもの)は**宣言できませんでした**。
+
+| 句 | 何を言うか |
+|---|---|
+| `omitted` | **呼び手が決めない引数**。プラットフォーム文字列を Repository が定数で送る、など。検査を通すために引数にするのは検査より悪い |
+| `wrapped` | **1 引数が複数をまとめている**。30 引数のメソッドは DTO より悪い契約で、しかも DTO は同じ正本から生成されるので**別経路で追随している** |
+| `added` | **正本が宣言していない引数**。multipart は JSON 展開が空になるので全部これ |
+
+```jsonc
+"canonicalDivergence": {
+  "wrapped": { "request": ["item_uuid", "note"] },
+  "omitted": ["platform"],
+  "added":   ["onProgress"],
+  "reason":  "…"
+}
+```
+
+**どの句も `renamed` と同じく正本に照合されます** — 正本がもう宣言していないものを名指し
+していればエラーなので、**注記が対象より長生きしません**。**差し引きであって免除ではない**
+のも同じで、どの句でも説明されない差は報告されます。
+
+### split tree では `extends` でスタブが正本 config を指す
+
+spec と build config が別サブツリーにある構成では、**どの config が答えるかが実行ディレクトリ
+依存**でした(`jui build` はアプリから、`jsonui-doc` はリポ直下から走る)。
+
+**spec の系譜が face を決める**ようになり、系譜上のスタブ config が `extends` で所有者を
+指します:
+
+```jsonc
+// docs/<face>/jui.config.json
+{ "extends": "../../<face>/jui.config.json",
+  "layouts_directory": "screens/layouts" }
+```
+
+**これが無いと、系譜上で最も近い config(たいていリポ直下)が答えます。**
+
 **Declare `params` on a method whose arguments a contract will pin.** `arg.<name>`
 in `branchContracts` binds to `methods[].params`, and nowhere else:
 `stateManagement.eventHandlers` is View-layer by design and carries no signature,
