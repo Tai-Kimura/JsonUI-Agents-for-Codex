@@ -105,6 +105,33 @@ group of flat fields, a client-side callback, a domain return type. The mark is
 for the declarations that were copying the document, which is most of them but
 not all — do not force the ones that were saying something.
 
+### `canonicalDivergence` — 直書きが「どう違うか」を宣言する
+
+直書きの `params` は「正本と意図的に違う」の表明そのものなので、**差を一律に警告すると
+意図の表明手段が消えます**(実コーパスの直書き 115 宣言が一斉に赤になり、常時赤の検査は
+読まれなくなる)。要るのは「差があるか」ではなく **「宣言された差と実際の差が一致しているか」**。
+
+```jsonc
+{ "name": "getVenue",
+  "endpoint": "GET /api/venues/{venue_id}",
+  "params": [{ "name": "venueUuid", "type": "String" }],
+  "canonicalDivergence": {
+    "renamed": { "venue_id": "venueUuid" },
+    "reason": "正本は略記。spec・実装とも読みやすさのため揃えている(spec と実装は一致)"
+  } }
+```
+
+- **宣言が検査のスイッチです。**書かなければ従来どおり何も起きません — プロジェクトは
+  1 メソッドずつ採用できます
+- **`reason` 必須。**説明できない差は、たいてい誰も直していない差です
+- **stale 宣言はエラー**(これが本命)。正本が `venueUuid` に改名されたら差が消えるので、
+  それを説明する注記は**「もう対処済み」が対象より長生きする**形になります
+- **差し引きであって免除ではない。**`renamed` で説明しきれない差が残っていればエラー。
+  事故の混入は「もともと違うと分かっているメソッド」に一番よく隠れます
+- **`@canonical` を使うメソッドには書けません**(参照は定義上ずれない)
+
+`contractViolations`(mock)と同型です。
+
 **Declare `params` on a method whose arguments a contract will pin.** `arg.<name>`
 in `branchContracts` binds to `methods[].params`, and nowhere else:
 `stateManagement.eventHandlers` is View-layer by design and carries no signature,
