@@ -137,6 +137,23 @@ in `branchContracts` binds to `methods[].params`, and nowhere else:
 `stateManagement.eventHandlers` is View-layer by design and carries no signature,
 so a handler-only method cannot take contracted arguments.
 
+### 共有コンポーネントが呼ぶものは、使っている spec すべてに宣言する
+
+共有ヘッダやパーシャルから呼ぶ Repository / UseCase メソッドは、**そのコンポーネントを
+使っている画面 spec すべてに宣言**します。1 箇所にまとめたり「app レベルだから spec の外」
+にしたりしません。**理由は生成ではなく追跡可能性で、spec を読んで「どこから呼ばれているか」
+が分からない状態を作らないため**です。
+
+コンポーネント spec には `dataFlow` がないので(`props` / `slots` / `structure` /
+`stateManagement` / `usage` のみ)、**コンポーネント自身がメソッドを宣言する手段はありません**。
+使う側が言うしかない、というのがこの規則の構造的な理由でもあります。
+
+**同じメソッドが複数 spec に出ることは正常です。**異常なのは**宣言が食い違うこと**で、
+実装は 1 つなのでどれか 1 つとしか一致し得ません。`jsonui-doc validate spec <dir>`
+(ディレクトリ指定のバッチ実行)が突き合わせて ERROR にします —— **1 ファイルの検証では
+原理的に見えない**ので、ディレクトリで回してください。`platforms` が違う宣言は
+別物として扱われます(`UIImage` / `Bitmap` のような正当な差)。
+
 **Do not guess method / var / repo names from the screen description alone.** They become part of the generated Protocol that every platform must implement, and renaming is a breaking change. If the user didn't volunteer the detail, ASK with the template in `rules/specification-rules.md` → "How to ask the user when they didn't volunteer this info".
 
 ---
