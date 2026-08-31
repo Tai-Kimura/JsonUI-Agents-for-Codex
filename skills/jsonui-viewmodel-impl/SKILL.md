@@ -156,6 +156,73 @@ This ensures all auto-generated Data models are up-to-date.
 
 **CRITICAL**: NEVER hardcode strings or colors. Always use StringManager and ColorManager.
 
+### ⛔ No machine check will catch this for you
+
+`jui lint-strings` proves that literals **in the layout** resolve. `--usage`
+compares the **key sets** between `strings.json` and the code that references
+keys. A display string you wrote directly into VM source **references no key
+at all**, so neither check can see it: the gates go green, the build is clean,
+`jui verify` reports no drift, and the untranslated text ships.
+
+**You are the only check.** That is why the rule below is a mechanical sweep
+rather than a principle to keep in mind.
+
+### The rule, in the form you can actually apply
+
+Deciding "is this user-visible?" per literal while you are writing logic is
+what fails — an error message does not feel like UI text when you are writing
+error handling. So do not decide that. Decide the opposite question, which has
+a closed answer:
+
+**Every string literal in VM source is display text UNLESS it is one of:**
+
+| Allowed non-display literal | Example |
+|---|---|
+| Dictionary / JSON keys, param names | `params["orderId"]`, `"Content-Type"` |
+| API paths, URLs, scheme names | `"/api/orders"` |
+| Enum raw values, state identifiers, screen ids | `case pending = "pending"` |
+| Log / debug output (never rendered) | `logger.debug("fetch failed: \(error)")` |
+| Format specifiers and separators with no words | `"%.2f"`, `", "`, `"-"` |
+| Resource key strings being passed TO the resolver | `StringManager.get("login_title")` |
+
+**Anything else goes through StringManager / R.string / getString. When you
+are unsure, it is display text** — a wrongly-localized internal string costs
+one redundant key; a wrongly-inlined display string ships untranslated and no
+gate reports it.
+
+### Literals that keep slipping through
+
+These are display text. They are missed because they are written while you are
+thinking about something else:
+
+- **Error and validation messages** — `"通信に失敗しました"`, `"Invalid email"`
+- **Empty-state and placeholder text** — `"データがありません"`
+- **Alert/dialog titles, bodies, and button labels** — including `"OK"`, `"キャンセル"`
+- **Status and result labels assigned in code** — `status = "承認待ち"`
+- **Units and suffixes concatenated onto numbers** — `"\(count)件"`, `"円"`
+- **Accessibility labels and hints**
+- **Text inside a `switch`/`when` that maps a state to words**
+
+### Required sweep before you report done
+
+Not "review your work" — list every literal and account for each one:
+
+```bash
+# Swift
+grep -nE '"[^"]*[^\x00-\x7F][^"]*"|"[A-Za-z][^"]{3,}"' <ViewModel>.swift
+# Kotlin
+grep -nE '"[^"]*[^\x00-\x7F][^"]*"|"[A-Za-z][^"]{3,}"' <ViewModel>.kt
+```
+
+For **every** hit, name which allowed category it falls in, or localize it.
+A hit you cannot place in the table is display text. If you touched several
+VM/Repository/UseCase files, sweep all of them — the rule is about the file
+you wrote, not about the screen.
+
+**Do not report the ViewModel complete with an unaccounted literal.** Hand any
+strings you localized to `/jsonui-localize` so they are registered with all
+declared languages.
+
 ### Resource File Locations
 
 **Shared source**: `{layouts_directory}/Resources/colors.json` and `strings.json`
@@ -253,7 +320,10 @@ data.productItems = CollectionDataSource(section = Section(cellData = items))
 ## Important Rules
 
 1. **NEVER put business logic in View** - Move all logic to ViewModel
-2. **NEVER hardcode strings** - Use StringManager
+2. **NEVER hardcode strings** - Use StringManager. **No gate catches a violation**
+   (a literal never routed through the table references no key, so `lint-strings`
+   and `--usage` are both blind to it). Run the sweep in "StringManager &
+   ColorManager Usage" and account for every literal before reporting done.
 3. **NEVER hardcode colors** - Use ColorManager
 4. **ALWAYS handle loading states** - Show UI during async operations
 5. **ALWAYS handle errors gracefully** - Show user-friendly messages

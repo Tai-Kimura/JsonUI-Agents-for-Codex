@@ -284,6 +284,7 @@ Do not "fix" one side blindly to match the other. Decide which is correct based 
 - ✅ jui build: 0 warnings
 - ✅ jui verify --fail-on-diff: no drift
 - ✅ jsonui-localize: N strings registered (or 0 if none)
+- ✅ VM literal sweep: M literals swept across {files}, all accounted for
 
 ### Files touched
 - Layout: docs/screens/layouts/{screen}.json
@@ -315,6 +316,27 @@ You own three of the four:
 | 3. `@generated` untouched | **you** | never edit them; if drift appears, fix spec or body |
 | 4. `jsonui-localize` ran | **you** | step 6, before the final build |
 
+### ⛔ Invariant 4 has no machine backstop on the VM side
+
+Invariants 1–3 are checked by a command that fails. Invariant 4 is only half
+checked: `jui lint-strings` proves **layout** literals resolve, and `--usage`
+compares **key sets**. A display string written straight into VM source
+references no key, so **nothing sees it** — build is clean, verify reports no
+drift, lint is green, and the untranslated text ships.
+
+So for VM/Repository/UseCase source, **the sweep is the gate**. Do not accept
+"localize ran, 0 strings" as a result on its own: ask how many literals were
+swept and in which files. A 0 that came from reading the wrong file looks
+identical to a screen that was already clean, and the four green gates above
+look identical either way too.
+
+The classification rule and the sweep command live in the
+`jsonui-viewmodel-impl` and `jsonui-localize` skills. The short form: **every
+string literal in VM source is display text unless it is a key, a path, an
+identifier, log output, or a word-free format specifier — and when unsure, it
+is display text.**
+
+
 Step 7 and step 8 are both mandatory. Do not report the screen done without both.
 
 ---
@@ -331,7 +353,7 @@ Step 7 and step 8 are both mandatory. Do not report the screen done without both
 ## Common mistakes
 
 1. **Editing `@generated` files to fix a drift** — always fix the source (spec or body), never the generated output.
-2. **Skipping localize "just this once"** — breaks invariant 4.
+2. **Skipping localize "just this once"** — breaks invariant 4. And on the VM side there is nothing to catch it: no gate reads VM literals, so the screen ships with untranslated text and all four gates green.
 3. **Declaring done with warnings** — all warnings must be 0. Not "low", not "only deprecation warnings". Zero.
 4. **Running platform-specific builds directly** (`sjui build`, `./gradlew`) — use `jui build` via MCP. It distributes layouts + resolves platform overrides + runs the platform build in one step.
 5. **Editing Layout JSON in `my-app-ios/my-app/Layouts/`** — the platform copy gets overwritten. Always edit in shared `docs/screens/layouts/`.

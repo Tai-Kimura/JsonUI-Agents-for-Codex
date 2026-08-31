@@ -100,19 +100,47 @@ Rules (enforced by build validation — violations fail the build):
    - Color names, font names
    - Numeric values
 
-### Phase 2: Scan ViewModel
+### Phase 2: Scan ViewModel (the part no gate can do for you)
 
-1. Read the ViewModel file for the screen
-2. Identify hardcoded strings that should be localized:
-   - Error messages
-   - Alert titles/messages
-   - Status labels set in code
-   - Format strings
-   - Any user-visible string literal
-3. Skip:
-   - API endpoints, parameter keys
-   - Log messages
-   - Internal state values
+**This phase is the only check that exists for VM-side literals.** The layout
+surface is machine-checked by `jui lint-strings`; `--usage` compares key sets.
+A display string written directly into VM source references no key, so it is
+invisible to both — every gate goes green and the untranslated text ships.
+Skipping or skimming this phase is not "a lighter run", it is the whole check.
+
+1. Read every VM/Repository/UseCase file the screen touches — **not just the
+   file named after the screen**. Text is routinely assigned in a repository's
+   error mapping.
+2. Sweep mechanically rather than by eye:
+
+   ```bash
+   grep -nE '"[^"]*[^\x00-\x7F][^"]*"|"[A-Za-z][^"]{3,}"' <file>
+   ```
+
+3. Classify **every** hit. A literal is display text unless it is one of the
+   closed list below; **when unsure, it is display text.** (A wrongly-localized
+   internal string costs one redundant key; a wrongly-inlined display string
+   ships untranslated with nothing reporting it.)
+
+   **Allowed non-display literals** — dictionary/JSON keys and param names;
+   API paths and URLs; enum raw values, state identifiers, screen ids; log and
+   debug output that is never rendered; format specifiers and word-free
+   separators (`"%.2f"`, `", "`); and key strings being passed *to* the
+   resolver.
+
+4. These are display text and are the ones actually missed, because they get
+   written while thinking about something else:
+   - **Error and validation messages**
+   - **Empty-state and placeholder text**
+   - **Alert/dialog titles, bodies, and button labels** — including `"OK"` / `"キャンセル"`
+   - **Status and result labels assigned in code**
+   - **Units and suffixes concatenated onto numbers** (`"\(count)件"`, `"円"`)
+   - **Accessibility labels and hints**
+   - **Words produced by a `switch`/`when` over a state**
+
+5. Report the count of literals you swept and the count you localized. "0
+   found" is a measurement — say how many you looked at, so a scan that read
+   the wrong file is distinguishable from a screen that was already clean.
 
 ### Phase 3: Register in strings.json
 
