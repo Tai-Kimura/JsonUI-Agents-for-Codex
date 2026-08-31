@@ -128,6 +128,13 @@ Skipping or skimming this phase is not "a lighter run", it is the whole check.
    separators (`"%.2f"`, `", "`); and key strings being passed *to* the
    resolver.
 
+   **And one exception in the other direction:** text that is displayed but
+   must NOT follow the active language — a language switcher whose options
+   each render in their own language (`["日本語", "English"]`), proper nouns,
+   brand names. **Localizing these is the bug.** Leave them, and add a comment
+   saying why: "deliberately not localized" and "nobody noticed" look identical
+   in source, and the next sweep has to tell them apart.
+
 4. These are display text and are the ones actually missed, because they get
    written while thinking about something else:
    - **Error and validation messages**
