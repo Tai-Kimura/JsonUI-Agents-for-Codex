@@ -65,7 +65,7 @@ jui lint-generated
 
 ---
 
-## 4. Localization is **machine-checked** — `jui lint-strings` must be clean
+## 4. Localization — the layout half is machine-checked, **the VM half is not**
 
 `jui lint-strings` scans the Layout JSON (style-merged, alias-canonicalized) for user-visible string attributes whose value is a raw literal that does not resolve through `strings.json`. Exit 0 is the gate; the `jsonui-localize` skill is the **repair tool** you run when the lint reports findings.
 
@@ -79,7 +79,34 @@ jui lint-strings
 - `jui build --lint-strings` (or `"lint": {"strings": true}` in jui.config.json) runs the same check inside the build, where findings ride the warning stream and gate via invariant 1
 - VM-side strings (error messages, alert titles) are still the `jsonui-localize` skill's territory — the lint covers the layout surface
 
----
+### ⛔ The VM half has no gate at all — the sweep is the gate
+
+`jui lint-strings` proves **layout** literals resolve. `--usage` compares the
+**key sets** between `strings.json` and code that references keys. A display
+string written straight into VM source **references no key**, so neither sees
+it: build clean, verify no drift, lint exit 0, and the untranslated text ships.
+This is the one invariant whose violation produces **no red anywhere**.
+
+So the VM side is a **procedure**, not a check, and it must be executed rather
+than intended:
+
+- **Every string literal in VM/Repository/UseCase source is display text
+  unless** it is a dictionary/JSON key or param name, an API path or URL, an
+  enum raw value / state id / screen id, log output that is never rendered, or
+  a word-free format specifier (`"%.2f"`, `", "`). **When unsure, it is display
+  text** — a redundant key costs one entry; an inlined display string ships
+  untranslated and nothing reports it.
+- Do not decide "is this user-visible?" literal by literal while writing logic.
+  That is where it leaks: an error message does not feel like UI text while you
+  are writing error handling. **Sweep mechanically and account for every hit.**
+- **Report the denominator**: "swept N literals across these files, localized
+  M". A bare "0 strings found" from reading the wrong file is indistinguishable
+  from a screen that was already clean — and so are all four green gates.
+
+Most-missed, all display text: error/validation messages, empty-state text,
+alert titles/bodies/buttons (`"OK"`, `"キャンセル"`), status labels assigned in
+code, units concatenated onto numbers (`"\(count)件"`), accessibility labels,
+and words produced by a `switch`/`when` over a state.
 
 ---
 
@@ -131,7 +158,7 @@ Files at the Domain level — `Model/{Name}.swift` / `<package>/model/{Name}.kt`
 | 1 | Layout correctness | `jui build` 0 warnings | build toolchain |
 | 2 | Spec ↔ Layout alignment | `jui verify --fail-on-diff` | verify |
 | 3 | Generated file integrity | `jui lint-generated` | lint |
-| 4 | Localization complete | `jui lint-strings` exit 0 (layout) + `jsonui-localize` pass (VM strings) | lint + process |
+| 4 | Localization complete | `jui lint-strings` exit 0 (layout) + **VM literal sweep, accounted for** (VM strings — **no gate**) | lint + **procedure only** |
 | 5 | DTO files unmodified by hand | `jui lint-generated` | lint |
 | 6 | Domain scaffold preservation | `jui build` skips existing | build toolchain |
 | 7 | DTO drift detection | `jui verify --fail-on-diff` | verify |
