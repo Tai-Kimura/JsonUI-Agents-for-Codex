@@ -190,6 +190,13 @@ are unsure, it is display text** — a wrongly-localized internal string costs
 one redundant key; a wrongly-inlined display string ships untranslated and no
 gate reports it.
 
+**One exception, and state it in a comment when you use it:** text that is
+displayed but must NOT follow the active language — a language switcher whose
+options each render in their own language (`["日本語", "English"]`), a proper
+noun, a brand name. Localizing these is the bug. They are display text that is
+deliberately not localized, which is a different thing from a literal nobody
+noticed, and the comment is what tells the next reader which one it is.
+
 ### Literals that keep slipping through
 
 These are display text. They are missed because they are written while you are
