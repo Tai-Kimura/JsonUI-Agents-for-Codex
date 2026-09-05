@@ -121,18 +121,17 @@ This pattern allows easy mocking in unit tests by injecting a mock implementatio
 
 ---
 
-## Mandatory Build with --clean Before Starting
+## Mandatory Clean Build Before Starting
 
-**CRITICAL**: Before starting ANY work, you MUST run `jui build` to ensure layouts are distributed, then platform build with `--clean`:
+**CRITICAL**: Before starting ANY work, you MUST run a clean `jui build` (via MCP: `jui_build`) so the shared layouts are distributed and every platform is rebuilt from them:
 
 ```bash
-# Distribute layouts from shared directory + build all platforms
-jui build
-
-# Then platform-specific clean build if needed:
-./sjui_tools/bin/sjui build --clean   # iOS
-./kjui_tools/bin/kjui build --clean   # Android
+# Distribute layouts / styles / resources from the shared directory,
+# sync the ViewModel Protocol/Base files, and build ALL active platforms
+jui build --clean
 ```
+
+Do **not** run the platform tools directly (`./sjui_tools/bin/sjui build`, `./kjui_tools/bin/kjui build`, `./gradlew`). `jui build` already runs them, and the direct path skips the layout distribution — the platform copy under `Layouts/` may then be stale. Until jsonui-cli 1.8.45 a second direct run on an unchanged tree also skipped validation entirely (the build cache silenced `--strict` and the `[error]` refusal), so a direct invocation could report a clean build for a tree the orchestrated build refuses.
 
 This ensures all auto-generated Data models are up-to-date.
 
