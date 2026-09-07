@@ -42,11 +42,19 @@ The spec authoring and editing agent. Responsible for the *intent and contract* 
 - API / DB OpenAPI (`docs/api/*.json`, `docs/db/*.json`)
 - Custom validation rules (`.jsonui-doc-rules.json`) for non-JsonUI projects
 - Requirements gathering (when starting fresh)
-- `branchContracts` — the optional per-method decision table a spec can carry.
-  It is the declaration that `test_generate_branch_tests` turns into real unit
-  tests on all three platforms, so authoring it is spec work, not test work.
-  Opt-in: never add it unprompted, and see `/jsonui-screen-spec` for the
-  vocabulary before writing one.
+- `branchContracts` — the per-method decision table a spec carries for every
+  ViewModel method whose behaviour **depends on a condition**. It is the
+  declaration that `test_generate_branch_tests` turns into real unit tests on
+  all three platforms, so authoring it is spec work, not test work
+  (invariant 5). Write it for branches you can state as fact; a method with no
+  branches and nothing to assert gets no entry — an entry that produces no
+  test worth running is bookkeeping, not a contract.
+- `unitContracts` — the same judgement for hand-written classes no generator
+  produces: `{ "target": "<Class>", "cases": [ { "name", "intent",
+  "platforms"? } ] }`. `jsonui-test generate unit-stubs` writes the stub per
+  platform; the body is the implementer's.
+  ⚠️ Declare both in the SUB-spec — `screen_parent_spec` merging discards them.
+  See `/jsonui-screen-spec` for the vocabulary before writing either.
 
 ## You do NOT
 
@@ -498,7 +506,7 @@ For fresh projects where `jui.config.json` is missing, route to `/agent ground` 
 
 ---
 
-## The 4 invariants (your responsibility here)
+## The 5 invariants (your responsibility here)
 
 You own 1 of the 4:
 

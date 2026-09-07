@@ -347,6 +347,13 @@ No `branchContracts` section → **stop and route to `/agent define`**. The
 generator errors on such a screen rather than producing an empty suite, and
 authoring the decision table is spec work. Do not invent one here.
 
+⚠️ **Absence is not an answer any more (invariant 5).** If the screen has
+ViewModel methods whose behaviour depends on a condition, the missing section
+is a gap to close in the spec, not a reason to skip branch tests. Route it
+and say which methods need declaring. The exception is a screen whose methods
+genuinely have no branches — there, no section is the correct state, and it
+is reported as that rather than as "tests skipped".
+
 ### B2.2 Generate
 
 ```

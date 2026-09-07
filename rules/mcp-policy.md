@@ -34,7 +34,11 @@ JsonUI agents call the `jsonui-mcp-server` (the `jui-tools` MCP) to interact wit
 | Validate test files (always `no_install: true`) | `mcp__jui-tools__test_validate` | `jsonui-test validate --no-install` |
 | Generate branch tests from a spec's branchContracts | `mcp__jui-tools__test_generate_branch_tests` | `jsonui-test generate branch-tests` |
 
-**Two** `jui` subcommands have no MCP equivalent today: `jui lint-generated` and `jui lint-strings` (both lint gates, Bash-invoked). Everything else goes through MCP — including every `jsonui-test` operation an agent performs.
+**Four** commands have no MCP equivalent today and are Bash-invoked:
+`jui lint-generated`, `jui lint-strings` (lint gates), and the two invariant-5 checks —
+`jsonui-test generate unit-stubs [--check]` (no MCP tool exists for unit stubs at all) and
+`jsonui-test generate branch-tests --check` (the generator has `test_generate_branch_tests`; **the `--check` mode does not**).
+Everything else goes through MCP — including every other `jsonui-test` operation an agent performs.
 
 ---
 

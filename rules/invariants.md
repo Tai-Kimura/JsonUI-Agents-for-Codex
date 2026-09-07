@@ -1,8 +1,8 @@
-# Invariants — The 4 Core Rules + 4 API Model Rules
+# Invariants — The 5 Core Rules + 4 API Model Rules
 
-The first four invariants apply to **every** JsonUI task. A task is not complete until all four hold. Everything else in this project is a means to satisfy them.
+The first five invariants apply to **every** JsonUI task. A task is not complete until all five hold. Everything else in this project is a means to satisfy them.
 
-Invariants 5–8 apply when the project uses swagger-driven Data Model codegen (any project with `docs/api/*.json` files).
+Invariants 6–9 apply when the project uses swagger-driven Data Model codegen (any project with `docs/api/*.json` files).
 
 ---
 
@@ -101,7 +101,7 @@ than intended:
   are writing error handling. **Sweep mechanically and account for every hit.**
 - **Report the denominator**: "swept N literals across these files, localized
   M". A bare "0 strings found" from reading the wrong file is indistinguishable
-  from a screen that was already clean — and so are all four green gates.
+  from a screen that was already clean — and so are all five green gates.
 
 Most-missed, all display text: error/validation messages, empty-state text,
 alert titles/bodies/buttons (`"OK"`, `"キャンセル"`), status labels assigned in
@@ -110,7 +110,40 @@ and words produced by a `switch`/`when` over a state.
 
 ---
 
-## 5. DTO files are **regenerated** every build — never edit
+## 5. Conditional logic and hand-written code are **declared and tested**
+
+A contract exists to make a test exist. `branchContracts` and `unitContracts` are how behaviour that a human wrote gets asserted; they are not a filing requirement.
+
+⛔ **Do not add a contract that produces no test worth running.** A pass-through getter, a one-line setter, a method with no branches and nothing to assert — no entry. A `note` saying "no branches" is not a contract: it raises the declared count and asserts nothing. If the entry would not cause a real test to exist, leave it out.
+
+**Where a contract IS required:**
+
+- `branchContracts` — a `dataFlow.viewModel.methods` method whose behaviour **depends on a condition**: branches on state, validation, error paths, a `switch`/`when` over a state. Each branch is a case someone can fail
+- `unitContracts` — hand-written classes and logic that no generator produces:
+
+```json
+{ "target": "<Class>", "cases": [ { "name": "...", "intent": "...", "platforms": ["ios", "android", "web"] } ] }
+```
+
+`platforms` omitted means every platform; the block is an object or an array of them. `doc_validate_spec` lints the shape.
+
+```bash
+jsonui-test generate branch-tests --check
+jsonui-test generate unit-stubs   --check
+# Exit 0 ← required: every declared case is implemented
+```
+
+- ⚠️ **These checks measure agreement, not coverage.** They compare the DECLARED set against implemented test names — nothing in the toolchain computes a coverage percentage. `N = 0 case(s) declared` exits 0 exactly like a fully implemented project. So the exit code is a floor, never the answer — quote `N case(s) declared across M spec file(s)`, never "check passed"
+- ⚠️ **Declare in the sub-spec, never in a parent spec.** `screen_parent_spec` merging discards these blocks; since 1.8.46 `--check` reports PROBLEM and exits non-zero instead of losing them silently
+- Implementation is detected **by name**: iOS `func <name>(` in an `XCTestCase`, Android `fun <name>(`, web `it("<name>")`. A renamed test is an unimplemented case
+- `unit-stubs` writes the stub in each platform's convention; the body is yours. It needs `platforms.<p>.unitTestsDir` in `jui.config.json`
+- Neither check has an MCP tool — both run through Bash (see `mcp-policy.md`)
+
+**Why this is not double bookkeeping.** `branchContracts` is the canonical statement of conditional behaviour, so prose in `displayLogic` and friends stays thin and points at it. It is also what lets the cross-platform consistency warning (v1.6.23) compare faces at all — that needs one declared shape, not three descriptions of it.
+
+---
+
+## 6. DTO files are **regenerated** every build — never edit
 
 Files under the per-platform DTO directory carry `@generated` markers and are rewritten on every `jui build` from the swagger source:
 
@@ -122,7 +155,7 @@ To change a DTO field shape, edit the swagger schema (`docs/api/*.json`). The DT
 
 ---
 
-## 6. Domain scaffolds are **user-owned after first emit**
+## 7. Domain scaffolds are **user-owned after first emit**
 
 Files at the Domain level — `Model/{Name}.swift` / `<package>/model/{Name}.kt` / `models/{Name}.ts` — are scaffolded **once** by `jui build` (containing just `let dto: {Name}Dto` + init/factory) and then **never touched** by codegen.
 
@@ -132,7 +165,7 @@ Files at the Domain level — `Model/{Name}.swift` / `<package>/model/{Name}.kt`
 
 ---
 
-## 7. `jui verify --fail-on-diff` checks **DTO drift only**
+## 8. `jui verify --fail-on-diff` checks **DTO drift only**
 
 `jui verify` regenerates the DTO bytes in memory and compares against the on-disk DTO files. A diff means swagger changed but `jui build` wasn't re-run, or someone hand-edited a DTO (violation of invariant 5).
 
@@ -141,7 +174,7 @@ Files at the Domain level — `Model/{Name}.swift` / `<package>/model/{Name}.kt`
 
 ---
 
-## 8. Filter changes can **delete DTOs** via orphan prune
+## 9. Filter changes can **delete DTOs** via orphan prune
 
 `api.schemas.include_paths` / `exclude_paths` / `include_schemas` / `exclude_schemas` modifications change the kept schema set. DTOs that fall out of the kept set are **deleted on the next `jui build`** (orphan prune).
 
@@ -159,8 +192,9 @@ Files at the Domain level — `Model/{Name}.swift` / `<package>/model/{Name}.kt`
 | 2 | Spec ↔ Layout alignment | `jui verify --fail-on-diff` | verify |
 | 3 | Generated file integrity | `jui lint-generated` | lint |
 | 4 | Localization complete | `jui lint-strings` exit 0 (layout) + **VM literal sweep, accounted for** (VM strings — **no gate**) | lint + **procedure only** |
-| 5 | DTO files unmodified by hand | `jui lint-generated` | lint |
-| 6 | Domain scaffold preservation | `jui build` skips existing | build toolchain |
-| 7 | DTO drift detection | `jui verify --fail-on-diff` | verify |
+| 5 | Conditional / hand-written logic tested | `jsonui-test generate branch-tests --check` + `unit-stubs --check` exit 0 — **declared-vs-implemented agreement only** | jsonui-test |
+| 6 | DTO files unmodified by hand | `jui lint-generated` | lint |
+| 7 | Domain scaffold preservation | `jui build` skips existing | build toolchain |
+| 8 | DTO drift detection | `jui verify --fail-on-diff` | verify |
 
-A screen is "done" only when invariants 1-4 hold (and 5-7 hold whenever the project uses swagger-driven Data Models).
+A screen is "done" only when invariants 1-5 hold (and 6-8 hold whenever the project uses swagger-driven Data Models).

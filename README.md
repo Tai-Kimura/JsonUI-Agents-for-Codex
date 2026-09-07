@@ -71,7 +71,7 @@ Authoring guides invoked from agents via `$skill-name`.
 | `jsonui-flow-test` | `test` | Flow test JSON (multi-screen journey) |
 | `jsonui-test-doc` | `test` | Description JSON + HTML docs |
 
-## Rules (4 invariants)
+## Rules (5 invariants)
 
 Detailed rules in [`rules/`](rules/).
 
@@ -79,6 +79,7 @@ Detailed rules in [`rules/`](rules/).
 2. **`jui verify --fail-on-diff` must pass with no drift.**
 3. **`@generated` files are never edited by hand.** Edit the spec; `jui build` regenerates.
 4. **`$jsonui-localize` must run before a screen is declared done.**
+5. **Conditional logic and hand-written code are declared and tested.** `branchContracts` / `unitContracts` where a real test follows — not for a method with no branches.
 
 See [`rules/invariants.md`](rules/invariants.md) and [`rules/mcp-policy.md`](rules/mcp-policy.md).
 
