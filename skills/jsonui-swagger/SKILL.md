@@ -117,7 +117,7 @@ FOREIGN KEY constraint is expected in the database.
 
 ## DTO + Domain codegen consequences
 
-API specification files (`docs/api/*.json`) are not just documentation — `jui build` reads them and generates per-platform DTO + Domain Data Model files (see `rules/file-locations.md` § API Specifications + Data Model, `rules/invariants.md` rules 5-8). Author with that in mind:
+API specification files (`docs/api/*.json`) are not just documentation — `jui build` reads them and generates per-platform DTO + Domain Data Model files (see `rules/file-locations.md` § API Specifications + Data Model, `rules/invariants.md` rules 6-9). Author with that in mind:
 
 - **v1 halt constructs** — these will halt `jui build` with an ERROR (not warning). Avoid them or factor them out before `jui build` is invoked:
   - `anyOf` anywhere (untagged unions — v2 feature)

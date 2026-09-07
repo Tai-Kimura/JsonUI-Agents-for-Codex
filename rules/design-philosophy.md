@@ -98,7 +98,7 @@ let dto = try JSONDecoder().decode(UserDto.self, from: data)
 return User(dto: dto)
 ```
 
-This pattern is mirrored on Android (Moshi/kotlinx) and Web (factory function `userFromDto`). See `invariants.md` (rules 5-8) for the editing contract and `file-locations.md` for the per-platform path layout.
+This pattern is mirrored on Android (Moshi/kotlinx) and Web (factory function `userFromDto`). See `invariants.md` (rules 6-9) for the editing contract and `file-locations.md` for the per-platform path layout.
 
 ## When in doubt
 

@@ -136,7 +136,7 @@ Do not summarize the sub-agent's output when it returns. Relay it to the user as
 
 ---
 
-## The 4 invariants
+## The 5 invariants
 
 You do not enforce these directly, but you remind the user and sub-agents when routing:
 
@@ -144,6 +144,7 @@ You do not enforce these directly, but you remind the user and sub-agents when r
 2. `jui verify --fail-on-diff` must pass with no drift
 3. `@generated` files are never edited by hand
 4. `jsonui-localize` must run before a screen is done
+5. Conditional logic and hand-written code are declared (`branchContracts` / `unitContracts`) and tested — only where the entry makes a real test exist
 
 See `rules/invariants.md`.
 

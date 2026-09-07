@@ -339,15 +339,22 @@ Files created:
 - {project_directory}/docs/screens/html/{screen_name}.html
 ```
 
-## Optional: `branchContracts` — declare the branches, get the tests
+## `branchContracts` — declare the branches, get the tests
 
-A spec may carry a `branchContracts` section: a decision table per ViewModel
+A spec carries a `branchContracts` section: a decision table per ViewModel
 method, from which `test_generate_branch_tests` generates real unit tests for
-web, Android and iOS **from the one declaration**. It is entirely opt-in —
-a spec without the section behaves exactly as before — so **do not add it
-unprompted**. Offer it when the user describes a screen whose error handling,
-optimistic updates, or state transitions matter, and write it only for
-branches they can state as fact.
+web, Android and iOS **from the one declaration**.
+
+**Required for every method whose behaviour depends on a condition** —
+error handling, validation, optimistic updates, state transitions, a
+`switch`/`when` over a state (invariant 5). Write only branches that can be
+stated as fact.
+
+⛔ **Not required, and not wanted, elsewhere.** A pass-through getter, a
+one-line setter, a method with no branches and nothing to assert gets no
+entry. A `note` saying "no branches" is not a contract: it raises the declared
+count and asserts nothing. If the entry would not make a real test exist,
+leave it out.
 
 ```jsonc
 "branchContracts": {
@@ -402,6 +409,42 @@ declare the weaker fact that does.
 `doc_validate_spec` lints the whole vocabulary — unknown keys, ghost
 conditions, unbindable arguments, and witnesses nothing gates on are errors
 or warnings there, before anyone generates a test.
+
+## `unitContracts` — the hand-written logic no generator produces
+
+Where `branchContracts` covers ViewModel methods, `unitContracts` declares the
+classes a human wrote: mappers, formatters, calculators, handlers.
+
+```jsonc
+"unitContracts": {
+  "target": "PriceCalculator",              // the class under test
+  "cases": [
+    { "name": "appliesMemberDiscount",      // the test's NAME — detection is by name
+      "intent": "a member price is 10% under list",
+      "platforms": ["ios", "android", "web"] }   // omit = every platform
+  ]
+}
+```
+
+An object, or an array of them. `doc_validate_spec` lints the shape.
+
+- **`name` is the contract.** Implementation is detected by matching it:
+  iOS `func <name>(` inside an `XCTestCase`, Android `fun <name>(`,
+  web `it("<name>")`. Renaming a test un-implements the case
+- `jsonui-test generate unit-stubs` writes the stub in each platform's
+  convention; the body is the implementer's. It needs
+  `platforms.<p>.unitTestsDir` in `jui.config.json`
+- `--check` compares the declared set against implemented names and exits
+  non-zero on a mismatch
+
+⛔ **Same restraint as `branchContracts`.** Declare a case because a real test
+should exist, not to raise a count. `--check` measures declared-vs-implemented
+agreement — **nothing computes a coverage percentage** — so a project
+declaring nothing exits 0 exactly like one declaring everything.
+
+⚠️ **Declare in the sub-spec, never a parent spec.** `screen_parent_spec`
+merging discards both contract blocks; since 1.8.46 `--check` reports PROBLEM
+and exits non-zero rather than losing them silently.
 
 ## Important Rules
 

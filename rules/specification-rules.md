@@ -334,7 +334,7 @@ default; set it before converting a project). Full rules: `jsonui-dataflow` skil
 保つため。同じメソッドが複数 spec に出るのは正常で、**食い違いが異常**(実装は 1 つ)。
 `jsonui-doc validate spec <dir>` が突き合わせて ERROR にする。
 
-> **Swagger-driven Data Models** — When a Repository method's `returnType` (or a param type) is the name of a schema declared under `docs/api/*.json#components.schemas.*`, the type resolves to the **Domain wrapper** (`User`), not the DTO (`UserDto`). `jui build` auto-registers swagger schema names in TypeMapper, so no manual `.jsonui-type-map.json` entry is needed. To declare a return type as the raw DTO, write `returnType: "UserDto"` explicitly. See `file-locations.md` (API Specifications + Data Model section) for the DTO ↔ Domain layout and `invariants.md` (rules 5-8) for the editing contract.
+> **Swagger-driven Data Models** — When a Repository method's `returnType` (or a param type) is the name of a schema declared under `docs/api/*.json#components.schemas.*`, the type resolves to the **Domain wrapper** (`User`), not the DTO (`UserDto`). `jui build` auto-registers swagger schema names in TypeMapper, so no manual `.jsonui-type-map.json` entry is needed. To declare a return type as the raw DTO, write `returnType: "UserDto"` explicitly. See `file-locations.md` (API Specifications + Data Model section) for the DTO ↔ Domain layout and `invariants.md` (rules 6-9) for the editing contract.
 
 **Pure-static display screens** (no interaction, no dynamic data, no observable state — e.g. a help page with hard-coded text) are the ONE exception. For those, still write `dataFlow.viewModel: { methods: [], vars: [] }` **explicitly** — do not omit the `dataFlow` key entirely, so the next editor can see it was a considered choice rather than a skip.
 

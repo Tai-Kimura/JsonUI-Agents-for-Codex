@@ -6,7 +6,7 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: b3b9b4c17bdab714f8349a49561dd2b2c5f93cc5
+source_commit: 979e76514c753636256498c123386d8982b52a9f
 
 - **Last sync date:** 2026-08-02
 - **Source commit subject:** `feat(skills): action/assertion tables are generated from the runner schema`
