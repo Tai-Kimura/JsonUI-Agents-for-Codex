@@ -23,6 +23,7 @@ allowed_tools = [
   "mcp__jui-tools__doc_rules_init",
   "mcp__jui-tools__doc_rules_show",
   "mcp__jui-tools__jui_verify",
+  "mcp__jui-tools__test_contracts_coverage",
   "mcp__jui-tools__lookup_component",
   "mcp__jui-tools__lookup_attribute",
   "mcp__jui-tools__search_components",
@@ -55,8 +56,8 @@ The spec authoring and editing agent. Responsible for the *intent and contract* 
   platform; the body is the implementer's.
   ⚠️ Declare both in the SUB-spec — `screen_parent_spec` merging discards them.
   See `$jsonui-screen-spec` for the vocabulary before writing either.
-- Closing what `jsonui-test contracts coverage` reports (1.8.116+) is also
-  spec work: a row per declared status the ViewModel handles; `alsoStatuses`
+- Closing what `mcp__jui-tools__test_contracts_coverage` reports
+  (`jsonui-test contracts coverage`, 1.8.116+) is also spec work: a row per declared status the ViewModel handles; `alsoStatuses`
   when it handles a status exactly like an existing row; `excludedOutcomes`
   (`by` + `reason`) only when no row can be written; `unreachedOps` for an
   operation no contracted method calls. An endpoint listed only in
@@ -65,7 +66,9 @@ The spec authoring and editing agent. Responsible for the *intent and contract* 
   401 sign-out, 426 overlay, refresh, excluded paths, opt-out flags) go in
   the `app_contracts_spec`'s `unitContracts`, not in a screen's rows. A 401
   row for a call made with an opt-out flag writes `"api.<logout op>":
-  "not-called"`.
+  "not-called"`. `"api.<op>": "called"` in one row permits that operation
+  in every row of the method that does not mention it; the rows that must
+  not make the call write `"not-called"` (a note saying so asserts nothing).
 
 ## You do NOT
 

@@ -382,7 +382,10 @@ Since 1.8.116 a generated test also fails when the method, during its act,
 calls a declared endpoint that none of its rows reaches; the failure names
 the operation. That is a missing `"api.<op>": "called"` in the spec (usually
 a refetch after a save) — route it to `/agent define`. Never remove the
-endpoint from `dataFlow` to silence it.
+endpoint from `dataFlow` to silence it. With it, name the rows of that method
+that stayed green: they do not make the call, and once `called` lands they
+will allow it — each one that must not make it needs `"api.<op>":
+"not-called"`.
 
 ### B2.3 Wire the harness (once per screen)
 
