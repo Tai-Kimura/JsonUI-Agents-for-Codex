@@ -677,32 +677,37 @@ hand; drive it from the spec so the attribute list and types stay in sync
 with the component's contract.
 
 **You must run this explicitly** — `jui build` does NOT auto-run
-converter scaffolding. That was tried and reverted: the downstream
-component generators (React/Swift/Kotlin component + adapter +
-dynamic-component scaffolders) all prompt interactively on overwrite,
-which blocks MCP / CI callers even when the outer `jui g converter`
-honors `--skip-existing`. Keep `jui build` focused on "build what's
-written"; scaffold explicitly when you add or change a spec.
+converter scaffolding. That was tried and reverted: at the time the
+downstream component generators (React/Swift/Kotlin component + adapter +
+dynamic-component scaffolders) each prompted interactively on overwrite,
+which blocked MCP / CI callers even when the outer `jui g converter`
+honored `--skip-existing` (fixed in jsonui-cli 1.8.112, but the decision
+stands). Keep `jui build` focused on "build what's written"; scaffold
+explicitly when you add or change a spec.
 
 ```bash
 jui g converter --from codeblock.component.json   # single spec
 jui g converter --all                             # every component spec
-jui g converter --all --skip-existing             # idempotent (skip existing
-                                                   #   converter files silently)
+jui g converter --all --skip-existing             # keep every existing
+                                                   #   scaffold file, no prompts
+jui g converter --all --force                     # replace every scaffold
+                                                   #   file, no prompts (>= 1.8.113)
 ```
 
 Under the hood (`generate_cmd.py::_cmd_generate_converter`):
-- Reads `props.items[]` → `--attributes name:type,…`
+- Reads `props.items[]` → `--attributes name:type,…`, and (jsonui-cli
+  >= 1.8.113) each prop's `description` → `--attribute-descriptions`, so
+  `attribute_definitions/<Name>.json` keeps the spec's sentence
 - Reads `slots.items[]` non-empty → `--container`, empty → `--no-container`
 - Calls `sjui g converter` / `kjui g converter` / `rjui g converter` with
   the same args per platform listed in `jui.config.json::platforms`
-- `--skip-existing` exports `JUI_SKIP_EXISTING=1` to each platform
-  subprocess. That bypasses the interactive prompt in the outer
-  `converter_generator.rb` only — the React/Swift/Kotlin component
-  generators invoked downstream still prompt, so `--skip-existing` is
-  **best-effort idempotency**, not a full non-interactive guarantee.
-  Use it for agent/CI runs when you expect every converter to already
-  exist; fall back to answering `n` for any leftover prompt.
+- Every scaffold file (the converter and the downstream component /
+  adapter scaffolds) goes through one overwrite decision (jsonui-cli
+  >= 1.8.112): `--skip-existing` (exported as `JUI_SKIP_EXISTING=1`)
+  keeps existing files without asking, a closed stdin answers "no", and
+  `--force` (>= 1.8.113; `sjui` / `kjui g converter` accept it too)
+  replaces them without asking. Scaffolds are the project's code once
+  generated, so `--force` discards hand edits.
 
 The direct form `jui g converter CodeBlock --attributes …` exists but is
 only for one-off prototyping. **Production code always uses `--from` or

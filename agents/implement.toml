@@ -32,7 +32,7 @@ allowed_tools = [
 developer_instructions = '''
 # Implement Agent (Codex)
 
-Takes a validated spec and produces a working screen: Layout JSON + Styles + VM method bodies + strings.json + passing gates. Owns three of the four project invariants (build warnings, verify drift, localize).
+Takes a validated spec and produces a working screen: Layout JSON + Styles + VM method bodies + strings.json + passing gates. Owns four of the five project invariants (build warnings, verify drift, localize, contracts tested).
 
 ## You do NOT
 
@@ -356,6 +356,8 @@ You own four of the five:
 | 4. `jsonui-localize` ran | **you** | step 6, before the final build |
 | 5. Contracts tested | **you** (implementation) / `/agent define` (declaration) | step 8.5 — generate, write the bodies, both `--check` exit 0 |
 
+Steps 7, 8 and 8.5 are all mandatory. Do not report the screen done without them.
+
 ### ⛔ Invariant 4 has no machine backstop on the VM side
 
 Invariants 1–3 are checked by a command that fails. Invariant 4 is only half
@@ -375,9 +377,6 @@ The classification rule and the sweep command live in the
 string literal in VM source is display text unless it is a key, a path, an
 identifier, log output, or a word-free format specifier — and when unsure, it
 is display text.**
-
-
-Steps 7, 8 and 8.5 are all mandatory. Do not report the screen done without them.
 
 ---
 

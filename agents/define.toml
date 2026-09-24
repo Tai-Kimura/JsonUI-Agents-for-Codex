@@ -54,7 +54,18 @@ The spec authoring and editing agent. Responsible for the *intent and contract* 
   "platforms"? } ] }`. `jsonui-test generate unit-stubs` writes the stub per
   platform; the body is the implementer's.
   ⚠️ Declare both in the SUB-spec — `screen_parent_spec` merging discards them.
-  See `/jsonui-screen-spec` for the vocabulary before writing either.
+  See `$jsonui-screen-spec` for the vocabulary before writing either.
+- Closing what `jsonui-test contracts coverage` reports (1.8.116+) is also
+  spec work: a row per declared status the ViewModel handles; `alsoStatuses`
+  when it handles a status exactly like an existing row; `excludedOutcomes`
+  (`by` + `reason`) only when no row can be written; `unreachedOps` for an
+  operation no contracted method calls. An endpoint listed only in
+  `dataFlow.apiEndpoints` (`n/a(unbound endpoint)`) needs binding to the
+  repository / use-case method that calls it. App-wide network effects (terminal
+  401 sign-out, 426 overlay, refresh, excluded paths, opt-out flags) go in
+  the `app_contracts_spec`'s `unitContracts`, not in a screen's rows. A 401
+  row for a call made with an opt-out flag writes `"api.<logout op>":
+  "not-called"`.
 
 ## You do NOT
 
@@ -157,12 +168,13 @@ Before a screen spec references a custom component (`CodeBlock`, `NavLink`, `Col
 | `dataFlow.viewModel.methods` | Public VM contract (button taps, async fetches) | Defaults to `isAsync: false`. See `$jsonui-dataflow` skill. |
 | `dataFlow.viewModel.vars` | Observable state | `{name, type, optional, observable, readOnly, platforms}` |
 | `dataFlow.repositories` | Data access layer; link to API with `methods[].endpoint` | Defaults to `isAsync: true` |
+| `methods[].params` / `returnType` | `"@canonical"` takes the parameters from the operation `endpoint` names; `"@canonical.wire"` takes the response schema name | Unresolvable mark = ERROR. Absent `params` still means "none" |
 | `dataFlow.useCases` | Business logic layer (optional); link to Repo via `repositories` or `methods[].calls` | |
 | `dataFlow.apiEndpoints` | `{path, method (GET/POST/PUT/PATCH/DELETE), request, response, notes}` | Path matches Repo `endpoint` references |
 | `relatedFiles` | Cross-references to generated/hand-written files | Only these `type` values: `View`, `ViewModel`, `Layout`, `Repository`, `UseCase`, `Model`, `Test`, `Extension`, `Component`, `Hook` |
 | `userActions` / `transitions` | Navigation targets | Spec-external code (Navigation) lives in `/agent implement` / `navigation-*` |
 
-When in doubt about a **Layout component or attribute**, call MCP: `lookup_component`, `lookup_attribute`, `search_components`, or `get_platform_mapping`. For per-platform differences call `get_platform_rules`; to find which spec file (or sub-spec of a split screen) covers a topic, call `search_specs`. Don't guess — and if the question is about the Layout JSON itself (not the spec), route to `/agent implement`.
+When in doubt about a **Layout component or attribute**, call MCP: `lookup_component`, `lookup_attribute`, `search_components`, or `get_platform_mapping`. For per-platform differences (an attribute that changes on one platform only) call `get_platform_rules`; to find which spec file (or sub-spec of a split screen) covers a topic, call `search_specs`. Don't guess — and if the question is about the Layout JSON itself (not the spec), route to `/agent implement`.
 
 Naming regexes the schema enforces silently — violations make the spec get SKIPPED during HTML generation:
 
@@ -217,6 +229,22 @@ mcp__jui-tools__doc_validate_spec with file: "login_screen.spec.json"
 ```
 
 Fix any violations. Do not proceed with violations still reported.
+
+### 1.4.1 🔴 `dataFlow` completeness gate (mandatory)
+
+`doc_validate_spec` does NOT catch empty `dataFlow` — it's structurally optional. You catch it. Before moving to user confirmation, verify all of the following:
+
+- [ ] If the screen has **any** user action (tap, submit, fetch, toggle that the VM owns, async work), `dataFlow.viewModel.methods` is non-empty.
+- [ ] Every `stateManagement.eventHandlers` entry that reaches the VM (not a pure-UI toggle) has a corresponding `dataFlow.viewModel.methods` entry.
+- [ ] If the screen has any observable state (loading flag, fetched data, derived display strings the VM computes), `dataFlow.viewModel.vars` is non-empty.
+- [ ] If the screen reads/writes **anything outside the VM** (API, disk, keychain, cache, platform SDK), `dataFlow.repositories[]` has at least one entry with `methods[]` and `endpoint` (or SDK description in `description`).
+- [ ] Every `repositories[*].methods[*].endpoint` has a matching entry in `dataFlow.apiEndpoints[]`.
+- [ ] Methods whose parameters merely restate the API document use `"params": "@canonical"` rather than a hand-copied list — and the ones that deliberately differ (object argument standing in for flat fields, client-side callback, domain return type) are written out, not forced.
+- [ ] If a single user action orchestrates multiple repos or involves multi-step validation, a `dataFlow.useCases[]` entry exists.
+
+If any of the above is incomplete because the user hasn't told you, **STOP and ask** — do not guess method names, repo names, or endpoint shapes. Use the question template in `rules/specification-rules.md` → "How to ask the user when they didn't volunteer this info".
+
+If the screen is genuinely pure-static display (no interaction, no dynamic data), write `dataFlow: { viewModel: { methods: [], vars: [] } }` **explicitly**. Do not omit the `dataFlow` key entirely.
 
 ### 1.5 Show to user + explicit confirmation
 
@@ -373,19 +401,25 @@ mcp__jui-tools__doc_generate_component with file: "codeblock.component.json"
 
 ### 4.5 Handoff: generate the converter
 
-Converter scaffolding is owned by `/agent implement` (it runs the jui / sjui / kjui / rjui toolchain), not by you. Hand off with the exact command:
+Converter scaffolding is owned by `/agent implement` (it runs the jui / sjui / kjui / rjui toolchain), not by you. **`jui build` does NOT auto-run this** — scaffolding is an explicit author action. Hand off with the exact command:
 
 ```
-jui g converter --from codeblock.component.json
+jui g converter --from codeblock.component.json   # single spec
 ```
 
 or, for a batch:
 
 ```
-jui g converter --all
+jui g converter --all                             # all specs (asks before overwriting an existing scaffold file)
+jui g converter --all --skip-existing             # keeps every existing scaffold file, no prompts
+jui g converter --all --force                     # replaces every scaffold file, no prompts (jsonui-cli >= 1.8.113)
 ```
 
-**Do not scaffold with `--attributes` by hand.** The whole point of the spec-driven path is that the attribute list stays in lockstep with the component contract; passing attrs by hand defeats that. `generate_cmd.py::_cmd_generate_converter` reads `props.items[]` → `--attributes` and `slots.items[]` non-empty → `--container`.
+Every scaffold file — the converter and the downstream scaffolds (React / Swift / Kotlin component, adapters) — goes through one overwrite decision (jsonui-cli >= 1.8.112): `--skip-existing` keeps existing files without asking, a closed stdin answers "no", and `--force` replaces them without asking (>= 1.8.113; `sjui` / `kjui g converter` take the same two flags). Scaffolds are the project's code once generated, so `--force` discards hand edits — use it only when that is the intent.
+
+**Do not scaffold with `--attributes` by hand.** The whole point of the spec-driven path is that the attribute list stays in lockstep with the component contract; passing attrs by hand defeats that. `generate_cmd.py::_cmd_generate_converter` reads `props.items[]` → `--attributes` (and, from jsonui-cli 1.8.113, each prop's `description` → `--attribute-descriptions`, so `attribute_definitions/<Name>.json` keeps the spec's sentence) and `slots.items[]` non-empty → `--container`.
+
+**When the spec CHANGES** (props added / renamed / retyped): delete the stale converter file on each affected platform, then re-run `jui g converter --from <spec>`. Do not edit the converter by hand.
 
 ### 4.6 Register in `.jsonui-doc-rules.json` (doc-site / non-JsonUI projects)
 
@@ -528,4 +562,7 @@ If a verify diff shows the Layout is wrong, don't "fix" the spec to match — fi
 3. **Skipping HTML generation** — the Mermaid diagram in HTML is the human-readable proof of the `dataFlow`. Downstream agents reference it.
 4. **Batching screens** — one at a time, with confirmation, always.
 5. **Silently touching Layout JSON** — never. Route to `/agent implement`.
+6. **Empty / missing `dataFlow` on an interactive screen** — agents have shipped specs without `dataFlow.viewModel`, `dataFlow.repositories`, or `dataFlow.useCases` even when the screen clearly needs them. `doc_validate_spec` will NOT catch this; the `jui build` Protocol ends up empty and humans hand-patch the VM. Always run the completeness gate in step 1.4.1 and invoke `$jsonui-dataflow` for the authoring guide — do NOT author `dataFlow` from memory.
+7. **Writing an eventHandler without its matching viewModel method** — if an eventHandler reaches the VM (not a pure-UI toggle), the spec needs BOTH the eventHandler entry AND a `dataFlow.viewModel.methods[]` entry. Missing the VM method means the VM Protocol won't expose it, and hand-written VM code has to add the method out of band.
+8. **Declaring API calls in `viewModel.methods` without a Repository** — ViewModels don't call APIs directly. Any VM method that fetches / loads / saves / deletes needs a corresponding `dataFlow.repositories[]` entry that actually owns the call.
 '''

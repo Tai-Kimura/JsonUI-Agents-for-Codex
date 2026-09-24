@@ -15,9 +15,32 @@ Invariants 6–9 apply when the project uses swagger-driven Data Model codegen (
 - Loop: edit → `jui build` → read warnings → fix → repeat until zero
 
 ```bash
-jui build
-# Warnings: 0 ← required
+jui build 2>&1 | grep -iE 'warning \[|warning:|\[warn|⚠' | grep -vic 'warnings found'
+# 0 ← required
 ```
+
+The second filter drops the build's own summary line (`[WARN] Validation warnings found: N`), which is printed through the same logger and would otherwise count as one more finding than there are (measured on real build logs: 2/2/0/4 against 1/1/0/3 findings).
+
+The filter is a heuristic and errs on the low side: a finding whose own text contains "warnings found" is dropped together with the summary, so read the number as a floor and, whenever it is not 0, read the lines themselves. Keep the `-c` at the end and only there — a `-c` earlier in the pipe turns every later stage into a count of one line, and the expression then reports 1 whether there are five findings or none (measured: 5 → 1, 0 → 1). The zero case is the dangerous one: it reports a finding that does not exist, and the reader goes looking for it. Other tools print their own summaries in other spellings (`jsonui-test validate` ends with `Warnings: 0`, which this expression does not match but a looser `warn` pattern does), so an expression borrowed for another command has to be checked against that command's output first.
+
+**The build does not count for you.** `jui build` prints its findings and exits 0 whether there are none or fifty — it keeps no warning tally, has no line that fails on one, and the "zero warnings" rule lives *here*, in this rulebook, not in the process's exit code. So the gate is you reading the output. Warnings arrive in four spellings, and a narrow pattern silently counts a different thing each time (measured on a consumer's logs, 2026-09-04):
+
+| spelling | where it comes from | trap |
+|---|---|---|
+| `WARNING [origin]: …` | the Python build itself (`WARNING [lint-strings]:`, `WARNING [normalize]:`) — the most common | the colon follows the bracketed origin, so `warning:` never matches it; `\[WARN` matches `[WARN]` but not `[lint-strings]` |
+| `WARNING: …` / `warning: …` | other Python and Ruby paths | case-sensitive `warning:` misses the upper-case form |
+| `⚠` | attribute / design warnings | not matched by any `warn` pattern |
+| `[WARN]` | Ruby logger, **with ANSI colour before it** (`\e[33m[WARN]\e[0m`) | `^\[WARN` anchored at column 0 is always 0 |
+
+Count with the unanchored, case-insensitive expression above — it matches all four shapes and none of the prose lines the build also prints ("no warnings", "Warnings: 0"). The first version of this rule shipped `'warning:|\[WARN|⚠'`, which misses the most common shape; it lasted one hour before a lane measured it against the actual print sites. Accepted warnings (a consumer's baseline of 14 `⚠` it has chosen to live with) are not "zero" — write the number and the reason, never "0 warnings".
+
+**The accepted warning most projects will meet is `WARNING [toolchain]:`.** It says this project's vendored platform tools were synced from an older version than the CLI now running, so the project builds with one toolchain and is validated by another. It reaches the expression above through `warning \[`, so it counts. The library's own docstring used to promise the opposite — that the line was "not counted toward the zero-warnings gate" — and was corrected on 2026-09-09: there is no tally in the process to be outside of, so the rulebook's expression is the only thing counting, and it matches. Record the count with its cause and your decision, next to the build result:
+
+```
+warnings 3 — toolchain split, `jui sync_tool` pending, accepted
+```
+
+The count is per vendored platform, not per project, so a project vendoring three platforms contributes three lines and one vendoring web alone contributes one. Which kind of split you have is already written in the line you are reading — `synced from 1.8.57, but this CLI is 1.8.60` — so compare the two versions rather than running anything. `bootstrap` replaces the shared CLI for every face at once while `sync_tool` is per-face, so lagging the immediately preceding release is the ordinary state *between those two events*; lagging by more than one release is a project that was left behind and never caught up. A one-release gap is consistent with both and settles nothing on its own; a larger gap settles it. `jui sync_tool` clears the line in either case, so whether it clears is not the discriminator — the two versions in the message are. Never write "0 warnings" on the grounds that the split was expected, and never narrow the expression to exclude the line: an exclusion silences the left-behind case too, and that case has no other symptom.
 
 **What `jui build` does in order** (relevant for diagnosing failures):
 1. Distributes shared `layouts/` / `styles/` / `resources/` / `images/` to each platform.
@@ -41,6 +64,18 @@ jui build
 jui verify --fail-on-diff
 # Exit 0 ← required
 ```
+
+### ⚠️ Exit 0 is not the whole result — read the denominator
+
+`jui verify` only compares screens whose Layout JSON it could have generated. A screen whose spec points at a hand-authored layout is **skipped**, and skipped screens do not affect the exit code. So a face where every screen is authored externally passes this invariant while comparing nothing.
+
+This is not a corner case. Across six projects measured together, the count of screens
+actually compared was zero in every one — 47, 30, 19, 18, 11 and 2 screens respectively,
+all of them skipped with the reason `layout authored externally`.
+
+**Satisfying this invariant is therefore not by itself evidence that spec and Layout agree.** Read the line `jui verify` prints (1.8.5 and later name the denominator: `verified N of M screen(s) — K skipped (reason)`), and treat `verified 0` as *this check did not run*, not as *this check passed*. `--json PATH` writes the same numbers as `verified` / `skipped` / `total` / `skippedByReason` for a gate to assert on.
+
+When `verified` is 0, spec–Layout agreement has to come from somewhere else — review of the authored Layout against the spec, or a test that exercises the screen. Do not report the screen as verified.
 
 ---
 
@@ -76,7 +111,7 @@ jui lint-strings
 
 - Every screen completion must end with a clean `jui lint-strings` (and a `jsonui-localize` pass for the VM-side strings the layout scan cannot see)
 - Intentional non-localized literals (brand names, format scaffolding) go in `.jui-strings-allowlist.json` — one entry per (layout, path, value), **reason required**. The ledger fails in both directions: an unlisted raw literal, and a stale entry whose literal is gone
-- `jui build --lint-strings` (or `"lint": {"strings": true}` in jui.config.json) runs the same check inside the build, where findings ride the warning stream and gate via invariant 1
+- `jui build --lint-strings` (or `"lint": {"strings": true}` in jui.config.json) runs the same check inside the build, where findings are **printed** as build warnings — the build's exit code does not change (it has no warning tally), so they gate only through invariant 1, i.e. through you counting them. The hard gate that actually fails is `jui lint-strings` run on its own (exit 2)
 - VM-side strings (error messages, alert titles) are still the `jsonui-localize` skill's territory — the lint covers the layout surface
 
 ### ⛔ The VM half has no gate at all — the sweep is the gate
@@ -127,13 +162,22 @@ A contract exists to make a test exist. `branchContracts` and `unitContracts` ar
 
 `platforms` omitted means every platform; the block is an object or an array of them. `doc_validate_spec` lints the shape.
 
+- `unitContracts` in the **`app_contracts_spec`** — the app-wide effects of the network layer: signing out on a terminal 401, the force-update overlay on 426, refresh, which paths are excluded from them, opt-out flags a call can pass. These happen at the app root, outside every screen's branch harness, so no screen's `branchContracts` can assert them. A screen's rows answer only what its ViewModel does when the status reaches it — and it does reach it: the handler runs, then the error is thrown to the caller
+
 ```bash
 jsonui-test generate branch-tests --check
 jsonui-test generate unit-stubs   --check
 # Exit 0 ← required: every declared case is implemented
 ```
 
-- ⚠️ **These checks measure agreement, not coverage.** They compare the DECLARED set against implemented test names — nothing in the toolchain computes a coverage percentage. `N = 0 case(s) declared` exits 0 exactly like a fully implemented project. So the exit code is a floor, never the answer — quote `N case(s) declared across M spec file(s)`, never "check passed"
+- ⚠️ **These checks measure agreement, not coverage.** They compare the DECLARED set against implemented test names. `N = 0 case(s) declared` exits 0 exactly like a fully implemented project. So the exit code is a floor, never the answer — quote `N case(s) declared across M spec file(s)`, never "check passed"
+- **Coverage is measured separately, and is not a gate yet (1.8.116+).** `jsonui-test contracts coverage` lists the API outcomes the OpenAPI declares that no branch row answers, per method × operation × platform. Read `units` and `statuses required` on the same line as the result — `units 0` means nothing was measured, not that everything is covered. Close an `uncovered` status in this order:
+  1. a row whose `when` serves that status
+  2. `alsoStatuses` on an existing row, when the ViewModel treats that status exactly like the row's own (the generator copies the row and checks it)
+  3. `excludedOutcomes` with `by` (`unit` / `unreachable` / `unexpressible`) and a `reason` — the last resort, because it asserts nothing
+  4. `unreachedOps` for an operation no contracted method calls
+  - An endpoint declared only in `dataFlow.apiEndpoints`, with no `repositories` / `useCases` method whose `endpoint` is that route, is reported `n/a(unbound endpoint)` and exits 3: no generated test can see its calls (they reach the runtime as undeclared). Bind it to the method that calls it — do not answer it with rows or exclusions
+- ⚠️ **Since 1.8.116 a generated branch test fails when the method calls a declared endpoint that none of its rows reaches.** The failure names the operation. If the method really makes that call (a refetch after a save, a follow-up load), add `"api.<op>": "called"` to the row whose act makes it; do not delete the endpoint from `dataFlow` to make the red go away — that turns the declaration into a lie
 - ⚠️ **Declare in the sub-spec, never in a parent spec.** `screen_parent_spec` merging discards these blocks; since 1.8.46 `--check` reports PROBLEM and exits non-zero instead of losing them silently
 - Implementation is detected **by name**: iOS `func <name>(` in an `XCTestCase`, Android `fun <name>(`, web `it("<name>")`. A renamed test is an unimplemented case
 - `unit-stubs` writes the stub in each platform's convention; the body is yours. It needs `platforms.<p>.unitTestsDir` in `jui.config.json`

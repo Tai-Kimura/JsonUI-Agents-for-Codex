@@ -400,6 +400,66 @@ of what was sent), or one of three `@` references:
 it stays visible and counted in the generated decision table. Prefer a note
 over a contract you are guessing at.
 
+### Answering every declared API outcome (1.8.116+)
+
+`jsonui-test contracts coverage` compares the statuses each operation declares
+in the OpenAPI with the rows that serve them, per method × operation ×
+platform. Four declarations close what it reports:
+
+```jsonc
+"branchContracts": {
+  "unreachedOps": {                      // no contracted method calls it
+    "api.prefetchBanner": { "reason": "the parent screen calls it; this VM only reads the result" }
+  },
+  "methods": {
+    "onCancelTap": {
+      "branches": [
+        { "when": { "api.cancelReservation": "error_500" },
+          "alsoStatuses": { "api.cancelReservation": ["429", "503"] },   // same then, copied and tested
+          "then": { "data.errorBannerVisibility": "visible" } }
+      ],
+      "excludedOutcomes": {              // last resort — asserts nothing
+        "api.detail": { "403": { "by": "unreachable", "reason": "the PUT just before answers 403 first" } }
+      }
+    }
+  }
+}
+```
+
+- **Write a row first.** A status the ViewModel folds into another outcome
+  (a 404 shown as the empty list) is still a row: `when` serves it, `then`
+  states the folded result.
+- **`alsoStatuses`** says "this row's `then` also holds for these statuses".
+  The generator copies the row once per status and runs it, so it is a
+  tested claim. Keys are the row's own `api.<op>` with a string scenario;
+  values are numeric statuses as strings (no `4XX`, no `default`). If
+  `@response.*` in the `then` cannot be read out of that status's body,
+  generation stops and names the row — the status needs its own row.
+- **`excludedOutcomes`** — `by` is `unit` (a unit case covers it),
+  `unreachable` (this method cannot receive it) or `unexpressible` (only a
+  `note` could state it); `reason` is required. There is no
+  `distinguish: false`: an outcome the VM does not distinguish is a row.
+- **`unreachedOps`** — an operation `dataFlow` declares that no contracted
+  method calls. The generated tests check it: a method that does call it
+  goes red.
+- **`metadata.platforms`** on the spec (`["ios", "android"]`) is the set of
+  platforms the screen exists on; coverage and the generator skip the rest.
+- **Every endpoint a method calls belongs on that method.** An endpoint that
+  appears only in `dataFlow.apiEndpoints` is invisible to the generated
+  tests; coverage reports it `n/a(unbound endpoint)` and exits 3. Put it in
+  the `endpoint` of the repository or use-case method that calls it.
+- **App-wide network effects are not a screen's rows.** Sign-out on a
+  terminal 401, the 426 overlay, refresh — declare them as `unitContracts` in
+  the `app_contracts_spec`. When the network layer itself makes an HTTP call
+  that shows up in a screen's generated test (a logout POST after a terminal
+  401), permit it there with `apiOutcomeRules`:
+  `{ "id", "statuses": ["401"], "sideCalls": ["<operationId>"], "verifiedBy": ["<unit case in this file>"], "reason" }`.
+  `sideCalls` takes operationIds, never `VERB /path`.
+- **A call made with an opt-out flag** (e.g. a request that must not end the
+  session on 401) should state it: `"api.logout": "not-called"` in its 401
+  row. Without it, the `apiOutcomeRules` permission would let the flag
+  regress silently.
+
 **Scope the claim to what is invariant.** A branch that only holds because
 some unrelated axis (a plan tier, a locale, a clock) happens to have one
 value pins that axis too, and goes red later for a reason that is not a
