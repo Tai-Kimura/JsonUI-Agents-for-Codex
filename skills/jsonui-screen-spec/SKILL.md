@@ -384,7 +384,10 @@ leave it out.
 **`when`** — `data.<field>` (a declared UI variable / VM var / state),
 `arg.<name>` (**must be a declared param of that method** —
 `stateManagement.eventHandlers` carries no signature), `api.<op>` (the name of
-a mock scenario), or `cond` (a named condition, `!` to negate).
+a mock scenario), `cond` (a named condition, `!` to negate), or
+`harness.<name>` (a precondition outside the ViewModel that the harness sets
+up — see *Harness conditions* below; `cond` is different: its witness sets
+ViewModel state).
 
 **`then`** — a literal, `transition`, `api: "none"` (no declared route was
 called), `api.<op>: "called" | "not-called"`, `api.<op>.request` (partial match
@@ -463,6 +466,40 @@ platform. Four declarations close what it reports:
   of the method** — the generated tests bound a method's calls per method,
   not per branch. A row where the method must not make that call says
   `"api.<op>": "not-called"`; a note saying so asserts nothing.
+
+### Harness conditions (1.8.118+)
+
+Some ViewModels call an endpoint only under a precondition the branch harness
+does not have — a signed-in session, a feature flag, the clock. Such an
+operation is `unattributed` in coverage, and neither a row nor an exclusion
+can close it. Declare the precondition once, in the `app_contracts_spec`, and
+name it in the rows that need it:
+
+```jsonc
+// app_contracts_spec
+"harnessConditions": {
+  "session": { "values": ["absent", "present"], "default": "absent",
+               "reason": "the profile is fetched only with a session" }
+}
+// a screen's row
+{ "when": { "harness.session": "present", "api.fetchMe": "error_429" },
+  "then": { "data.profileErrorVisibility": "visible" } }
+```
+
+- Every declared condition is arranged in every generated test of the app,
+  before the harness is built: with the row's value, or `default` when the
+  row does not name it. An app that declares none gets no calls and no file.
+- The app implements the hook once, in its harness directory:
+  `branch-conditions.ts` (`export function arrangeCondition(name, value)`),
+  `BranchConditions.kt`, `BranchConditions.swift`. The generator writes a
+  stub once, when the file is missing, and the stub fails every pair you have
+  not implemented; `generate branch-tests --check` warns while the file is
+  missing.
+- The hook must make the ViewModel observe the condition as production
+  would. Nothing checks this for you. For a session, see the jsonui-test
+  agent's harness rules.
+- An undeclared name, a value outside `values`, or `harness.*` in an app with
+  no `harnessConditions` is a declaration error.
 
 **Scope the claim to what is invariant.** A branch that only holds because
 some unrelated axis (a plan tier, a locale, a clock) happens to have one

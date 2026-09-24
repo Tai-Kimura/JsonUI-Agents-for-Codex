@@ -112,6 +112,7 @@ If the user is adding an `Embed`-based screen (tablet master/detail, dashboard w
 - **New + specs exist, no layouts** → `/agent implement` (or `/agent define` to add a new spec first)
 - **Existing bug** → `/agent debug` first (READ-ONLY, returns a routing recommendation)
 - **Existing spec change** → `/agent define`
+- **Close contract coverage** (`jsonui-test contracts coverage` reports uncovered outcomes) → `/agent define` (Task 6)
 - **Existing Layout / VM body change** → `/agent implement`
 - **Existing navigation change** → `navigation-{ios,android,web}`
 - **Investigation only** → `/agent debug`

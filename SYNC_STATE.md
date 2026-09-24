@@ -6,11 +6,11 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: 2b16b9a526c7a1b7310da5c2039d06f588476fc3
+source_commit: dae3c47a25701c976095cd5e852bca18399bf4a3
 
 - **Last sync date:** 2026-09-25
-- **Source commit subject:** `rules+skills+agents (P2c, MCP): define runs test_contracts_coverage (jsonui-mcp-server 2.13.0); a row's "called" permits the op in every row of its method`
-- **Note on this sync:** ports one commit (the MCP rows of P2c and the per-method permission of the upper bound): `rules/invariants.md` and `skills/jsonui-screen-spec/SKILL.md` verbatim; `rules/mcp-policy.md` with the same edits outside the two Codex spots (inventory regenerated with `scripts/contract_check.py --fix`); `agents/define.toml` gains `mcp__jui-tools__test_contracts_coverage` in `allowed_tools`, and `agents/define.toml` / `agents/test.toml` carry the Claude body edits with the reference adaptations.
+- **Source commit subject:** `agents (P2d x P4): jsonui-define Task 6 closes a precondition-only call with a harness condition row`
+- **Note on this sync:** ports three commits: 2605601 (P2d, harness conditions: `skills/jsonui-screen-spec/SKILL.md` verbatim, `agents/test.toml` B2.3 regenerated from the Claude source with the reference adaptations), fdb07fb (P4, jev: define/test regenerated from the Claude source with the reference adaptations; conductor gains one routing line by hand), and dae3c47 (P2d x P4: one item in define's Task 6). `{{P2D_VERSION}}` resolved to 1.8.118.
 
 Run `scripts/check_sync.sh /path/to/JsonUI-Agents-for-claude` to see what has
 changed on the Claude side since the recorded commit.
