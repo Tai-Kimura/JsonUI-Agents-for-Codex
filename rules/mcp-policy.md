@@ -33,6 +33,7 @@ JsonUI agents call the `jsonui-mcp-server` (the `jui-tools` MCP) to interact wit
 | Regenerate API mocks from swagger | `mcp__jui-tools__test_mock_generate` | `jsonui-test mock generate` |
 | Validate test files (always `no_install: true`) | `mcp__jui-tools__test_validate` | `jsonui-test validate --no-install` |
 | Generate branch tests from a spec's branchContracts | `mcp__jui-tools__test_generate_branch_tests` | `jsonui-test generate branch-tests` |
+| Contract-gap coverage (declared API outcomes no branch row answers; read-only, not a gate yet) | `mcp__jui-tools__test_contracts_coverage` | `jsonui-test contracts coverage` |
 
 **Four** commands have no MCP equivalent today and are Bash-invoked:
 `jui lint-generated`, `jui lint-strings` (lint gates), and the two invariant-5 checks —
@@ -84,7 +85,7 @@ description = "..."
 config_file = "agents/define.toml"
 ```
 
-**Avoid:** wildcard `mcp__jui-tools__*`. It loads all 42 tool schemas into the prompt, wasting tokens and increasing agent confusion.
+**Avoid:** wildcard `mcp__jui-tools__*`. It loads every tool schema the server exposes into the prompt, wasting tokens and increasing agent confusion.
 
 **Avoid:** allowing every built-in tool. Only grant `Write` / `Edit` / `Bash` when the agent genuinely needs them.
 
@@ -101,7 +102,7 @@ Generated from each agent's `allowed_tools` in `agents/*.toml` — the `allowed_
 |---|---|
 | `conductor` | `get_project_config`, `list_api_models`, `list_api_specs`, `list_component_specs`, `list_layouts`, `list_screen_specs` |
 | `debug` | `doc_validate_spec`, `get_platform_mapping`, `get_platform_rules`, `get_project_config`, `jui_build`, `jui_verify`, `list_api_models`, `list_api_specs`, `list_component_specs`, `list_layouts`, `list_screen_specs`, `lookup_attribute`, `lookup_component`, `preview_api_model_sync`, `read_layout_file`, `read_spec_file`, `search_components`, `search_specs` |
-| `define` | `doc_generate_component`, `doc_generate_spec`, `doc_init_component`, `doc_init_spec`, `doc_rules_init`, `doc_rules_show`, `doc_validate_component`, `doc_validate_spec`, `get_platform_rules`, `get_project_config`, `jui_verify`, `list_api_specs`, `list_component_specs`, `list_screen_specs`, `lookup_attribute`, `lookup_component`, `preview_api_model_sync`, `read_spec_file`, `search_components`, `search_specs` |
+| `define` | `doc_generate_component`, `doc_generate_spec`, `doc_init_component`, `doc_init_spec`, `doc_rules_init`, `doc_rules_show`, `doc_validate_component`, `doc_validate_spec`, `get_platform_rules`, `get_project_config`, `jui_verify`, `list_api_specs`, `list_component_specs`, `list_screen_specs`, `lookup_attribute`, `lookup_component`, `preview_api_model_sync`, `read_spec_file`, `search_components`, `search_specs`, `test_contracts_coverage` |
 | `ground` | `get_project_config`, `jui_build`, `jui_init` |
 | `implement` | `get_binding_rules`, `get_modifier_order`, `get_platform_mapping`, `get_platform_rules`, `get_project_config`, `jui_build`, `jui_generate_project`, `jui_verify`, `list_api_models`, `list_api_specs`, `list_layouts`, `list_screen_specs`, `lookup_attribute`, `lookup_component`, `read_layout_file`, `read_spec_file`, `search_components`, `search_specs` |
 | `navigation-android` | `get_platform_mapping`, `get_project_config`, `get_screen_identity`, `jui_build`, `list_screen_specs`, `read_layout_file`, `read_spec_file` |
@@ -114,12 +115,14 @@ Generated from each agent's `allowed_tools` in `agents/*.toml` — the `allowed_
 
 ## Test tooling: agent use of the test_* MCP tools
 
-The MCP server exposes eight `test_*` tools. Agent consumption is deliberate, not implied — a tool not listed as agent-consumed stays unused by agents until this policy changes:
+Every `test_*` tool the MCP server exposes is in one of the two groups below. Agent consumption is deliberate, not implied — a tool not listed as agent-consumed stays unused by agents until this policy changes:
 
-**Agent-consumed** (declared by `test`):
+**Agent-consumed** (declared by `test` unless noted):
 
 - `test_artifacts_pull` / `test_artifacts_status` — collect and inspect run artifacts
 - `test_mock_generate` — regenerate `generated/` mocks from the swagger
+- `test_generate_branch_tests` — generate branch tests from a spec's `branchContracts` (generated output, never authored)
+- `test_contracts_coverage` — declared by `define`: the contract-gap coverage report, read-only. Closing what it reports is spec work, and `define` is Bash-free. Its `exit` is the CLI's verdict (0 / 1 / 2 / 3); `exit: null` means no report came back that the tool could trust
 - `test_validate` — validate test files, **always with `no_install: true`**. The wrapper's default (like the CLI's) installs tests as a side effect, and authoring-time validation must not consume the files. Servers built before 2026-08-01 do not know the parameter and **silently drop it** (the SDK's zod validation strips unknown keys), so the install runs anyway — if validation appears to install despite `no_install: true`, update `~/.jsonui-mcp-server` (`bash ~/.jsonui-mcp-server/install.sh`) and restart before trusting this path.
 
 **Deliberately not agent-consumed:**

@@ -402,8 +402,8 @@ over a contract you are guessing at.
 
 ### Answering every declared API outcome (1.8.116+)
 
-`jsonui-test contracts coverage` compares the statuses each operation declares
-in the OpenAPI with the rows that serve them, per method × operation ×
+`jsonui-test contracts coverage` (MCP: `test_contracts_coverage`) compares the
+statuses each operation declares in the OpenAPI with the rows that serve them, per method × operation ×
 platform. Four declarations close what it reports:
 
 ```jsonc
@@ -459,6 +459,10 @@ platform. Four declarations close what it reports:
   session on 401) should state it: `"api.logout": "not-called"` in its 401
   row. Without it, the `apiOutcomeRules` permission would let the flag
   regress silently.
+- **`"api.<op>": "called"` in one row permits that operation in every row
+  of the method** — the generated tests bound a method's calls per method,
+  not per branch. A row where the method must not make that call says
+  `"api.<op>": "not-called"`; a note saying so asserts nothing.
 
 **Scope the claim to what is invariant.** A branch that only holds because
 some unrelated axis (a plan tier, a locale, a clock) happens to have one

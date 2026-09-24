@@ -6,11 +6,11 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: d2f4cac5938be2e7d0b679dc8b5bd098a29f3672
+source_commit: 2b16b9a526c7a1b7310da5c2039d06f588476fc3
 
 - **Last sync date:** 2026-09-25
-- **Source commit subject:** `rules+skills+agents (P2c): contracts coverage, the upper bound on a method's calls, and the declarations that answer them (jsonui-cli 1.8.116)`
-- **Note on this sync:** besides the five commits since 979e765 (2401149, fa04474, 9b90203, 01eddcd, d2f4cac), it closes drift that predated the recorded commit: `rules/invariants.md` and the bodies of `agents/define.toml`, `agents/test.toml` and `agents/implement.toml` were regenerated from the Claude source at d2f4cac with the reference adaptations and divergence rows below (the content check does not cover agents, so that drift was invisible to it). 9b90203's frontmatter change (quoting `description:`) has no counterpart here — the TOML shell carries no description.
+- **Source commit subject:** `rules+skills+agents (P2c, MCP): define runs test_contracts_coverage (jsonui-mcp-server 2.13.0); a row's "called" permits the op in every row of its method`
+- **Note on this sync:** ports one commit (the MCP rows of P2c and the per-method permission of the upper bound): `rules/invariants.md` and `skills/jsonui-screen-spec/SKILL.md` verbatim; `rules/mcp-policy.md` with the same edits outside the two Codex spots (inventory regenerated with `scripts/contract_check.py --fix`); `agents/define.toml` gains `mcp__jui-tools__test_contracts_coverage` in `allowed_tools`, and `agents/define.toml` / `agents/test.toml` carry the Claude body edits with the reference adaptations.
 
 Run `scripts/check_sync.sh /path/to/JsonUI-Agents-for-claude` to see what has
 changed on the Claude side since the recorded commit.
