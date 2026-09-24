@@ -6,10 +6,11 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: 979e76514c753636256498c123386d8982b52a9f
+source_commit: d2f4cac5938be2e7d0b679dc8b5bd098a29f3672
 
-- **Last sync date:** 2026-08-02
-- **Source commit subject:** `feat(skills): action/assertion tables are generated from the runner schema`
+- **Last sync date:** 2026-09-25
+- **Source commit subject:** `rules+skills+agents (P2c): contracts coverage, the upper bound on a method's calls, and the declarations that answer them (jsonui-cli 1.8.116)`
+- **Note on this sync:** besides the five commits since 979e765 (2401149, fa04474, 9b90203, 01eddcd, d2f4cac), it closes drift that predated the recorded commit: `rules/invariants.md` and the bodies of `agents/define.toml`, `agents/test.toml` and `agents/implement.toml` were regenerated from the Claude source at d2f4cac with the reference adaptations and divergence rows below (the content check does not cover agents, so that drift was invisible to it). 9b90203's frontmatter change (quoting `description:`) has no counterpart here — the TOML shell carries no description.
 
 Run `scripts/check_sync.sh /path/to/JsonUI-Agents-for-claude` to see what has
 changed on the Claude side since the recorded commit.

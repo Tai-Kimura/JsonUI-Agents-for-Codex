@@ -92,8 +92,11 @@ Which kind of test?
 3. **Branch test** — what a ViewModel method does per branch (which API was
    called, what state resulted, whether it navigated), generated from the
    spec's branchContracts
-4. **Test documentation** — add description JSON + HTML docs to existing tests
-5. **Test validation** — check whether existing tests pass the CLI schema
+4. **Unit test stubs** — for the hand-written classes a spec declares in
+   `unitContracts` (mappers, formatters, calculators); the stub is generated,
+   the body is yours
+5. **Test documentation** — add description JSON + HTML docs to existing tests
+6. **Test validation** — check whether existing tests pass the CLI schema
 ```
 
 If the user says something like "write tests for screen X", skip the question.
@@ -113,6 +116,11 @@ not what is on screen, and a screen test is the wrong instrument for them.
 mcp__jui-tools__read_spec_file with file: "{screen}.spec.json"
 mcp__jui-tools__read_layout_file with file: "{screen}.json"
 ```
+
+A large screen may be SPLIT into sub-specs (the parent's `subSpecs` array;
+`list_screen_specs` lists them inline as `screen_sub_spec` rows). When you
+need the part that covers a topic, `mcp__jui-tools__search_specs` with a
+keyword returns the owning file + JSON path directly.
 
 Extract:
 
@@ -194,9 +202,7 @@ Fix any errors. When the project config declares `mock.swagger` + `mock.mockDir`
 this gate **also** regenerates `<mockDir>/generated/` if it is stale and fails on
 mock contract drift — so a failure here is not necessarily about the test file.
 Read the output before assuming the test is wrong; `no_mock_check: true` isolates the
-test-file half.
-
-For the full list of available actions/assertions and their
+test-file half. For the full list of available actions/assertions and their
 parameters, see the `$jsonui-screen-test` skill's reference or read
 `test_tools/jsonui_test_cli/schema.py` in the jsonui-cli repo.
 
@@ -372,6 +378,12 @@ names the fix: a scenario the mock file does not define, an `arg.<name>` the
 method does not declare as a param, a `@response.<path>` absent from the
 scenario body. Those belong back in the spec — route to `/agent define`.
 
+Since 1.8.116 a generated test also fails when the method, during its act,
+calls a declared endpoint that none of its rows reaches; the failure names
+the operation. That is a missing `"api.<op>": "called"` in the spec (usually
+a refetch after a save) — route it to `/agent define`. Never remove the
+endpoint from `dataFlow` to silence it.
+
 ### B2.3 Wire the harness (once per screen)
 
 The generated test + runtime are `@generated`. The **harness** is written
@@ -380,6 +392,25 @@ state, invoking the method, expecting transitions, and resolving `@key`
 strings. Fill in its typed switches — and keep them **closed**, failing loudly
 on an unknown name. A lenient default (`?? "open"`) turns a dropped value into
 a passing test of the wrong case.
+
+Two environment rules, both measured on real apps:
+
+- **Web: do not stub the session cookie.** With a session cookie present the
+  app's ApiClient tries a refresh; the screen does not declare the refresh
+  route, the runtime answers it 599, and the ViewModel receives status 0
+  instead of 401. The test stays green because `then` does not look at the
+  error kind — it is now testing an outcome production never has. If a
+  harness must carry a session, declare the refresh route and its scenarios
+  in the spec's `dataFlow` and the mock.
+- **iOS: stop third-party SDKs that make HTTP calls on their own schedule in
+  the test host** (push-token delivery is the common one). Such a call can
+  land inside a test's act window or not, depending on what an earlier run
+  left in the simulator, so the result flips between runs and no row can
+  fix it. Clearing Keychain or UserDefaults is not enough — it only stops
+  the SDK until it delivers again. Under XCTest, do not set the messaging
+  delegate, turn auto-init off and skip APNs registration; turning auto-init
+  off alone still let the delegate fire. This is a change in the app's own
+  launch code, so say so to the implementer — the generator cannot make it.
 
 ### B2.4 Prove the tests can fail
 
