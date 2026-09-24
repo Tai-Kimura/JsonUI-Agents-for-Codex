@@ -69,6 +69,7 @@ The spec authoring and editing agent. Responsible for the *intent and contract* 
   "not-called"`. `"api.<op>": "called"` in one row permits that operation
   in every row of the method that does not mention it; the rows that must
   not make the call write `"not-called"` (a note saying so asserts nothing).
+  Task 6 is the procedure.
 
 ## You do NOT
 
@@ -91,6 +92,7 @@ What are you doing?
 2. **Edit an existing spec** — add a screen, change fields, refine dataFlow
 3. **Author API / DB spec** — OpenAPI
 4. **Author component spec** — custom component for functionality not in standard JsonUI
+5. **Close contract coverage** — answer the API outcomes `test_contracts_coverage` reports uncovered
 ```
 
 If the user already has a clear request, skip the question.
@@ -468,6 +470,56 @@ Detect by asking: "Is this project using JsonUI / SwiftJsonUI / KotlinJsonUI / R
 3. `mcp__jui-tools__doc_rules_show` to verify the effective ruleset
 
 Do this BEFORE authoring any screen spec in a non-JsonUI project.
+
+---
+
+## Task 6: Close contract coverage (draft, confirm, record)
+
+Use this when the user asks to close coverage, or when `mcp__jui-tools__test_contracts_coverage` reports anything other than a pass. You draft the answers; the user decides; the spec records the decision. Every decision lands as a row, `alsoStatuses`, `excludedOutcomes`, `unreachedOps`, or an endpoint binding — there is no other place a decision is kept.
+
+**Draft from the spec, the OpenAPI and the mock files only.** Do not open ViewModel / Repository / UseCase source to decide how a status is handled. When the spec does not say, the draft is a question for the user, not a guess (see `rules/specification-rules.md` on inventing behaviour).
+
+### 6.1 Measure
+
+`mcp__jui-tools__test_contracts_coverage` with `screen` set (one screen at a time). Read the verdict from `exit`:
+
+| `exit` | Meaning | What you do |
+|---|---|---|
+| 0 | pass (or `empty`) | Quote `units` and `statuses required` for each platform. `units 0` means nothing was measured |
+| 1 | `uncovered` ≥ 1, or a declaration error | 6.2–6.5 for `uncovered[]`; fix each entry of `declaration_errors[]` as its message says |
+| 2 | cannot start | Report `error` and stop — it is a config problem, not a spec gap |
+| 3 | something could not be evaluated | Fix what `not_evaluated[]` / `na_endpoints` name: bind an unbound endpoint to the method that calls it, add the missing scenario, add the document to `mock.swagger` |
+| `null` | no report the tool could trust | Nothing was measured. Say so; never report it as a pass |
+
+### 6.2 Read each uncovered entry
+
+An entry is `{method, op, route, statuses, kind, callers}`. `kind` is `partial` (the method reaches the operation and some of its statuses have rows), `default-only` (only the success scenario is served), or `unattributed` (no contracted method reaches the operation; `callers` lists the use-case methods that call it).
+
+Before drafting, read what the spec already says about that method and operation: its rows for the operation and their `notes`; `userActions`, `serverSide` and `stateManagement` prose; the OpenAPI response for the status (description, body schema); the mock file's scenario names for the route (a row's `when` names a scenario, not a status).
+
+### 6.3 Draft — one per (method, operation, status), in this order
+
+1. **`alsoStatuses`** on an existing row, when the spec's own words say the ViewModel handles this status exactly like that row's status. Name the row and quote the words. The copy is checked like any row: its `@response.*` references must resolve in this status's body, and `alsoStatuses` takes numeric statuses only (no `4XX`, no `default`).
+2. **A new row**: `when` serves the status's scenario (`"api.<op>": "<scenario>"`); `then` states what the spec says results (state, message, navigation). A `then` that only says the call was made is not a row.
+   - **Arrange what the call needs** in the same `when`: `data.<field>` for a declared UI variable / VM var / state (ViewModel-internal state is declared in `branchContracts.seedableState` first), `arg.<name>` for a declared param. If the spec names no field or param for the state the row needs, the gap is in the spec — say which state is missing.
+   - **`@response.*` reads the body of the one operation `when` serves.** When the method calls two operations and the row is about one, leave the other out of `when` (it gets its default scenario) and assert it in `then` with `"api.<other>": "called"`.
+   - **When the spec says a result exists but not what it is** ("a common message" with no strings key, a refetch described for one status only), write what it does state, and list the vagueness as a spec gap in 6.4. Do not invent the missing value, and do not drop the row for it.
+3. **`excludedOutcomes`** (`by` + `reason`; the shape is in `$jsonui-screen-spec`), only when neither 1 nor 2 can be written: `unit` (a unit case covers it — name the case), `unreachable` (this method cannot receive it — say why from the spec or the OpenAPI), `unexpressible` (only a `note` could state it). An exclusion asserts nothing, so it is the last resort.
+4. **`unattributed`**: `callers` names the use-case methods whose `calls` include the operation; the ViewModel method that calls one of them makes the call. Give that method a row that reaches the operation — a `when` that serves one of its scenarios, or `then` `"api.<op>": "called"`. If no contracted method on this screen calls it (the parent screen does, for example), declare it in `unreachedOps` with a reason. An endpoint that appears only in `dataFlow.apiEndpoints` is the different case in 6.1 (`n/a(unbound endpoint)`).
+5. **A call made only under a precondition** the harness does not have (signed in, a feature flag, 1.8.118+): declare a harness condition in the app spec (`harnessConditions`) and write rows with `"harness.<name>": "<value>"` (`$jsonui-screen-spec`, *Harness conditions*). An exclusion cannot close it, and `unreachedOps` would be false.
+6. **Ask** when the spec does not say how the ViewModel handles the status. Write the question; do not pick 1–5 for it.
+
+Also say when the spec's prose describes a state that no field or row carries. That is a gap in the spec, not a draft.
+
+### 6.4 Show, then write
+
+Show the drafts as one table per screen: method · operation · status · draft (1–6) · the JSON to add · the spec words it rests on · the spec gaps it found. Ask which to accept. Write only the accepted ones. What is not accepted stays `uncovered`, visibly. Never add an exclusion to make the number go down.
+
+### 6.5 Close the loop
+
+1. `doc_validate_spec`
+2. `test_contracts_coverage` again — quote before and after on one line per platform: required · row · excluded · uncovered · not evaluated · exit. Take them from `platforms[].totals`; `statuses_required` and `units` are there from 1.8.118, before that add up `screens[]`. A row that asserts `"api.<op>": "called"` for an operation the method did not reach before makes that (method, operation) a new unit, so `statuses required` can grow: draft the new units in another round, until a re-measure adds none
+3. Route to `/agent test` to regenerate branch tests. Each new row and each `alsoStatuses` copy is a new generated test. If one goes red against the implementation, that is a finding for `/agent debug`. Do not weaken the row to make it green.
 
 ---
 
