@@ -147,6 +147,10 @@ were previously only documentation:
 - **`required` on a parameter or a request-body property** decides whether the
   generated signature is `String` or `String?`. Marking everything optional
   produces optional arguments in three platforms' generated code.
+- **`nullable: true` is not the same as optional.** `nullable` says the value
+  can be `null`; leaving a property out of `required` says the key can be
+  absent. Declare each only when the API does it: a response field that is
+  always present but may be `null` is both `required` and `nullable`.
 - **A named success-response schema** (`$ref`) is what `@canonical.wire` lifts.
   An operation whose 200 body is described inline has no name to lift, and a
   spec asking for it fails validation with that reason.

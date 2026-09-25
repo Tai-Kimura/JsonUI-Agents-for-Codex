@@ -48,9 +48,9 @@
   },
 
   "nullable": {
-    "optional_field": {
+    "nullable_field": {
       "type": "string",
-      "description": "Optional field",
+      "description": "May be null. Not the same as optional: a property is optional when it is left out of required",
       "nullable": true
     }
   },

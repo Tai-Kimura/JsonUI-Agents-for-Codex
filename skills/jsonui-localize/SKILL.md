@@ -215,8 +215,16 @@ viewModel.updateData(mapOf("errorMessage" to context.getString(R.string.screen_n
    | Finding | Meaning |
    |---|---|
    | `missing-key` | a reference resolving in neither `strings.json` nor the platform's own catalogs (`Localizable.strings` / `.xcstrings` / `.stringsdict`) — **the raw key reaches the screen** |
-   | `unused-key` | a table entry no face references |
+   | `unused-key` | a table entry no face's app code references — from 1.8.119, a key that only test code reads is unused too (a test may still read it: removing the key makes that test's reference a `missing-key`, so update the test with it) |
    | `dynamic-ref` | a lookup whose key is not a literal and whose statement names no `*_STRING_KEYS` map — the closure that makes the other two trustworthy |
+
+   From 1.8.119, test code is scanned but does not count as usage:
+   iOS test targets (from `project.pbxproj`), Android test source sets
+   (`src/test*`, `src/androidTest*`, `src/testFixtures*`) and web
+   `*.test.*` / `*.spec.*` / `__tests__/`. Generated branch harnesses still
+   count. A test directory those rules miss is added per face with
+   `lint.stringsUsageTestPaths` (for example `{"web": ["tests"]}`), and
+   every run prints `usage scanned N source file(s), excluded M as test code`.
 
    It is opt-in per run (or per project via `lint.stringsUsage`). What it
    does **not** see is a literal that was never routed through the table at

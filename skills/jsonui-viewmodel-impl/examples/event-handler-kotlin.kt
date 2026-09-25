@@ -6,10 +6,10 @@ init {
     )}
 }
 
-private fun onLoginTap() {
+fun onLoginTap() {
     // Implementation
 }
 
-private fun onItemTap(item: ItemData) {
+fun onItemTap(item: ItemData) {
     // Implementation
 }

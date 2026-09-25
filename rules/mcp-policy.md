@@ -31,14 +31,15 @@ JsonUI agents call the `jsonui-mcp-server` (the `jui-tools` MCP) to interact wit
 | Pull run artifacts (screenshots / recordings) | `mcp__jui-tools__test_artifacts_pull` | `jsonui-test artifacts pull` |
 | Show artifacts config + already-pulled files | `mcp__jui-tools__test_artifacts_status` | `jsonui-test artifacts status` |
 | Regenerate API mocks from swagger | `mcp__jui-tools__test_mock_generate` | `jsonui-test mock generate` |
-| Validate test files (always `no_install: true`) | `mcp__jui-tools__test_validate` | `jsonui-test validate --no-install` |
+| Validate test files (always `no_install: true`; from 1.8.119 the result also carries the project's contracts-coverage section — a gate from 1.8.120) | `mcp__jui-tools__test_validate` | `jsonui-test validate --no-install` |
 | Generate branch tests from a spec's branchContracts | `mcp__jui-tools__test_generate_branch_tests` | `jsonui-test generate branch-tests` |
-| Contract-gap coverage (declared API outcomes no branch row answers; read-only, not a gate yet) | `mcp__jui-tools__test_contracts_coverage` | `jsonui-test contracts coverage` |
+| Contract-gap coverage (declared API outcomes no branch row answers; read-only. Its `exit` does not read the baseline: `jsonui-test validate` compares these entries with the app's baseline, and gates on that from 1.8.120) | `mcp__jui-tools__test_contracts_coverage` | `jsonui-test contracts coverage` |
 
-**Four** commands have no MCP equivalent today and are Bash-invoked:
-`jui lint-generated`, `jui lint-strings` (lint gates), and the two invariant-5 checks —
+These commands have no MCP equivalent today and are Bash-invoked:
+`jui lint-generated`, `jui lint-strings` (lint gates), the two invariant-5 checks —
 `jsonui-test generate unit-stubs [--check]` (no MCP tool exists for unit stubs at all) and
-`jsonui-test generate branch-tests --check` (the generator has `test_generate_branch_tests`; **the `--check` mode does not**).
+`jsonui-test generate branch-tests --check` (the generator has `test_generate_branch_tests`; **the `--check` mode does not**) —
+and `jsonui-test contracts baseline` (1.8.119+; `test` runs it only to shrink an existing baseline — the first recording is the user's decision).
 Everything else goes through MCP — including every other `jsonui-test` operation an agent performs.
 
 ---
@@ -134,13 +135,13 @@ Every `test_*` tool the MCP server exposes is in one of the two groups below. Ag
 
 ## Bash tool policy
 
-Include `Bash` in the `tools:` frontmatter when the agent needs one of the two uncovered CLI commands (`jui lint-generated`, typically CI-only; `jui lint-strings`, the localize gate), or needs to run platform-specific native commands (e.g. `xcodebuild`, `./gradlew`, `npm run dev`, `git`, `rbenv` diagnostics). Every other `jui` / `jsonui-doc` operation is an MCP call — prefer that.
+Include `Bash` in the `tools:` frontmatter when the agent needs one of the Bash-invoked commands listed above (`jui lint-generated`, typically CI-only; `jui lint-strings`, the localize gate; `jsonui-test contracts baseline`, to shrink a coverage baseline), or needs to run platform-specific native commands (e.g. `xcodebuild`, `./gradlew`, `npm run dev`, `git`, `rbenv` diagnostics). Every other `jui` / `jsonui-doc` operation is an MCP call — prefer that.
 
 - `ground`: needs Bash for initial platform scaffolding
 - `debug`: needs Bash for impl-side grep and CI-style checks
 - `navigation-*`: may need Bash for platform-native build verification
 - `implement`: may need Bash for platform-native runs alongside the MCP build gate
-- `test`: needs Bash for running platform test suites (`jsonui-test validate --no-install` stays available as the human/CI fallback, but agent validation goes through `test_validate`)
+- `test`: needs Bash for running platform test suites and `jsonui-test contracts baseline` (`jsonui-test validate --no-install` stays available as the human/CI fallback, but agent validation goes through `test_validate`)
 
 `conductor` and `define` stay Bash-free.
 

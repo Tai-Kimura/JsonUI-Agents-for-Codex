@@ -161,11 +161,13 @@ Ask: "Are there visibility rules? (e.g., show loading indicator when loading)"
 {
   "condition": "loading",
   "effects": [
-    {"element": "loading_indicator", "state": "visible", "variableName": "loadingVisibility"}
+    {"element": "loadingIndicator", "state": "visible", "variableName": "loadingVisibility"}
   ]
 }
 ```
 If `variableName` is omitted, it auto-generates as `{elementId}Visibility`.
+
+`element` (and `states[].values[].visibleElements`) names the **Layout JSON `id` exactly as the layout writes it** — not a snake_case copy of it. If the layout says `loadingIndicatorView`, write `loadingIndicatorView`. For a node inside an include that has an id, write the resolved id (`hero` + `type_badge` → `heroTypeBadge`), not the included layout's own `type_badge`. `doc_validate_spec` checks it against the resolved layout (1.8.119+ as info, a WARNING from 1.8.120). When the message names layout ids (`the layout has '…'`), they are candidates, not matches: confirm which node the rule means — the one that carries the visibility binding — before changing the spec, and ask the user when there is no candidate. Never delete an effect or a `visibleElements` entry to clear the message.
 
 **⛔ CRITICAL: No Business Logic in UI Variables**
 

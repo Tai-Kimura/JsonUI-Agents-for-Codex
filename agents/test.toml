@@ -202,7 +202,30 @@ Fix any errors. When the project config declares `mock.swagger` + `mock.mockDir`
 this gate **also** regenerates `<mockDir>/generated/` if it is stale and fails on
 mock contract drift — so a failure here is not necessarily about the test file.
 Read the output before assuming the test is wrong; `no_mock_check: true` isolates the
-test-file half. For the full list of available actions/assertions and their
+test file from mock drift. From 1.8.119 the result also carries the
+project's contracts-coverage section — the whole project, whatever `files`
+holds; `no_mock_check` does not skip it. From 1.8.120 it can make the
+result FAILED (`Coverage: FAILED` on the summary line). That is not a test-file
+problem: entries not in the baseline, and what cannot be baselined, go to
+`/agent define` (Task 6) with the screens validate names; `baselined but closed`
+alone, or with only vanished beside it, means shrink the baseline as in B2.2;
+with any other cause in the same result, route to `/agent define` first and
+shrink after it routes back. `baselined but gone from the run` (vanished)
+means the unit left the run — a screen off the platform, or a spec file,
+method, operation or status gone. When the same platform also reports
+`not evaluated` or `screens not evaluated`, fix those first (define) and
+measure again; what is still vanished after that is the user's: tell them —
+removing or re-keying those entries by hand is theirs, and the shrink keeps
+them. `new` on one screen with `vanished` of the same count on another (a
+renamed spec file), or `new` and `vanished` after a rename of a method or an
+operation, is the same debt under a new name, not new debt: stop and tell
+the user before routing anything. `cannot start` — a config problem, or a baseline
+file that cannot be read — is the user's to fix: report it; never edit,
+regenerate or delete the file. The notice's "or record the current ones once"
+is the user's decision, not yours: tell them the command it names
+(`jsonui-test contracts baseline --initial`) and the app's root to run it
+from. Never run it when the file is missing, never pass `--initial`, and never
+skip the section to get a green. For the full list of available actions/assertions and their
 parameters, see the `$jsonui-screen-test` skill's reference or read
 `test_tools/jsonui_test_cli/schema.py` in the jsonui-cli repo.
 
@@ -335,6 +358,8 @@ tests/flows/{flow}.test.json
 mcp__jui-tools__test_validate with files: ["tests/flows/{flow}.test.json"], no_install: true
 ```
 
+A coverage failure in the result is routed as in A4, not fixed in the flow file.
+
 ---
 
 ## Flow B2: Branch test (generated, not authored)
@@ -388,7 +413,30 @@ will allow it — each one that must not make it needs `"api.<op>":
 "not-called"`.
 
 API outcomes that `contracts coverage` reports uncovered are also spec work:
-route them to `/agent define` (Task 6: close contract coverage).
+route them to `/agent define` (Task 6: close contract coverage). When define
+routes back after closing, regenerate the branch tests and, if the app has a coverage baseline
+(1.8.119+ — Glob for `contracts_coverage_baseline.json` in the
+`spec_directory` that `mcp__jui-tools__get_project_config` reports; validate's
+`no baseline file` wording is not the check, because it is absent whenever
+the section did not run), run
+`jsonui-test contracts baseline` from the app's root (the directory with its
+`jui.config.json`) to remove the entries that are now closed. It only removes
+what the run measured as answered (for an unmeasured entry: its operation or
+status measured again). It keeps what is only unmeasured now
+(`H unmeasured now — not closed, kept`) and what vanished (`V vanished — not
+closed, kept; remove or re-key them by hand`: the user's to resolve — tell them).
+`new K not added (close them, or add by hand)` means route those K to
+`/agent define` Task 6 — adding by hand is the user's option, not yours —
+unless the same line reports `V vanished` of the same count after a rename
+(as in A4): that is the renamed debt; tell the user and route nothing.
+`nothing written` means one of two things. `nothing written — the gate fails
+on these …` names what cannot be baselined: route those to `/agent define`
+too, then run it again. `nothing written — recording the first baseline …`
+means there is no file: stop and tell the user — the first recording is
+their decision, and you never pass `--initial`. `cannot start` (for example a
+baseline file a merge conflict left unparsable) means stop and report it.
+Never create the file when it is missing, and never delete, regenerate or
+edit it.
 
 ### B2.3 Wire the harness (once per screen)
 
@@ -398,6 +446,15 @@ state, invoking the method, expecting transitions, and resolving `@key`
 strings. Fill in its typed switches — and keep them **closed**, failing loudly
 on an unknown name. A lenient default (`?? "open"`) turns a dropped value into
 a passing test of the wrong case.
+
+**Call the method as the spec declares it.** The generated test passes the
+row's `arg.*` values positionally, in the order of the method's declared
+params — the spec, the `jui generate` stub and the test agree on that. A
+ViewModel method that takes one object instead (`start(params: {…})`) has
+drifted from its spec. Report it and route it (the spec's params →
+`/agent define`, the ViewModel → `/agent implement`); do not absorb it in the
+harness (its `invoke` on Android and iOS, or a wrapper around the ViewModel in
+`createHarness` on web), which would hide the drift from every later reader.
 
 **Harness conditions (once per app, 1.8.118+).** When the app spec
 declares `harnessConditions`, the generator creates one file in the harness
@@ -454,7 +511,7 @@ mcp__jui-tools__doc_generate_html with input_dir: "tests/", output_dir: "tests/h
 
 ## Flow D: Validation only
 
-Call `test_validate` with the target directory in `files` and `no_install: true`. Report errors; do not fix them blindly — understand each one. For the schema reference of available actions / assertions, see the `$jsonui-screen-test` skill or `test_tools/jsonui_test_cli/schema.py` in the jsonui-cli repo.
+Call `test_validate` with the target directory in `files` and `no_install: true`. Report errors; do not fix them blindly — understand each one. A coverage failure in the result is routed as in A4, not fixed in the test files. For the schema reference of available actions / assertions, see the `$jsonui-screen-test` skill or `test_tools/jsonui_test_cli/schema.py` in the jsonui-cli repo.
 
 ---
 
@@ -544,10 +601,11 @@ Same rule as `/agent define` and `/agent implement`: finish the full cycle (draf
 - tests/html/ — (if regenerated)
 
 ### Validation
-- ✅ test_validate (no_install: true): pass
+- test_validate (no_install: true): Result {PASSED|FAILED}
+- contracts coverage, per platform: exit {X} · baselined {N} (matched {M} · new {K} · stale {S}[ · unmeasured now {H}][ · vanished {V}])  (or the section's one line — not applicable / not run / cannot start / skipped — quoted; none of them is a coverage pass)
 - ⚠ (any warnings noted)
 
-### Coverage
+### Spec tie-in
 - Tied to spec sections: eventHandlers ({count}), displayLogic states ({count}), VM methods ({count})
 
 ### Next

@@ -6,9 +6,9 @@
       {
         "name": "ViewState",
         "values": [
-          {"value": "loading", "description": "Loading data", "visibleElements": ["loading_indicator"]},
-          {"value": "content", "description": "Showing content", "visibleElements": ["content_view"]},
-          {"value": "error", "description": "Error occurred", "visibleElements": ["error_view"]}
+          {"value": "loading", "description": "Loading data", "visibleElements": ["loadingIndicator"]},
+          {"value": "content", "description": "Showing content", "visibleElements": ["contentView"]},
+          {"value": "error", "description": "Error occurred", "visibleElements": ["errorView"]}
         ],
         "notes": "Main view state"
       }
@@ -26,8 +26,8 @@
       {
         "condition": "isLoading == true",
         "effects": [
-          {"element": "loading_view", "state": "visible"},
-          {"element": "content_view", "state": "hidden"}
+          {"element": "loadingView", "state": "visible"},
+          {"element": "contentView", "state": "hidden"}
         ]
       }
     ],
