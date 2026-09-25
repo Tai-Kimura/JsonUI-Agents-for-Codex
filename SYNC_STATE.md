@@ -6,11 +6,11 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: dae3c47a25701c976095cd5e852bca18399bf4a3
+source_commit: fee2646e31cc279c5fbaf252bcd7f31eb9b2d30e
 
 - **Last sync date:** 2026-09-25
-- **Source commit subject:** `agents (P2d x P4): jsonui-define Task 6 closes a precondition-only call with a harness condition row`
-- **Note on this sync:** ports three commits: 2605601 (P2d, harness conditions: `skills/jsonui-screen-spec/SKILL.md` verbatim, `agents/test.toml` B2.3 regenerated from the Claude source with the reference adaptations), fdb07fb (P4, jev: define/test regenerated from the Claude source with the reference adaptations; conductor gains one routing line by hand), and dae3c47 (P2d x P4: one item in define's Task 6). `{{P2D_VERSION}}` resolved to 1.8.118.
+- **Source commit subject:** `skills (screen-test, flow-test): a test step's element ids are checked against every layout (jsonui-cli 1.8.119 as INFO, WARNING from 1.8.120); appOwnedIds is not for clearing the message`
+- **Note on this sync:** ports eight commits, landed together with jsonui-cli 1.8.119: 23480d2 (P3b v6c: `jsonui-test validate` reports contracts coverage from 1.8.119 and gates on it from 1.8.120; the first baseline is the user's, agents only shrink it — agents regenerated from the Claude source with the reference adaptations, rules and skills verbatim; `AGENTS.md` gains invariant 5's coverage clause and the seventh never-do, and README's Bash line points at `rules/mcp-policy.md`, both by hand), ca72626 (B2.3: call a branch-test method as the spec declares it), be2336e (P2.5 v3c: displayLogic elements and visibleElements are the layout's ids as written), cfe93cf (U8: the include id prefix on every generated platform), f32d6de (swagger: nullable is not optional), 83fad38 (localize: test code does not count as string usage), 7be3710 (viewmodel-impl / dataflow: a declared member keeps its visibility), and fee2646 (screen-test / flow-test: step element ids are checked against every layout). Version values written in: the coverage report and the element-id checks from 1.8.119; the coverage gate, the layout-id WARNING and web's include id prefix from 1.8.120; the dynamic-mode include id prefix from SwiftJsonUI 10.28.0 and KotlinJsonUI 2.41.1.
 
 Run `scripts/check_sync.sh /path/to/JsonUI-Agents-for-claude` to see what has
 changed on the Claude side since the recorded commit.

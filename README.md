@@ -51,7 +51,7 @@ You'll be asked to pick a workflow. Three of the four route through `/agent cond
 | `test` | W | Screen / flow test authoring + validation + HTML docs |
 | `debug` | R | READ-ONLY spec-first bug trace, behavior walks, code archaeology |
 
-Switch between them with `/agent <name>`. All agents are MCP-first — they call the `jsonui-mcp-server` for spec / layout reads, lookups, generation, build, verify. Bash shell-outs to the `jui` CLI are reserved for the four commands without MCP wrappers.
+Switch between them with `/agent <name>`. All agents are MCP-first — they call the `jsonui-mcp-server` for spec / layout reads, lookups, generation, build, verify. Bash shell-outs are reserved for the commands without MCP wrappers (see `rules/mcp-policy.md`).
 
 ## Skills (11)
 

@@ -304,7 +304,7 @@ The public contract. Every method and var declared here becomes a Protocol/Inter
 "vars": [
   { "name": "isLoading", "type": "Bool" },
   { "name": "items", "type": "Array(Product)" },
-  { "name": "onDismiss", "type": "() -> Void", "optional": true },
+  { "name": "onDismiss", "type": "() -> Void", "optional": true, "observable": false },
   { "name": "staticLabel", "type": "String", "readOnly": true, "observable": false }
 ]
 ```
@@ -332,12 +332,14 @@ spec: { "name": "fetch", "params": [{"name":"id","type":"String"}], "returnType"
 Var example:
 
 ```
-spec: { "name": "onDismiss", "type": "() -> Void", "optional": true }
+spec: { "name": "onDismiss", "type": "() -> Void", "optional": true, "observable": false }
   iOS Protocol:     var onDismiss: (() -> Void)? { get set }
-  iOS Impl:         @Published var onDismiss: (() -> Void)? = nil
+  iOS Impl:         var onDismiss: (() -> Void)? = nil
   Android Protocol: var onDismiss: (() -> Unit)?
-  Web Base:         public onDismiss?: () => void;   (only when observable: false)
+  Web Base:         public onDismiss?: () => void;   (the Base carries a var only when observable: false)
 ```
+
+A callback is not UI state, so declare it `observable: false`. `observable` defaults to `true` for every type: left at the default, the same var is `@Published var onDismiss` on iOS and `val onDismiss: StateFlow<(() -> Unit)?>` on Android.
 
 ### `// @jui:protocol` marker (escape hatch)
 

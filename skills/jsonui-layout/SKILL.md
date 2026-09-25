@@ -78,7 +78,7 @@ Before implementing layouts, read the specification JSON and extract:
 - `structure.wrapperViews` - Wrapper views with `targetId`
 - `stateManagement.uiVariables` - Data bindings to use (`@{variableName}`)
 - `stateManagement.eventHandlers` - Event bindings to use (`@{onHandlerName}`)
-- `stateManagement.displayLogic` - Visibility rules (may include explicit `variableName`)
+- `stateManagement.displayLogic` - Visibility rules (may include explicit `variableName`). A node that an `element` or a state's `visibleElements` names takes that id exactly as the spec writes it — except inside an include that has an id, where the spec names the resolved id (`hero` + `type_badge` → `heroTypeBadge`) and the node in the included layout keeps its own (`type_badge`). When the node already exists under another spelling, the spec is what gets corrected — do not rename the node.
 
 ## Creating new sub-files
 

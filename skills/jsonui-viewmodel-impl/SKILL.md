@@ -139,6 +139,8 @@ This ensures all auto-generated Data models are up-to-date.
 
 ## ViewModel Patterns
 
+**A method or var the spec declares in `dataFlow.viewModel` is a member of the generated Protocol / Interface — keep its visibility.** Kotlin: never `private`, `protected` or `internal` on the member (`jui build` adds `override`). A method is `fun X(…)`. A var takes the form the protocol declares: a `readOnly` one is `val X`, observable or not (or `var X` with `private set` — Kotlin prohibits a private setter on an open property, so this holds in the generated class, which is final; in an open class it is `final override var X`); a settable one is `val X: StateFlow<…>` over a private `MutableStateFlow` when observable (the default), and `var X` with `observable: false`. Swift: `func` / `var`, never `private` or `fileprivate` (a readOnly var may be `private(set) var`). A narrowed one does not satisfy the protocol, and the build fails. Only helpers the spec does not declare (`validateInput()` below) stay private.
+
 ### Swift (SwiftUI)
 
 → Example: `examples/viewmodel-swift.swift`

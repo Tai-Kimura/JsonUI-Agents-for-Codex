@@ -17,12 +17,12 @@ class LoginViewModel : ViewModel() {
         )}
     }
 
-    private fun onLoginTap() {
+    fun onLoginTap() {
         if (!validateInput()) return
         // TODO: Call login API
     }
 
-    private fun onRegisterTap() {
+    fun onRegisterTap() {
         // TODO: Navigate to register
     }
 
