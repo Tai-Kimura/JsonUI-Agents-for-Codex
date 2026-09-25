@@ -845,7 +845,7 @@ curl -fsSL https://raw.githubusercontent.com/Tai-Kimura/jsonui-cli/main/test_too
 
 ### Step 3: Validate the Test File
 
-From 1.8.119, `jsonui-test validate` also prints the project's contracts-coverage section, and from 1.8.120 it can fail on it whatever file you pass (the project's coverage, not this test file — see `rules/invariants.md`, invariant 5).
+From 1.8.119, `jsonui-test validate` also prints the project's contracts-coverage section, and from 1.8.121 it can fail on it whatever file you pass (the project's coverage, not this test file — see `rules/invariants.md`, invariant 5).
 
 ```bash
 jsonui-test validate path/to/your_flow.test.json
@@ -860,9 +860,9 @@ Result: PASSED
 Files: 1, Errors: 0, Warnings: 0
 ```
 
-**With warnings or errors:** the file path, then one line per warning or error, then the same two summary lines (`Result: FAILED` when there is any error — and from 1.8.120 also when coverage fails: `Errors: 0` with `Coverage: FAILED`).
+**With warnings or errors:** the file path, then one line per warning or error, then the same two summary lines (`Result: FAILED` when there is any error — and from 1.8.121 also when coverage fails: `Errors: 0` with `Coverage: FAILED`).
 
-From 1.8.119 the coverage section follows the summary (`coverage: <platform> units … → exit X (…) · baselined N (matched · new · stale[ · unmeasured now][ · vanished])`, then the notice or the gate line). From 1.8.120 the summary line also carries `Coverage: passed|FAILED (exit X; …)`.
+From 1.8.119 the coverage section follows the summary (`coverage: <platform> units … → exit X (…) · baselined N (matched · new · stale[ · unmeasured now][ · vanished])`, then the notice or the gate line). From 1.8.121 the summary line also carries `Coverage: passed|FAILED (exit X; …)`.
 
 ### Fix and Re-validate
 

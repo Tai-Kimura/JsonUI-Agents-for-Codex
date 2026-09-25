@@ -167,7 +167,7 @@ Ask: "Are there visibility rules? (e.g., show loading indicator when loading)"
 ```
 If `variableName` is omitted, it auto-generates as `{elementId}Visibility`.
 
-`element` (and `states[].values[].visibleElements`) names the **Layout JSON `id` exactly as the layout writes it** — not a snake_case copy of it. If the layout says `loadingIndicatorView`, write `loadingIndicatorView`. For a node inside an include that has an id, write the resolved id (`hero` + `type_badge` → `heroTypeBadge`), not the included layout's own `type_badge`. `doc_validate_spec` checks it against the resolved layout (1.8.119+ as info, a WARNING from 1.8.120). When the message names layout ids (`the layout has '…'`), they are candidates, not matches: confirm which node the rule means — the one that carries the visibility binding — before changing the spec, and ask the user when there is no candidate. Never delete an effect or a `visibleElements` entry to clear the message.
+`element` (and `states[].values[].visibleElements`) names the **Layout JSON `id` exactly as the layout writes it** — not a snake_case copy of it. If the layout says `loadingIndicatorView`, write `loadingIndicatorView`. For a node inside an include that has an id, write the resolved id (`hero` + `type_badge` → `heroTypeBadge`), not the included layout's own `type_badge`. `doc_validate_spec` checks it against the resolved layout (1.8.119+ as info, a WARNING from 1.8.121). When the message names layout ids (`the layout has '…'`), they are candidates, not matches: confirm which node the rule means — the one that carries the visibility binding — before changing the spec, and ask the user when there is no candidate. Never delete an effect or a `visibleElements` entry to clear the message.
 
 **⛔ CRITICAL: No Business Logic in UI Variables**
 
@@ -461,9 +461,22 @@ platform. Four declarations close what it reports:
   `{ "id", "statuses": ["401"], "sideCalls": ["<operationId>"], "verifiedBy": ["<unit case in this file>"], "reason" }`.
   `sideCalls` takes operationIds, never `VERB /path`.
 - **A call made with an opt-out flag** (e.g. a request that must not end the
-  session on 401) should state it: `"api.logout": "not-called"` in its 401
-  row. Without it, the `apiOutcomeRules` permission would let the flag
-  regress silently.
+  session on 401) should state it in its 401 row: `"api.<op>": "not-called"`,
+  where `<op>` is the operationId the `apiOutcomeRules` rule names in
+  `sideCalls` — or, when the screen declares that endpoint itself, the
+  screen's own name for it. Without the row, the rule's permission lets the
+  flag regress silently. From jsonui-cli 1.8.120 the
+  row may name a side call the screen does not declare, but only as
+  `"not-called"`: `"called"`, a `when` scenario and `.request` stop
+  generation, because checking that the call is made is the rule's
+  `verifiedBy` unit case's job. A regressed flag then fails its row as
+  `api.<op>: this row says not-called — called N time(s)`. With an earlier
+  jsonui-cli the row is accepted only when the screen declares the operation
+  in `dataFlow` (otherwise validate warns and generation stops); do not
+  declare an endpoint the screen does not call just to write it. There, a
+  regressed flag fails with the bound's message, whose advice to write
+  `"called"` is wrong for this row: keep `"not-called"` and fix the
+  ViewModel.
 - **`"api.<op>": "called"` in one row permits that operation in every row
   of the method** — the generated tests bound a method's calls per method,
   not per branch. A row where the method must not make that call says
