@@ -31,9 +31,9 @@ JsonUI agents call the `jsonui-mcp-server` (the `jui-tools` MCP) to interact wit
 | Pull run artifacts (screenshots / recordings) | `mcp__jui-tools__test_artifacts_pull` | `jsonui-test artifacts pull` |
 | Show artifacts config + already-pulled files | `mcp__jui-tools__test_artifacts_status` | `jsonui-test artifacts status` |
 | Regenerate API mocks from swagger | `mcp__jui-tools__test_mock_generate` | `jsonui-test mock generate` |
-| Validate test files (always `no_install: true`; from 1.8.119 the result also carries the project's contracts-coverage section — a gate from 1.8.120) | `mcp__jui-tools__test_validate` | `jsonui-test validate --no-install` |
+| Validate test files (always `no_install: true`; from 1.8.119 the result also carries the project's contracts-coverage section — a gate from 1.8.121) | `mcp__jui-tools__test_validate` | `jsonui-test validate --no-install` |
 | Generate branch tests from a spec's branchContracts | `mcp__jui-tools__test_generate_branch_tests` | `jsonui-test generate branch-tests` |
-| Contract-gap coverage (declared API outcomes no branch row answers; read-only. Its `exit` does not read the baseline: `jsonui-test validate` compares these entries with the app's baseline, and gates on that from 1.8.120) | `mcp__jui-tools__test_contracts_coverage` | `jsonui-test contracts coverage` |
+| Contract-gap coverage (declared API outcomes no branch row answers; read-only. Its `exit` does not read the baseline: `jsonui-test validate` compares these entries with the app's baseline, and gates on that from 1.8.121) | `mcp__jui-tools__test_contracts_coverage` | `jsonui-test contracts coverage` |
 
 These commands have no MCP equivalent today and are Bash-invoked:
 `jui lint-generated`, `jui lint-strings` (lint gates), the two invariant-5 checks —

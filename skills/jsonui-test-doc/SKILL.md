@@ -313,7 +313,7 @@ jsonui-test v tests/screens/login/login.test.json
 jsonui-test v tests/
 ```
 
-From 1.8.119, `jsonui-test v` also prints the project's contracts-coverage section, and from 1.8.120 it can fail on it whatever path you pass (the project's coverage, not these files — see `rules/invariants.md`, invariant 5).
+From 1.8.119, `jsonui-test v` also prints the project's contracts-coverage section, and from 1.8.121 it can fail on it whatever path you pass (the project's coverage, not these files — see `rules/invariants.md`, invariant 5).
 
 ### Common Validation Warnings
 

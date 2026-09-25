@@ -307,7 +307,7 @@ jsonui-test generate unit-stubs   --check
 - ⚠️ **`N = 0 case(s) declared` also exits 0.** The checks compare declared
   against implemented; they do not measure coverage. Coverage of the declared
   API outcomes is `jsonui-test validate`'s coverage section (a gate from
-  1.8.120): closing it is `/agent define` Task 6, running validate is
+  1.8.121): closing it is `/agent define` Task 6, running validate is
   `/agent test`; never record or edit a coverage baseline, or pass `--initial`
   or `--no-coverage-check`, to get a green. Quote the count — a green
   check over an empty set is the thing this step exists to prevent
@@ -328,7 +328,7 @@ jsonui-test generate unit-stubs   --check
 - ✅ VM literal sweep: M literals swept across {files}, all accounted for
 - ✅ branch-tests --check: exit 0, N case(s) declared across M spec file(s)  (or: no conditional method on this screen)
 - ✅ unit-stubs --check: exit 0, N case(s) declared  (or: no hand-written class added)
-- contracts coverage (from 1.8.120 a gate): as `/agent test` last reported it — exit · baselined (matched · new · stale[ · unmeasured now][ · vanished]) — or "not measured yet — route to `/agent test` (Flow D) before calling invariant 5 met"
+- contracts coverage (from 1.8.121 a gate): as `/agent test` last reported it — exit · baselined (matched · new · stale[ · unmeasured now][ · vanished]) — or "not measured yet — route to `/agent test` (Flow D) before calling invariant 5 met"
 
 ### Files touched
 - Layout: docs/screens/layouts/{screen}.json
@@ -359,7 +359,7 @@ You own four of the five:
 | 2. `jui verify --fail-on-diff` | **you** | step 8, after every edit cycle |
 | 3. `@generated` untouched | **you** | never edit them; if drift appears, fix spec or body |
 | 4. `jsonui-localize` ran | **you** | step 6, before the final build |
-| 5. Contracts tested | **you** (implementation) / `/agent define` (declaration) | step 8.5 — generate, write the bodies, both `--check` exit 0 · validate's coverage section (from 1.8.120): closed by `/agent define` Task 6, run by `/agent test` — quote it as they last reported it, never as yours |
+| 5. Contracts tested | **you** (implementation) / `/agent define` (declaration) | step 8.5 — generate, write the bodies, both `--check` exit 0 · validate's coverage section (from 1.8.121): closed by `/agent define` Task 6, run by `/agent test` — quote it as they last reported it, never as yours |
 
 Steps 7, 8 and 8.5 are all mandatory. Do not report the screen done without them.
 

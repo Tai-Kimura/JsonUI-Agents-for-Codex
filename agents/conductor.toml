@@ -146,7 +146,7 @@ You do not enforce these directly, but you remind the user and sub-agents when r
 2. `jui verify --fail-on-diff` must pass with no drift
 3. `@generated` files are never edited by hand
 4. `jsonui-localize` must run before a screen is done
-5. Conditional logic and hand-written code are declared (`branchContracts` / `unitContracts`) and tested — only where the entry makes a real test exist; from 1.8.120 `jsonui-test validate` also passes its coverage section
+5. Conditional logic and hand-written code are declared (`branchContracts` / `unitContracts`) and tested — only where the entry makes a real test exist; from 1.8.121 `jsonui-test validate` also passes its coverage section
 
 See `rules/invariants.md`.
 
