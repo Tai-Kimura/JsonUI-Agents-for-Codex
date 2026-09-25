@@ -6,11 +6,11 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: fee2646e31cc279c5fbaf252bcd7f31eb9b2d30e
+source_commit: e063601ad2c957e101654540e46f9484004fd91f
 
 - **Last sync date:** 2026-09-25
-- **Source commit subject:** `skills (screen-test, flow-test): a test step's element ids are checked against every layout (jsonui-cli 1.8.119 as INFO, WARNING from 1.8.120); appOwnedIds is not for clearing the message`
-- **Note on this sync:** ports eight commits, landed together with jsonui-cli 1.8.119: 23480d2 (P3b v6c: `jsonui-test validate` reports contracts coverage from 1.8.119 and gates on it from 1.8.120; the first baseline is the user's, agents only shrink it — agents regenerated from the Claude source with the reference adaptations, rules and skills verbatim; `AGENTS.md` gains invariant 5's coverage clause and the seventh never-do, and README's Bash line points at `rules/mcp-policy.md`, both by hand), ca72626 (B2.3: call a branch-test method as the spec declares it), be2336e (P2.5 v3c: displayLogic elements and visibleElements are the layout's ids as written), cfe93cf (U8: the include id prefix on every generated platform), f32d6de (swagger: nullable is not optional), 83fad38 (localize: test code does not count as string usage), 7be3710 (viewmodel-impl / dataflow: a declared member keeps its visibility), and fee2646 (screen-test / flow-test: step element ids are checked against every layout). Version values written in: the coverage report and the element-id checks from 1.8.119; the coverage gate, the layout-id WARNING and web's include id prefix from 1.8.120; the dynamic-mode include id prefix from SwiftJsonUI 10.28.0 and KotlinJsonUI 2.41.1.
+- **Source commit subject:** `agents (jsonui-test B2.4): a green run can still print what must be acted on — read the branch-test warnings from a run that shows a passing test's output; a 0 from one that does not is not a measurement`
+- **Note on this sync:** ports one commit: e063601 (jsonui-test B2.4: read the branch-test console lines — unmatched routes, unmatched_foreign, condition_without_effect — from a run that shows a passing test's output, `npx vitest run --reporter=default` on web; a 0 from a run that hides it is not a measurement). `agents/test.toml` regenerated from the Claude source with the reference adaptation (`jsonui-define` → `/agent define`). Version-free. The previous sync (the eight units landed with jsonui-cli 1.8.119) ended at fee2646.
 
 Run `scripts/check_sync.sh /path/to/JsonUI-Agents-for-claude` to see what has
 changed on the Claude side since the recorded commit.

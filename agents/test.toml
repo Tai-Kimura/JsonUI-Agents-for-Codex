@@ -497,6 +497,19 @@ Report which branches you verified this way. Running the tests themselves is
 the user's job (`npm run test:unit`, `./gradlew test`, `xcodebuild test`) —
 same boundary as the runner-based flows above.
 
+**A green run can still print what you must act on — read it from a run
+that shows it.** A generated test that passes may print, on its console and
+never as a failure: `jsonui-test branch test: … reached no declared route
+and was answered 599` (follow the fix the line names; declaring the route
+and its scenarios is spec work — route it to `/agent define`),
+`unmatched_foreign: …` and `condition_without_effect: …` (both info). A
+runner that hides a passing test's console output shows none of them,
+whether or not there are any. On web, vitest's default reporter hides it
+when it detects that an agent is running it, so read them from
+`npx vitest run --reporter=default`. A count of 0 from a run that did not
+show a passing test's output is not a measurement: report it as not
+measured, never as 0.
+
 ---
 
 ## Flow C: Documentation
