@@ -237,6 +237,8 @@ Fix any violations. Do not proceed with violations still reported.
 
 From jsonui-cli 1.9.0 one INFO is also one to fix: `'<name>' initial value <value> is not a value of <Type> (<kind>) — write the value itself, or describe it in description` (the line after it names the release where it becomes a WARNING). Give an Int / Double / Bool / Array / Object uiVariable a value of that type — a string holding a JSON literal (`"0"`, `"false"`, `"[]"`) reads as that literal — and move prose into its `description`.
 
+From jsonui-cli 1.9.1 that line is a WARNING (an INFO in 1.9.0), and `jui verify --fail-on-diff` counts each initial value the spec declares — in `stateManagement.uiVariables`, and in a Collection cell's `uiVariables` against the cell layout — that the layout's `data` does not carry, or carries with another value. An include's entries count under the include id's prefix (`card` + `title` → `cardTitle`), and `"[]"` is not `CollectionDataSource()`; `/agent implement` step 8 has the rules. The spec's side of a fix is yours: a variable only the view model uses belongs in `dataFlow.viewModel.vars`, not `uiVariables`; a cell's value belongs in the cell's `uiVariables`; a value the screen draws stays declared, with the default the layout's `data` gives it.
+
 ### 1.4.1 🔴 `dataFlow` completeness gate (mandatory)
 
 `doc_validate_spec` does NOT catch empty `dataFlow` — it's structurally optional. You catch it. Before moving to user confirmation, verify all of the following:
