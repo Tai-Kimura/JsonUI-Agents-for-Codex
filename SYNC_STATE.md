@@ -6,11 +6,11 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: 77f857b681ddb03a0c284ade5e5f248a6de53a76
+source_commit: 2fe7d75e9b0fa24fd9bd7edb076f7eac413e6629
 
 - **Last sync date:** 2026-09-28
-- **Source commit subject:** `agents (implement 8, define): from jsonui-cli 1.9.1 --fail-on-diff counts the initial values a spec declares and its layout does not carry, an include's data counts under the include id's prefix, and the spec validator's initial-value line is a WARNING`
-- **Note on this sync:** ports one commit, 77f857b (landed with jsonui-cli 1.9.1): jsonui-implement step 8 and jsonui-define — from 1.9.1 `jui verify --fail-on-diff` counts each initial value a screen spec declares that its layout's data does not carry, an include's data counts under the include id's prefix, and the spec validator's initial-value line is a WARNING. Applied from the Codex-side patch written with the Claude one; `agents/*.toml` carry the reference adaptation (`jsonui-implement` → `/agent implement`). The syncs before it: 65481a2 (thirty 1.9.0 units and 1.9.1's web nested-tap sentence; one line of `rules/invariants.md` keeps the announced gate name), then c8a8865, 1917e23 and 2f61608 (landed with jsonui-cli 1.8.120).
+- **Source commit subject:** `agents (jsonui-test B2.4): from jsonui-cli 1.9.1 the generated web rows wait with settleQuiet, and a hand-written test's settle() / settle(n) is 1.8.120's turn-based wait again`
+- **Note on this sync:** ports one commit, 2fe7d75 (landed with jsonui-cli 1.9.1): jsonui-test B2.4 — from 1.9.1 the generated web rows wait with `settleQuiet`, and a hand-written test's `settle()` / `settle(n)` is 1.8.120's turn-based wait again. `agents/test.toml` carries the same text (the sentence has no agent reference). The syncs before it: 77f857b (from 1.9.1 `--fail-on-diff` counts the initial values; an include's data under its id's prefix), 65481a2 (thirty 1.9.0 units and 1.9.1's web nested-tap sentence; one line of `rules/invariants.md` keeps the announced gate name), then c8a8865, 1917e23 and 2f61608 (landed with jsonui-cli 1.8.120).
 
 Run `scripts/check_sync.sh /path/to/JsonUI-Agents-for-claude` to see what has
 changed on the Claude side since the recorded commit.
