@@ -6,11 +6,11 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: 65481a23ab6e8ff8e10063cf29bb7514fb1b3598
+source_commit: 77f857b681ddb03a0c284ade5e5f248a6de53a76
 
 - **Last sync date:** 2026-09-28
-- **Source commit subject:** `agents, rules, skills, installer: jsonui-cli 1.9.0 and 1.9.1 (SwiftJsonUI 10.29.0, KotlinJsonUI 2.42.0, jsonui-mcp-server 2.14.0) — thirty 1.9.0 units and 1.9.1's web nested-tap rule`
-- **Note on this sync:** ports one commit, 65481a2 (landed with jsonui-cli 1.9.0 and 1.9.1): thirty units written for 1.9.0 — among them the version the pack gave the three gates 1.8.120 announced, which now names 1.9.0 (one line of `rules/invariants.md` keeps the announced name, because 1.9.0 and 1.9.1 print it in the coverage gate line) — and 1.9.1's web nested-tap sentence. Applied from the Codex-side patches written with the Claude ones; `agents/*.toml` carry the reference adaptation (`jsonui-define` → `/agent define`), skills are verbatim. The syncs before it: c8a8865, 1917e23 and 2f61608 (landed with jsonui-cli 1.8.120), 10f8bee (the Android sentence) and e063601 (the vitest reporter paragraph).
+- **Source commit subject:** `agents (implement 8, define): from jsonui-cli 1.9.1 --fail-on-diff counts the initial values a spec declares and its layout does not carry, an include's data counts under the include id's prefix, and the spec validator's initial-value line is a WARNING`
+- **Note on this sync:** ports one commit, 77f857b (landed with jsonui-cli 1.9.1): jsonui-implement step 8 and jsonui-define — from 1.9.1 `jui verify --fail-on-diff` counts each initial value a screen spec declares that its layout's data does not carry, an include's data counts under the include id's prefix, and the spec validator's initial-value line is a WARNING. Applied from the Codex-side patch written with the Claude one; `agents/*.toml` carry the reference adaptation (`jsonui-implement` → `/agent implement`). The syncs before it: 65481a2 (thirty 1.9.0 units and 1.9.1's web nested-tap sentence; one line of `rules/invariants.md` keeps the announced gate name), then c8a8865, 1917e23 and 2f61608 (landed with jsonui-cli 1.8.120).
 
 Run `scripts/check_sync.sh /path/to/JsonUI-Agents-for-claude` to see what has
 changed on the Claude side since the recorded commit.

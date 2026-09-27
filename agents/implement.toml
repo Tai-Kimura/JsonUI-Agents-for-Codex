@@ -282,6 +282,12 @@ Do not "fix" one side blindly to match the other. Decide which is correct based 
 
 **Initial values (1.9.0+).** `jui_verify` also compares each initial value the spec declares with the layout's `data` entry — an externally authored layout too — and prints `**WARNING: N initial value(s) a spec declares that its layout does not carry** (…)` with one line each. In jsonui-cli 1.9.0 the parenthesis says they are reported only and names the release from which `--fail-on-diff` counts them: the run exits 0 over them, but they are drift all the same. Make the two agree as above, and do not report "no drift" while the section is printed.
 
+**Initial values are counted (1.9.1+).** From jsonui-cli 1.9.1, `--fail-on-diff` counts each initial value a screen spec declares — in `stateManagement.uiVariables`, and in a Collection cell's (or header's / footer's) `uiVariables` against that cell's layout — that the layout's `data` does not carry (`… declares no data entry '<name>'`, `… gives it no defaultValue`) or carries with another value (`… has <value>`): the parenthesis says counted by `--fail-on-diff`, and `jui_verify` with `fail_on_diff` fails on them. In 1.9.0 the same WARNING lines were reported only.
+
+- An include's `data` counts under the include id's prefix, the way sjui / kjui name it in the screen's Data type: include id `card` + entry `title` → `cardTitle`; an include without an id passes the names through as written. Such a line ends `(in include '<path>')`. On web, rjui does not expand an include — the partial's own Data has the unprefixed name — but the check follows the native naming.
+- Two spellings are not one value. `"[]"` is not `CollectionDataSource()`: sjui emits `= []`, which is not a CollectionDataSource (`jui g project` writes a spec's `Array(X)` as class `[X]`, with `"[]"` when the spec says `"[]"`). A data entry without `defaultValue` starts as nil / null / undefined on all three tools, not as `[]`.
+- Fix a line by making the spec and the layout agree: if the screen draws the value, add the entry to the layout's `data` with the same default; a variable only the view model uses leaves `uiVariables` (it belongs in `dataFlow.viewModel.vars`); a cell's value moves to the cell's `uiVariables`.
+
 ### 8.5 Contracts → declared logic is tested (MUST — invariant 5)
 
 Only for logic that has something to assert. A screen whose ViewModel methods
