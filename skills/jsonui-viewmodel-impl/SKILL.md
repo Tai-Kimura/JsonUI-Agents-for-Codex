@@ -340,6 +340,7 @@ data.productItems = CollectionDataSource(section = Section(cellData = items))
 8. **FOLLOW platform conventions** - Use idiomatic patterns
 9. **NEVER modify code inside tools directories** (`sjui_tools/`, `kjui_tools/`, `rjui_tools/`)
 10. **NEVER edit GENERATED_CODE sections** (Kotlin only) - Code between `// >>> GENERATED_CODE_START` and `// >>> GENERATED_CODE_END` is auto-generated
+11. **A var bound to an enum attribute holds one of the spellings the attribute declares, case and all** (1.9.0+) - the generated code looks the value up as written. A word the attribute does not declare (another case, or a word declared nowhere) is not one it has to read, and can draw the default — nothing warns, since the build cannot see what the var will hold. Look the spellings up with `lookup_attribute`. (Before jsonui-cli 1.9.0, the value was lowercased first.)
 
 ---
 
@@ -434,6 +435,6 @@ function didFinishEditingOrder(id: string) {
 
 If the embedded screen is rendered standalone (not via Embed), `emit` is a no-op — events have no parent to deliver to. The VM does not need to branch on context.
 
-### Navigation inside an embedded VM (v1: `delegate` only)
+### Navigation inside an embedded VM
 
-`navigate(...)` calls forward to the parent's NavController/Router. `pop` / `dismiss` / `navigateBack` are bounded at the embed (they do NOT close the embed). Write VM methods that call these as you would for the standalone case — the runtime handles the rest.
+With `delegate` (the default), `navigate(...)` calls forward to the parent's NavController/Router; with `isolated` they push onto the embed's own stack, and a pop stops at its root. `pop` / `dismiss` / `navigateBack` are bounded at the embed (they do NOT close the embed). Write VM methods that call these as you would for the standalone case — the runtime handles the rest.

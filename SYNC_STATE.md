@@ -6,11 +6,11 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: 2f61608407b5858607602aead1e350ba1961f638
+source_commit: 65481a23ab6e8ff8e10063cf29bb7514fb1b3598
 
-- **Last sync date:** 2026-09-25
-- **Source commit subject:** `skills (screen-spec): from jsonui-cli 1.8.120 a row can say an apiOutcomeRules side call was not called without the screen declaring it — only "not-called"; the call itself is the rule's verifiedBy unit case's`
-- **Note on this sync:** ports three commits landed with jsonui-cli 1.8.120: c8a8865 (the coverage gate, the layout-id WARNING and web's include id prefix are from 1.8.121 — 33 values across the agents, rules and skills), 1917e23 (jsonui-test B2.4: from 1.8.120 each branch-test notice is one line naming its row, outside the runner's console capture; regenerate every screen) and 2f61608 (jsonui-screen-spec: from 1.8.120 a row can say an apiOutcomeRules side call was not called without the screen declaring it). Applied from the Codex-side patches written with the Claude ones; `agents/*.toml` carry the reference adaptation (`jsonui-define` → `/agent define`), skills are verbatim. The syncs before it: 10f8bee (the Android sentence), e063601 (the vitest reporter paragraph) and fee2646 (the eight units landed with jsonui-cli 1.8.119).
+- **Last sync date:** 2026-09-28
+- **Source commit subject:** `agents, rules, skills, installer: jsonui-cli 1.9.0 and 1.9.1 (SwiftJsonUI 10.29.0, KotlinJsonUI 2.42.0, jsonui-mcp-server 2.14.0) — thirty 1.9.0 units and 1.9.1's web nested-tap rule`
+- **Note on this sync:** ports one commit, 65481a2 (landed with jsonui-cli 1.9.0 and 1.9.1): thirty units written for 1.9.0 — among them the version the pack gave the three gates 1.8.120 announced, which now names 1.9.0 (one line of `rules/invariants.md` keeps the announced name, because 1.9.0 and 1.9.1 print it in the coverage gate line) — and 1.9.1's web nested-tap sentence. Applied from the Codex-side patches written with the Claude ones; `agents/*.toml` carry the reference adaptation (`jsonui-define` → `/agent define`), skills are verbatim. The syncs before it: c8a8865, 1917e23 and 2f61608 (landed with jsonui-cli 1.8.120), 10f8bee (the Android sentence) and e063601 (the vitest reporter paragraph).
 
 Run `scripts/check_sync.sh /path/to/JsonUI-Agents-for-claude` to see what has
 changed on the Claude side since the recorded commit.
@@ -51,12 +51,8 @@ Consumer-project identifiers are genericized in this repo. Current list
 | File | Claude source | This repo |
 |---|---|---|
 | `rules/specification-rules.md` | `jsonui-implement` (Claude agent name in the dataFlow prose) | `/agent implement` (Codex invocation; the consumer-flavored examples were genericized on the Claude side too in b3b9b4c — vocabulary now matches verbatim) |
-| `rules/file-locations.md` | consumer FQN example / `BarLegacy*` | `com.example.myapp.model` / `ItemLegacy*` (upstream genericized the FQN to `com.example.app.model` in 7db7a9e — spelling-only difference) |
-| `skills/jsonui-layout/examples/strings-json.json` | domain-flavored sample string | neutral wording |
-| `agents/implement.toml` | domain-flavored Domain accessor example (`displayAbv`/`abv`) | `displayRating`/`rating` |
-| `agents/test.toml` | fixture example schema `` `Bar` `` | `` `Product` `` |
+| `rules/file-locations.md` | the FQN example `com.example.app.model` | `com.example.myapp.model` (spelling-only difference) |
 | `agents/navigation-{ios,android,web}.toml` | domain-flavored route examples (product detail / review form / product routes) | `ProductDetail`, `ReviewForm`, `Product`, `/product/[id]`, `/review/…` |
-| `agents/debug.toml` / `agents/define.toml` | "bar search" example / `"bar_list"` layoutFile example | "product search" / `"item_list"` |
 | `rules/specification-rules.md` (5) | markdown link into JsonUIDocument's `.claude/` path | plain-prose reference |
 | `rules/specification-rules.md` HARD RULE | `jsonui-implement` agent ref | `/agent implement` |
 | `rules/mcp-policy.md` | Claude frontmatter example in "Declaring MCP tools in agents"; inventory prose/marker names frontmatter + `contract_check.sh` | Codex-variant section; inventory prose/marker names `allowed_tools` + `contract_check.py` (structural, per mapping table) |

@@ -204,7 +204,7 @@ mock contract drift — so a failure here is not necessarily about the test file
 Read the output before assuming the test is wrong; `no_mock_check: true` isolates the
 test file from mock drift. From 1.8.119 the result also carries the
 project's contracts-coverage section — the whole project, whatever `files`
-holds; `no_mock_check` does not skip it. From 1.8.121 it can make the
+holds; `no_mock_check` does not skip it. From 1.9.0 it can make the
 result FAILED (`Coverage: FAILED` on the summary line). That is not a test-file
 problem: entries not in the baseline, and what cannot be baselined, go to
 `/agent define` (Task 6) with the screens validate names; `baselined but closed`
@@ -228,6 +228,17 @@ from. Never run it when the file is missing, never pass `--initial`, and never
 skip the section to get a green. For the full list of available actions/assertions and their
 parameters, see the `$jsonui-screen-test` skill's reference or read
 `test_tools/jsonui_test_cli/schema.py` in the jsonui-cli repo.
+
+An `[INFO] … notVisible on '<id>' cannot fail on iOS` line
+(1.9.0+) is not in `Warnings:` and does not
+fail the run, but that step checks nothing on iOS. Handle it as the
+`$jsonui-screen-test` skill says (*A `notVisible` on a decorative image is
+named*): assert on the id of a view around the image that appears and
+disappears with it; when that needs a layout change — an `alt` on a
+meaningful image, or an id or visibility on the view around it — route it
+to `/agent implement` with the image's id and the layout the INFO names. Never
+keep the step off iOS to clear the line, and do not pass `quiet: true`,
+which hides INFO lines.
 
 Note: assertions **auto-wait** (poll until the condition holds or `timeout`), so
 don't precede an assertion with `waitFor`. New capabilities available: `when`/`optional`
@@ -358,7 +369,7 @@ tests/flows/{flow}.test.json
 mcp__jui-tools__test_validate with files: ["tests/flows/{flow}.test.json"], no_install: true
 ```
 
-A coverage failure in the result is routed as in A4, not fixed in the flow file.
+A coverage failure in the result is routed as in A4, not fixed in the flow file, and an `[INFO] … cannot fail on iOS` line is handled as in A4.
 
 ---
 
@@ -411,6 +422,11 @@ endpoint from `dataFlow` to silence it. With it, name the rows of that method
 that stayed green: they do not make the call, and once `called` lands they
 will allow it — each one that must not make it needs `"api.<op>":
 "not-called"`.
+
+From jsonui-cli 1.9.0 both claims — this bound and a
+row's `"not-called"` — hold over a stated window, and their failures say
+so: `(within the act and until no request was in flight for 400 ms after
+it)`. A call made later than that — more than 400 ms after the last request, with nothing in flight (a longer timer, a pause) — is outside it, so a green says nothing about such a call: on web and iOS any such call, on Android one from a thread, a timer or an IO task (a `viewModelScope` delay runs in the row's virtual time, inside the window). An earlier runtime stopped after a fixed drain and could miss a call made just after the act, so after the upgrade a row that was green can go red: the window now sees a call — usually the method's; an earlier row's view model can make it too where the runtime cannot keep it out — a subscription on web, or any such call where web rows cannot be told apart (Node before 20.16 / 22.3, a browser); a process-wide base URL on Android; on iOS a view model kept alive, every earlier one below 26 and a leaked one (`outlived_its_test`) from 26 (B2.4, *An earlier row's view model*). Once B2.4 has ruled that out, a red on the bound is handled as above, and a red on a row's `"not-called"` is a call the row forbids: fix the ViewModel, or route to `/agent define` if the row is wrong. Neither is a timing flake, nor a reason to add waits or to remove the endpoint.
 
 API outcomes that `contracts coverage` reports uncovered are also spec work:
 route them to `/agent define` (Task 6: close contract coverage). When define
@@ -497,12 +513,108 @@ Report which branches you verified this way. Running the tests themselves is
 the user's job (`npm run test:unit`, `./gradlew test`, `xcodebuild test`) —
 same boundary as the runner-based flows above.
 
+**How a generated row waits (1.9.0+).** A generated
+branch test waits for the work, not for a fixed time: once after the
+harness is built and once after the act, each time until no request is in
+flight and none has arrived or been answered for 400 ms. A row whose `when`
+serves an operation its `then` does not mention, or whose `then` says
+`"called"` or reads `.request`, also waits until each such operation has
+been called (not a `--condition-controls` control row, which reads the
+call's absence over the quiet window). So every row takes at least 2 × 400 ms (on web, earlier
+runtimes took tens of milliseconds a row). No spec or row setting tunes
+these waits; the only timing input on the spec side is still a scenario's
+`delayMs` (each applied as at most 30000: a larger value validates without a warning and waits 30000). On Android and iOS a harness that overrides
+`settle()` must call the base one, which holds the 400 ms quiet. Two reds
+come from the wait itself:
+
+- `settle: the row expects <op>, never called within EXPECT_MS (10000 ms)
+  after the act, …` — 10 s after the act: the act never sent that request,
+  the same finding as `route '<op>' declared in when was never hit` (on iOS
+  that line can follow it). A mutation that stops the call goes red this
+  way, 10 s later, not at once.
+- `settle: still busy after N ms — M request(s) in flight …` (Android:
+  `M response(s) still due`) — at 31 s, the budget of one wait (one
+  `delayMs` of at most 30000 and a margin): the work did not settle. Either
+  requests kept being made or answered less than 400 ms apart — after the
+  act, or from the harness's construction (a polling or retry loop) when it
+  is the wait before the act that fails (on web and Android the stack names
+  the row's own `settle` line; on iOS the failure points at the runtime's
+  `settle` for either wait, and a construction that stays busy fails the
+  wait after the act too) — or delayed calls made one after another ended
+  past the budget: the delays of the calls one wait sees add up, and two of
+  16000 already fail it. M is read at the instant the budget ran out and
+  does not tell these apart (the same chain reads 1 or 0 by that instant);
+  work out from the ViewModel which calls the row made and read their
+  scenarios' `delayMs` instead — the red does not list them. No row setting
+  lengthens this wait.
+
+On web each generated row gives vitest its own timeout (`ROW_TIMEOUT_MS`,
+67000 ms), so `Test timed out in 5000ms` on a generated row means an
+earlier jsonui-cli wrote that file. Whoever runs the suite should give the
+command at least 0.8 s a row, plus each scenario's `delayMs`, 10 s for each
+row that fails on an expected operation and 31 s for each busy wait (on iOS
+a view model busy from its construction can fail both waits of a row).
+
+**An earlier row's view model (1.9.0+).** A view model
+can outlive its row — a timer, a task, a thread or an observer holds it —
+and call after its row ended, inside a later row's window. The runtime keeps
+such a call out of the later row where it can, and names it:
+
+- web: a request made from a timer or task that began in an earlier row —
+  usually that row's view model's, but a module-level loop, queue or
+  interval an earlier row started counts as that row's too, even when the
+  later row's own view model asked for the call — is answered 599, not
+  counted in the later row, and named in that row's output after its wait:
+  `earlier_row_call: <N> — <METHOD> <path> from "<earlier row>", …`. A
+  call an earlier view model makes from an event the later row posts (a
+  subscription) runs in the later row and is counted there. Where rows
+  cannot be told apart (Node before 20.16 / 22.3, or a browser) the runtime
+  says so once, `earlier_row_call: rows cannot be told apart here …`, and
+  such calls are counted.
+- Android: a call an earlier row's view model makes to its own ended row's
+  server while the next row runs is answered 599, not counted, and named
+  (by that row, or a later one if it lands after that row's notices)
+  (`earlier_row_call: <N> — …: made by an earlier row's view model after its
+  row ended …`); later than that the server is shut down and the call fails
+  unseen inside the view model. A view model that reads a process-wide base
+  URL sends it to the later row's server instead, where it is counted — have
+  the harness pass the view model the URL its factory is given.
+- iOS 26 and later: a view model still alive when the next test starts is
+  named — `outlived_its_test: the view model of "<earlier row>" is still
+  alive after its test ended — the app's view model leaks: …`. That is a
+  leak in the app (a Task, Timer or observer holding it strongly keeps it
+  past its screen there too) unless the harness itself stores the view model
+  somewhere that outlives the test: check the harness, then report it to the
+  implementer. Its calls are not told apart.
+- iOS below 26: the runtime keeps every earlier test's harness and view
+  model alive (releasing them crashes there), so such a call lands in a
+  later row. It says so once per process, `retained_harnesses: below iOS 26
+  this process keeps every earlier test's harness and view model alive (<N>
+  so far; …)`, and on the absence failures with the note `— below iOS 26
+  the harnesses of <N> earlier test(s) in this process are kept alive …`.
+
+On web and Android, a row that waits for a call an earlier view model made
+instead goes red on EXPECT_MS, and the red says so (`; not counted here,
+<N> call(s) an earlier row's view model …`). Where such a call is still
+counted — a subscription on web, and every such call where web rows cannot
+be told apart; a process-wide base URL on Android; on iOS every earlier view
+model below 26 and a leaked one (`outlived_its_test`) from 26 — it can fail
+a `"not-called"` or the bound, or satisfy a `"called"`, `.request` or `when`
+row the view model under test never made. Before acting on such a red or
+green, check whether an earlier row's view model makes the call (on web,
+also whether the call goes through a loop or queue an earlier row started;
+on iOS, confirm on 26 or later and read `outlived_its_test`); do not change
+the spec for it.
+
 **A green run can still print what you must act on — read it from a run
 that shows it.** A generated test that passes may print notices, never as a
 failure: `unmatched` (a request that `… reached no declared route and was
 answered 599`; follow the fix the line names — declaring the route and its
 scenarios is spec work, route it to `/agent define`) and the infos
-`unmatched_foreign` and `condition_without_effect`. From jsonui-cli
+`unmatched_foreign`, `condition_without_effect` and, from
+1.9.0, `earlier_row_call` (web and Android),
+`outlived_its_test` (iOS 26 and later) and `retained_harnesses` (iOS below
+26). From jsonui-cli
 1.8.120 the generated runtime writes each as one line,
 `jsonui-test branch test [<screen>.<method> <row title>] <kind>: …`, to the
 test process's own stderr, outside the runner's console capture: on web it
@@ -522,13 +634,29 @@ an agent is running it, so read them from
 `npx vitest run --reporter=default`; on Android, Gradle keeps them off its
 console, so read them in the test results XML
 (`build/test-results/<task>/TEST-*.xml`, under `<system-err>` and
-`<system-out>`); on iOS, `xcodebuild` shows them unless `-quiet`. After an
-upgrade, regenerate every screen's branch tests (`jsonui-test generate
-branch-tests` without a screen does them all): the runtime is one file the
-screens share, and a screen not regenerated prints its lines as
-`jsonui-test branch test [] …`, without its row. A count of 0 from a run
-that did not show a passing test's output is not a measurement: report it
-as not measured, never as 0.
+`<system-out>`); on iOS, `xcodebuild` shows them unless `-quiet`. A count
+of 0 from a run that did not show a passing test's output is not a
+measurement: report it as not measured, never as 0.
+
+**After an upgrade, regenerate every screen's branch tests** —
+`jsonui-test generate branch-tests` without a screen does them all, once
+per platform with the flags the project generates with (`-p android
+--package …`, `-p ios --module …`, `--condition-controls`; without `-p` it
+is web). The MCP generator takes one screen per call and cannot pass
+`--condition-controls`. The runtime is one file the screens share, but each
+screen's own test file carries its rows' part, and a screen not
+regenerated still compiles and runs against the new runtime with nothing in
+its output saying the file is stale: from 1.9.0 its rows
+do not wait for their operations and their reds lack the window, it prints
+none of the notices about an earlier row's view model (each screen's own
+file calls them), and a screen generated before 1.8.120
+prints its `unmatched` notices as `jsonui-test branch test [] …`, without
+its row. A screen's file from 1.9.0 names the window in
+every row (`until no request was in flight for`; on web every row also
+ends `}, ROW_TIMEOUT_MS);`). `jsonui-test generate branch-tests --check`,
+per platform with the same flags, is the verdict: it exits 1 and prints
+`[DRIFT]` for the runtime and for each screen's file an earlier jsonui-cli
+wrote.
 
 ---
 
@@ -544,7 +672,7 @@ mcp__jui-tools__doc_generate_html with input_dir: "tests/", output_dir: "tests/h
 
 ## Flow D: Validation only
 
-Call `test_validate` with the target directory in `files` and `no_install: true`. Report errors; do not fix them blindly — understand each one. A coverage failure in the result is routed as in A4, not fixed in the test files. For the schema reference of available actions / assertions, see the `$jsonui-screen-test` skill or `test_tools/jsonui_test_cli/schema.py` in the jsonui-cli repo.
+Call `test_validate` with the target directory in `files` and `no_install: true`. Report errors; do not fix them blindly — understand each one. A coverage failure in the result is routed as in A4, not fixed in the test files, and an `[INFO] … cannot fail on iOS` line is handled as in A4. For the schema reference of available actions / assertions, see the `$jsonui-screen-test` skill or `test_tools/jsonui_test_cli/schema.py` in the jsonui-cli repo.
 
 ---
 
@@ -612,7 +740,7 @@ When a screen is intended to run inside an `Embed` slot of a parent screen, the 
 
 Notes:
 - `embeddedIn` value is `{ParentScreen}.{regionId}` (PascalCase parent + camelCase regionId — matches the spec).
-- In v1 `navigationMode: "delegate"`, navigation assertions for the embedded screen target the **parent's** NavController/Router. `pop` / `dismiss` / `navigateBack` are bounded at the embed.
+- With `navigationMode: "delegate"` (the default), navigation assertions for the embedded screen target the **parent's** NavController/Router. `pop` / `dismiss` / `navigateBack` are bounded at the embed.
 - Flow tests do not yet support assertions that cross the embed boundary (v1 limitation). If the user needs an end-to-end flow that involves an embed, write two screen tests (parent + embedded) and assert their states independently, or wait for the flow test schema's `embeddedIn` support (deferred).
 
 ---

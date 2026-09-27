@@ -49,6 +49,8 @@ Run `jui init` if `jui.config.json` doesn't exist. Read `jui.config.json` to res
 
 ---
 
+**Ruby 3.2 or later (1.9.0+).** From jsonui-cli 1.9.0, sjui / kjui / rjui — which `jui init`, `jui build` and `jui g …` run, each in its platform's directory — need Ruby 3.2 or later, and stop at once on an older one: `ERROR: sjui needs Ruby 3.2 or later (jsonui-cli 1.9.0), and this is Ruby <version> at <path>. Put a .ruby-version naming Ruby 3.2 or later in <dir> or a directory above it (rbenv, asdf and mise read it), or put a Ruby 3.2 or later first on PATH.` `jui init` and `jui sync_tool` write that platform directory's `.ruby-version` themselves, naming the Ruby the tools pin (3.2.2 in jsonui-cli 1.9.0), and write it back on each sync — so a version manager reads that file, not one in the project root, and when that exact Ruby is not installed it stops before any tool starts: `rbenv: version `3.2.2' is not installed (set by <platform directory>/.ruby-version)`. With no version manager the file is not read, and the first Ruby on PATH runs. Installing a Ruby is the user's: with a version manager, ask them to install exactly the version the line names — the pin names a patch level (3.2.2), and another 3.2 or a 3.3 does not satisfy it; with none, a Ruby 3.2 or later first on PATH. Then run the tools again.
+
 ## App setup — iOS
 
 ### Mode: `swiftui`
@@ -165,9 +167,9 @@ Same as `compose` except `--mode xml`. Generates Dynamic-mode Android Views with
 
    Configures:
    - `{project}/src/Layouts/` (platform Layout copy)
-   - `{project}/src/generated/` (generated TS/TSX, `@generated`)
+   - `{project}/src/generated/` (generated code, `@generated`)
    - `{project}/src/viewmodels/` (hand-authored VM impls)
-   - `{project}/rjui.config.json`
+   - `{project}/rjui.config.json` — it holds `"typescript": false`. From jsonui-cli 1.9.0 that decides every file rjui writes: `.js` / `.jsx` with no type syntax, or `.ts` / `.tsx` with `true` (before 1.9.0, several of them were TypeScript whichever it said). For a TypeScript project set `"typescript": true` before the first `jui build`; changing it later switches the generated files over, and the build names what it could not replace.
 
 3. From `app_config_path/web.yaml`:
    - App name, Node version

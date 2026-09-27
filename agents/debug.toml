@@ -85,8 +85,9 @@ Map the user's description to a spec section:
 | Crash | above + type alignment in `.jsonui-type-map.json` |
 | Embedded screen does not see parent VM data | `structure.embeds[].params` — embeds receive only what is explicitly passed. Expected per design (`rules/design-philosophy.md` "VM isolation across embedded screens"); not a bug. |
 | Same screen embedded twice shares state | Layout JSON `Embed.id` uniqueness + Android `EmbedContainer.remember(id)` — id collision causes shared VM. Confirm IDs are unique within the parent layout. |
-| Embed child navigate() does the wrong thing | `Embed.navigationMode` in v1 is `delegate` only — child `navigate` drives parent NavController/Router. `pop` / `dismiss` / `navigateBack` are bounded at the embed (do not close it). |
+| Embed child navigate() does the wrong thing | Read `Embed.navigationMode`. `delegate` (the default): child `navigate` drives the parent NavController/Router. `isolated`: the embed owns a private stack and a push stays inside it (a spec can declare it from jsonui-cli 1.9.0; a Layout JSON Embed could before). `pop` / `dismiss` / `navigateBack` are bounded at the embed (do not close it). |
 | Embed event handler not firing on parent | `structure.embeds[].events` mapping → confirm parent VM has the named method or eventHandler. Validator catches this at spec time; runtime miss usually means lib `emit(name, payload)` was called with a name not in the map. |
+| Generated code does not compile after a jsonui-cli upgrade (a JsonUI name it cannot find, or an argument it does not take) | **spec-external** — the app's SwiftJsonUI / KotlinJsonUI is older than the generated code needs: see "The libraries move with the CLI" in `rules/invariants.md`. Never edit the generated file. |
 | Symptom not in the spec (infra, runtime race, memory) | **spec-external** — confirm there's no spec ↔ impl drift first, then go to impl |
 
 If the symptom doesn't fit cleanly, pick the closest and note the assumption in the report.
