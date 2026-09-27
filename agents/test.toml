@@ -548,6 +548,14 @@ come from the wait itself:
   scenarios' `delayMs` instead — the red does not list them. No row setting
   lengthens this wait.
 
+On web, from jsonui-cli 1.9.1, the rows call `settleQuiet()` /
+`settleQuiet({ rec, expect })` — the wait described here, so a red's
+stack names that line — and every failure still starts `settle:`. A
+hand-written test that imports the runtime's `settle()` / `settle(n)`
+gets 1.8.120's wait again — n macrotask turns (10 without a number) and
+the delayed responses, no quiet window, and no loop under a frozen
+`Date` — and calls `settleQuiet` when it wants the rows' quiet wait.
+
 On web each generated row gives vitest its own timeout (`ROW_TIMEOUT_MS`,
 67000 ms), so `Test timed out in 5000ms` on a generated row means an
 earlier jsonui-cli wrote that file. Whoever runs the suite should give the
