@@ -223,6 +223,17 @@ spec と build config が別サブツリーにある構成では、**どの conf
 
 **これが無いと、系譜上で最も近い config(たいていリポ直下)が答えます。**
 
+**`jsonui-test` does not follow `extends`.** `jsonui-test generate
+branch-tests`, `contracts coverage` and `generate unit-stubs --check` read
+only the config of the directory they run in (`jui.config.json`, else
+`jsonui-test.config.json`), so run them from the app's config directory (the one that declares `spec_directory`), not
+from the stub. From a stub, `generate branch-tests --spec …` can succeed
+without the rules' side routes (it prints `apiOutcomeRules: none (…)`);
+from 1.9.0, when a row names a side call the screen does
+not declare, it stops with `…; apiOutcomeRules could not be read from here
+(<reason>) — run from the app's config directory, or declare the
+operation` — run it from there, and do not declare the operation.
+
 **Declare `params` on a method whose arguments a contract will pin.** `arg.<name>`
 in `branchContracts` binds to `methods[].params`, and nowhere else:
 `stateManagement.eventHandlers` is View-layer by design and carries no signature,

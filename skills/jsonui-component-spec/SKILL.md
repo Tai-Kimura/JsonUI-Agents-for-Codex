@@ -98,9 +98,9 @@ Ask: "What data does this component receive from outside? (e.g., user name, imag
 
 For each prop, confirm:
 - name (camelCase)
-- type (String, Int, Bool, [String], etc.)
-- required? (default: true)
-- default value (if optional)
+- type — one `jui g converter` knows (jsonui-cli 1.9.0+): String, Int, Long, Float, Double, CGFloat, Bool, Color, CollectionDataSource, Object, a callback such as `(() -> Void)?`, `T?` / `[T]` of them, a bare `Array`, and their aliases; any other type is an app type the app declares (the specification rules, *Prop types*)
+- required? (default: true) — documentation only: `g converter` does not read it. A prop a layout leaves out takes its scaffold's default: the type's value in Swift and Kotlin (`""`, 0, false, `[]` …; nil for `T?`) — on iOS only in a component scaffolded by jsonui-cli 1.9.0+, where an earlier scaffold requires each non-optional scalar — and `undefined` on web; type it `T?` when "not given" must read differently from that value
+- default value (if optional) — documentation only: the Swift and Kotlin scaffolds use the type's value and web leaves the prop `undefined`, whatever this says
 - description
 
 → Update `props.items`, then validate.
@@ -136,7 +136,7 @@ Ask: "What events does this component emit to its parent? (e.g., onTap, onSelect
 
 For each event:
 - name (must start with "on" + PascalCase, e.g., onTap, onSelect)
-- parameters (name and type)
+- parameters (name and type) — documentation: `jui g converter` scaffolds every event as a `Callback` — `(() -> Void)?` in Swift, `(() -> Unit)?` in Kotlin, `(...args: any[]) => void` in TypeScript (to hand an iOS handler a value, declare the event in `props.items[]` with a closure type such as `((String) -> Void)?`; Android still gets `(() -> Unit)?`)
 - description
 
 → Update `stateManagement.exposedEvents`, then validate.

@@ -86,8 +86,13 @@ Rules (enforced by build validation — violations fail the build):
 2. Identify all user-visible text strings:
    - `"text"` attributes with literal values (not bindings `@{...}`)
    - `"hint"` / `"placeholder"` attributes
-   - `"alt"` attributes on Image/NetworkImage (web; screen-reader text — resolves
-     strings.json keys like text/hint; decorative images should use `"alt": ""`).
+   - `"alt"` attributes on Image/NetworkImage (screen-reader text — in SwiftUI,
+     Compose and web layouts from jsonui-cli 1.9.0, web only
+     before; resolves
+     strings.json keys like text/hint, and from that version a literal alt is
+     reported by `jui lint-strings` and extracted like text; `"alt": ""` marks
+     a decorative image, which is also what an image with no alt is, unless it
+     operates something).
      Never register Image `"src"` / `"srcName"` values — image sources are not
      user-visible text, and a src that collides with a strings key breaks the image
    - `"title"` attributes

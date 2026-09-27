@@ -167,7 +167,7 @@ Ask: "Are there visibility rules? (e.g., show loading indicator when loading)"
 ```
 If `variableName` is omitted, it auto-generates as `{elementId}Visibility`.
 
-`element` (and `states[].values[].visibleElements`) names the **Layout JSON `id` exactly as the layout writes it** — not a snake_case copy of it. If the layout says `loadingIndicatorView`, write `loadingIndicatorView`. For a node inside an include that has an id, write the resolved id (`hero` + `type_badge` → `heroTypeBadge`), not the included layout's own `type_badge`. `doc_validate_spec` checks it against the resolved layout (1.8.119+ as info, a WARNING from 1.8.121). When the message names layout ids (`the layout has '…'`), they are candidates, not matches: confirm which node the rule means — the one that carries the visibility binding — before changing the spec, and ask the user when there is no candidate. Never delete an effect or a `visibleElements` entry to clear the message.
+`element` (and `states[].values[].visibleElements`) names the **Layout JSON `id` exactly as the layout writes it** — not a snake_case copy of it. If the layout says `loadingIndicatorView`, write `loadingIndicatorView`. For a node inside an include that has an id, write the resolved id (`hero` + `type_badge` → `heroTypeBadge`), not the included layout's own `type_badge`. `doc_validate_spec` checks it against the resolved layout (1.8.119+ as info, a WARNING from 1.9.0). When the message names layout ids (`the layout has '…'`), they are candidates, not matches: confirm which node the rule means — the one that carries the visibility binding — before changing the spec, and ask the user when there is no candidate. Never delete an effect or a `visibleElements` entry to clear the message.
 
 **⛔ CRITICAL: No Business Logic in UI Variables**
 
@@ -276,7 +276,7 @@ Does this screen host another screen as a region of its layout? If yes:
 - screen to embed (snake_case layout JSON filename, no extension, e.g. 'order_detail'):
 - params to pass (key → parent VM var name or literal value):
 - events to receive from the embedded screen (on[A-Z]... → parent VM method or eventHandler):
-- navigationMode: 'delegate' is v1 default; 'isolated' is deferred to v1.5.
+- navigationMode: 'delegate' (default) or 'isolated' (jsonui-cli 1.9.0+; the embedded screen then declares no present-type transition).
 ```
 
 Then write `structure.embeds[]`. Example shape:
@@ -470,13 +470,29 @@ platform. Four declarations close what it reports:
   `"not-called"`: `"called"`, a `when` scenario and `.request` stop
   generation, because checking that the call is made is the rule's
   `verifiedBy` unit case's job. A regressed flag then fails its row as
-  `api.<op>: this row says not-called — called N time(s)`. With an earlier
-  jsonui-cli the row is accepted only when the screen declares the operation
+  `api.<op>: this row says not-called (within the act and until no request
+  was in flight for 400 ms after it) — called N time(s)` (the parenthesis
+  from jsonui-cli 1.9.0). With a jsonui-cli
+  before 1.8.120 the row is accepted only when the screen declares the operation
   in `dataFlow` (otherwise validate warns and generation stops); do not
   declare an endpoint the screen does not call just to write it. There, a
   regressed flag fails with the bound's message, whose advice to write
   `"called"` is wrong for this row: keep `"not-called"` and fix the
   ViewModel.
+  With jsonui-cli 1.8.120, when the spec's nearest `jui.config.json` is a
+  doc-tree stub (`extends` and `layouts_directory`), `jsonui-doc validate
+  spec` does not reach the rules: it warns on each such `"not-called"` row
+  that the operation is not declared, in the same words whether or not a
+  rule names it. Look the op up in the app contracts spec's
+  `apiOutcomeRules[].sideCalls`: if it is there, the warning is false —
+  keep the row. From 1.9.0 validate follows `extends`
+  to the config that owns the spec; when it still cannot read the rules,
+  the warning ends `(the app contracts spec could not be read from here:
+  <reason>, so sideCalls was not checked)` — the row was not checked, not
+  rejected: fix the reason (a config on the chain from the spec, or the app
+  contracts spec itself), not the row, and validate again — if the warning
+  stays without the parenthesis, no rule names the op: the row, or the
+  rule's `sideCalls`, is wrong.
 - **`"api.<op>": "called"` in one row permits that operation in every row
   of the method** — the generated tests bound a method's calls per method,
   not per branch. A row where the method must not make that call says
@@ -545,13 +561,20 @@ classes a human wrote: mappers, formatters, calculators, handlers.
 An object, or an array of them. `doc_validate_spec` lints the shape.
 
 - **`name` is the contract.** Implementation is detected by matching it:
-  iOS `func <name>(` inside an `XCTestCase`, Android `fun <name>(`,
-  web `it("<name>")`. Renaming a test un-implements the case
+  iOS `func test_<name>(` inside an `XCTestCase`, Android `@Test fun
+  <name>(`, web `it("<name>")` / `test("<name>")`. Renaming a test
+  un-implements the case. From
+  jsonui-cli 1.9.0 a name several `target`s declare is one case per
+  target: each needs its own test, in the class, describe or file
+  `generate unit-stubs` writes for that target
 - `jsonui-test generate unit-stubs` writes the stub in each platform's
   convention; the body is the implementer's. It needs
   `platforms.<p>.unitTestsDir` in `jui.config.json`
-- `--check` compares the declared set against implemented names and exits
-  non-zero on a mismatch
+- `--check` compares the declared set against implemented names (from
+  1.9.0, (target, case) pairs) and exits non-zero on a
+  mismatch; tests of a name several targets declare that no target's
+  class, describe or file places are reported `unattributed` — not
+  checked, and they do not by themselves fail it
 
 ⛔ **Same restraint as `branchContracts`.** Declare a case because a real test
 should exist, not to raise a count. `--check` measures declared-vs-implemented

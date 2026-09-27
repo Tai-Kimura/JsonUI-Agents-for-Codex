@@ -149,7 +149,7 @@ app_config_path: {app_config_path}
 
 This is the consolidated Phase 4 skill that replaces the 5 legacy setup skills (`swiftjsonui-swiftui-setup`, `swiftjsonui-uikit-setup`, `kotlinjsonui-compose-setup`, `kotlinjsonui-xml-setup`, `reactjsonui-setup`). It installs the platform's tools (`sjui_tools/` / `kjui_tools/` / `rjui_tools/`), bootstraps the app shell, and wires up JsonUI. The skill does the work; you invoke and monitor.
 
-> Note: `rjui init` emits a `EmbedContainer.tsx` template into the project for the `Embed` view type as part of scaffold. No separate setup step is needed for Embed support.
+> Note: `rjui init` emits an `EmbedContainer` template into the project for the `Embed` view type as part of scaffold (`EmbedContainer.tsx`; from jsonui-cli 1.9.0, `EmbedContainer.jsx` in a project whose `rjui.config.json` does not set `"typescript": true`). No separate setup step is needed for Embed support.
 
 > Legacy fallback (pre-Phase 4 projects): if `$jsonui-platform-setup` is not yet installed in the user's environment, fall back to the individual legacy skill matching `platform` + `mode`. They remain in the skills/ directory until Phase 6.
 
@@ -173,7 +173,9 @@ The skill handles CLI installation (`jsonui-test`, Python 3.10+), directory scaf
 mcp__jui-tools__jui_build
 ```
 
-Should succeed even though no specs/screens exist yet — verifies the pipeline is wired up.
+Should succeed even though no specs/screens exist yet — verifies the pipeline is wired up. From jsonui-cli 1.9.0 an iOS or Android platform whose Layouts directory is not there fails it by name (`Layouts directory not found: <path>` / `Nothing was built. Check layouts_directory in <tool>.config.json, or run '<tool> init'.`, then `ERROR: Build failed for: <platform>`, exit 1); before, it said `No JSON files found`, built nothing and exited 0. Web has always failed this way (`Layouts directory not found: <path>` / `Run "rjui init" first`). Check that the platform config's `layouts_directory` (under its `source_directory` on iOS and Android) resolves to the directory `platforms.<platform>.layoutsDir` in `jui.config.json` names, and that the shared layouts directory is not empty — `jui build` creates a platform's Layouts directory only by copying into it (`jui init` seeds `Resources/colors.json`), so on Android and web an empty shared directory fails the same way. A platform Layouts directory that exists but is empty is not this — it still builds (exit 0, with a `No JSON … found` warning).
+
+**Ruby 3.2 or later (1.9.0+).** From jsonui-cli 1.9.0, sjui / kjui / rjui — which `jui init`, `jui build` and `jui g …` run, each in its platform's directory — need Ruby 3.2 or later, and stop at once on an older one: `ERROR: sjui needs Ruby 3.2 or later (jsonui-cli 1.9.0), and this is Ruby <version> at <path>. Put a .ruby-version naming Ruby 3.2 or later in <dir> or a directory above it (rbenv, asdf and mise read it), or put a Ruby 3.2 or later first on PATH.` `jui init` and `jui sync_tool` write that platform directory's `.ruby-version` themselves, naming the Ruby the tools pin (3.2.2 in jsonui-cli 1.9.0), and write it back on each sync — so a version manager reads that file, not one in the project root, and when that exact Ruby is not installed it stops before any tool starts: `rbenv: version `3.2.2' is not installed (set by <platform directory>/.ruby-version)`. With no version manager the file is not read, and the first Ruby on PATH runs. Installing a Ruby is the user's: with a version manager, ask them to install exactly the version the line names — the pin names a patch level (3.2.2), and another 3.2 or a 3.3 does not satisfy it; with none, a Ruby 3.2 or later first on PATH. Then run the tools again.
 
 ### 1.6 Completion report
 
