@@ -6,11 +6,11 @@ adapts the packaging and reference syntax.
 
 <!-- machine-readable — scripts/check_sync.sh parses these two lines -->
 source_repo: JsonUI-Agents-for-claude
-source_commit: 2fe7d75e9b0fa24fd9bd7edb076f7eac413e6629
+source_commit: 55ae0584d66027c348a57cb8918f8e24fc81cd3f
 
 - **Last sync date:** 2026-09-28
-- **Source commit subject:** `agents (jsonui-test B2.4): from jsonui-cli 1.9.1 the generated web rows wait with settleQuiet, and a hand-written test's settle() / settle(n) is 1.8.120's turn-based wait again`
-- **Note on this sync:** ports one commit, 2fe7d75 (landed with jsonui-cli 1.9.1): jsonui-test B2.4 — from 1.9.1 the generated web rows wait with `settleQuiet`, and a hand-written test's `settle()` / `settle(n)` is 1.8.120's turn-based wait again. `agents/test.toml` carries the same text (the sentence has no agent reference). The syncs before it: 77f857b (from 1.9.1 `--fail-on-diff` counts the initial values; an include's data under its id's prefix), 65481a2 (thirty 1.9.0 units and 1.9.1's web nested-tap sentence; one line of `rules/invariants.md` keeps the announced gate name), then c8a8865, 1917e23 and 2f61608 (landed with jsonui-cli 1.8.120).
+- **Source commit subject:** `rules + define + screen-spec: long prose goes in the spec's texts file (jsonui-cli 1.9.3+)`
+- **Note on this sync:** ports 55ae058: `rules/specification-rules.md` gains "Long prose: texts files" (verbatim), `skills/jsonui-screen-spec/SKILL.md` its unitContracts pointer (verbatim), and `agents/define.toml` Task 2 the same bullet as `jsonui-define.md` with the rules path adapted. b0afde7 (invariants: the coverage gate line prints 1.9.0) was already ported as f480590, so the recorded commit moves past it too. The sync before: 2fe7d75 — (landed with jsonui-cli 1.9.1): jsonui-test B2.4 — from 1.9.1 the generated web rows wait with `settleQuiet`, and a hand-written test's `settle()` / `settle(n)` is 1.8.120's turn-based wait again. `agents/test.toml` carries the same text (the sentence has no agent reference). The syncs before it: 77f857b (from 1.9.1 `--fail-on-diff` counts the initial values; an include's data under its id's prefix), 65481a2 (thirty 1.9.0 units and 1.9.1's web nested-tap sentence; one line of `rules/invariants.md` keeps the announced gate name), then c8a8865, 1917e23 and 2f61608 (landed with jsonui-cli 1.8.120).
 
 Run `scripts/check_sync.sh /path/to/JsonUI-Agents-for-claude` to see what has
 changed on the Claude side since the recorded commit.

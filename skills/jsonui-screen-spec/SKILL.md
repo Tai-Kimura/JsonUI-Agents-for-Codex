@@ -560,6 +560,12 @@ classes a human wrote: mappers, formatters, calculators, handlers.
 
 An object, or an array of them. `doc_validate_spec` lints the shape.
 
+An `intent` longer than a line or two — the rule, the platforms, the state
+before the fix — goes in the spec's texts file as Markdown (jsonui-cli
+1.9.3+): `"intent": { "md": "cases.price_calculator.applies_member_discount" }`
+with the text under that key in `<name>.texts.yaml`. See "Long prose: texts
+files" in `rules/specification-rules.md`.
+
 - **`name` is the contract.** Implementation is detected by matching it:
   iOS `func test_<name>(` inside an `XCTestCase`, Android `@Test fun
   <name>(`, web `it("<name>")` / `test("<name>")`. Renaming a test
