@@ -469,6 +469,60 @@ Cross-references to generated and hand-written files. Accepted `type` values (`v
 ]
 ```
 
+## Long prose: texts files (`<name>.texts.yaml`) — jsonui-cli 1.9.3+
+
+A prose field — `metadata.description`, any `description`, `notes` (or one
+entry of a `notes` array) and a unit case's `intent` — may point into a YAML
+file instead of holding the text inline. Use it when the text is longer than
+a few lines or needs structure (headings, lists, per-rule paragraphs, a quoted
+"before" state). Keep short prose inline: an inline string is plain text and
+its line breaks are shown as written.
+
+```json
+{ "metadata": { "description": { "md": "overview" } } }
+{ "name": "healthCheck_timeout", "intent": { "md": "cases.user_repository.health_check_timeout" } }
+{ "intent": { "md": "shared/network.texts.yaml#timeouts.default" } }
+```
+
+```yaml
+# app_contracts.texts.yaml — beside app_contracts.spec.json
+overview: |
+  この面の app が所有する unit target の契約。
+
+  ### ネットワーク層の規則
+  **(1)** 426: ForceUpdateManager を立てる。
+cases:
+  user_repository:
+    health_check_timeout: |
+      **`[api.healthCheck=default]`** GET /api/health は要求単位で **10 秒**。
+
+      - iOS: `URLRequest.timeoutInterval == 10`
+      - Android: chain の connect / read / write timeout が 10 秒
+```
+
+- Without `#`, the key is read from the spec's **paired** file:
+  `foo.spec.json` → `foo.texts.yaml` in the same directory (`.component.json`
+  → `.texts.yaml` too). With `#`, from the named file, relative to the spec.
+- The key is a `.`-separated path through nested mappings. The value at its
+  end is a string — use `|` so Markdown needs no escaping — and it renders as
+  **Markdown** (CommonMark + tables; raw HTML is not rendered).
+- `jsonui-doc validate spec` (`doc_validate_spec`) **errors** on: an undefined
+  key, a key naming a mapping, a missing file, a non-string key (`yes:` /
+  `on:` / `1:` — quote it), a key containing `.`, a duplicate key, a list or
+  empty value, a reference in a field that is not prose. A paired-file key no
+  field references is a **warning** — delete it or reference it; it is
+  usually a rename done on one side only.
+- `read_spec_file` returns each reference expanded as
+  `{"md": "<key>", "text": "<the text>"}`. **Edit the text in the YAML file.**
+  `text` is for reading only — never write it into the spec (validate refuses
+  it).
+- Renaming a key is two edits: the YAML key and every `{"md": ...}` naming it.
+  Validate after either.
+- ⛔ Never move a text back inline to "simplify": the page loses its Markdown
+  structure and the JSON becomes one escaped line again. Moving a long inline
+  text OUT to the texts file is fine; confirm with the user when it is not
+  your text.
+
 ## Naming regex summary
 
 Enforced by the schema. Violations are validation errors, not warnings:
