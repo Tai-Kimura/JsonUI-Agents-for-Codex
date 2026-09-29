@@ -471,11 +471,27 @@ Cross-references to generated and hand-written files. Accepted `type` values (`v
 
 ## Long prose: texts files (`<name>.texts.yaml`) — jsonui-cli 1.9.3+
 
-A prose field — `metadata.description`, any `description`, `notes` (or one
-entry of a `notes` array) and a unit case's `intent` — may point into a YAML
-file instead of holding the text inline. Use it when the text is longer than
-a few lines or needs structure (headings, lists, per-rule paragraphs, a quoted
-"before" state). Keep short prose inline: an inline string is plain text and
+A prose field may point into a YAML file instead of holding the text inline.
+The prose fields:
+
+| Field | Where |
+|---|---|
+| `description`, `notes` (or one entry of a `notes` array) | anywhere |
+| `intent` | a unit case |
+| `purpose` | `structure.decorativeElements[]`, `structure.wrapperViews[]` |
+| `processing` | `userActions[]` |
+| `rule` / `handling` | `validation.clientSide[]` / `validation.serverSide[]` |
+| `meaning` | `branchContracts.conditions.<name>` |
+| `note` | a note-only branch (`branchContracts.methods.<m>.branches[]`) |
+| `reason` | `apiOutcomeRules[]`, `excludedOutcomes`, `unreachedOps` — **not** under `harnessConditions` or `canonicalDivergence` |
+| `condition` | `transitions[]` only — **not** `validation.serverSide[]` or `stateManagement.displayLogic[]` |
+
+Anywhere else — a name, a destination, `displayName`, `action`, `diagram`, a
+component `example` — a reference is an error: a tool reads that value as a
+name, a key or code.
+
+Use it when the text is longer than a few lines or needs structure (headings,
+lists, per-rule paragraphs, a quoted "before" state). Keep short prose inline: an inline string is plain text and
 its line breaks are shown as written.
 
 ```json
@@ -502,16 +518,28 @@ cases:
 
 - Without `#`, the key is read from the spec's **paired** file:
   `foo.spec.json` → `foo.texts.yaml` in the same directory (`.component.json`
-  → `.texts.yaml` too). With `#`, from the named file, relative to the spec.
+  → `.texts.yaml` too). With `#`, from the named file: a relative path ending
+  in `.texts.yaml` (`../shared/x.texts.yaml` is fine).
 - The key is a `.`-separated path through nested mappings. The value at its
   end is a string — use `|` so Markdown needs no escaping — and it renders as
   **Markdown** (CommonMark + tables; raw HTML is not rendered).
 - `jsonui-doc validate spec` (`doc_validate_spec`) **errors** on: an undefined
-  key, a key naming a mapping, a missing file, a non-string key (`yes:` /
-  `on:` / `1:` — quote it), a key containing `.`, a duplicate key, a list or
-  empty value, a reference in a field that is not prose. A paired-file key no
-  field references is a **warning** — delete it or reference it; it is
-  usually a rename done on one side only.
+  key, a key naming a mapping, a missing file, an absolute path or a file not
+  ending in `.texts.yaml` before `#`, an empty file part (`#key` — write
+  `{"md": "key"}` for the paired file), a non-string key (`yes:` / `on:` /
+  `1:` — quote it), a key containing `.`, a duplicate key, a merge key (`<<:`
+  — write each key out), a list or empty value, a reference in a field that
+  is not prose. A paired-file key no field references is a **warning** —
+  delete it or reference it; it is usually a rename done on one side only.
+- Needs `PyYAML` and `markdown-it-py` only for a spec with a reference;
+  without them such a spec fails validation, naming the `pip install`. A
+  spec with no reference needs neither.
+- `jsonui-test` (`generate branch-tests`, `contracts coverage`,
+  `generate unit-stubs`) refuses a spec with an unresolved reference, with
+  the same message. A sub-spec's reference reads the sub-spec's own texts
+  file.
+- `search_specs` does not search texts-file text: it matches the `{"md": ...}`
+  key, not the prose. Grep the `.texts.yaml` files for words in the text.
 - `read_spec_file` returns each reference expanded as
   `{"md": "<key>", "text": "<the text>"}`. **Edit the text in the YAML file.**
   `text` is for reading only — never write it into the spec (validate refuses
