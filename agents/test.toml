@@ -229,16 +229,13 @@ skip the section to get a green. For the full list of available actions/assertio
 parameters, see the `$jsonui-screen-test` skill's reference or read
 `test_tools/jsonui_test_cli/schema.py` in the jsonui-cli repo.
 
-An `[INFO] … notVisible on '<id>' cannot fail on iOS` line
-(1.9.0+) is not in `Warnings:` and does not
-fail the run, but that step checks nothing on iOS. Handle it as the
-`$jsonui-screen-test` skill says (*A `notVisible` on a decorative image is
-named*): assert on the id of a view around the image that appears and
-disappears with it; when that needs a layout change — an `alt` on a
-meaningful image, or an id or visibility on the view around it — route it
-to `/agent implement` with the image's id and the layout the INFO names. Never
-keep the step off iOS to clear the line, and do not pass `quiet: true`,
-which hides INFO lines.
+An `[INFO] … notVisible on '<id>' cannot fail on iOS` line comes only from
+jsonui-cli 1.9.0–1.9.29. From 1.9.30 validate no longer prints it: the iOS
+driver's `notVisible` is the exact negation of `visible`, so a step on a
+decorative image checks what it says on every platform (the
+`$jsonui-screen-test` skill, *A `notVisible` on a decorative image is no
+longer named*). If an older CLI still prints it, update the CLI rather than
+changing the step; do not pass `quiet: true`, which hides INFO lines.
 
 Note: assertions **auto-wait** (poll until the condition holds or `timeout`), so
 don't precede an assertion with `waitFor`. New capabilities available: `when`/`optional`
@@ -299,6 +296,14 @@ generated body puts `null` into non-nullable slots and manufactures real
 violations. Only `[BODY]` (required missing / wrong type / bad enum / a field
 the contract does not have) needs action. `strict: true` (or
 `mock.checkOptionalFields`) is the opt-in for teams that do want full coverage.
+
+**A `null` the schema admits is not a violation.** From jsonui-cli 1.9.6 the
+check reads the schema as written before following a `$ref`: `nullable: true`
+— beside a `$ref` too (`{"$ref": "…", "nullable": true}`, OpenAPI 3.0) — a
+`null` type or type member, or a `oneOf` / `anyOf` branch that admits null.
+Before, a null for `$ref` + `nullable` was a `[BODY]` violation. Keep the
+`null` in the mock when the server sends it; do not replace it to satisfy an
+older check.
 
 **`mock serve` also checks the requests the app sends** against the operation's
 `requestBody` and query parameters. Violations do not fail the request — they
@@ -369,7 +374,7 @@ tests/flows/{flow}.test.json
 mcp__jui-tools__test_validate with files: ["tests/flows/{flow}.test.json"], no_install: true
 ```
 
-A coverage failure in the result is routed as in A4, not fixed in the flow file, and an `[INFO] … cannot fail on iOS` line is handled as in A4.
+A coverage failure in the result is routed as in A4, not fixed in the flow file.
 
 ---
 
@@ -680,7 +685,7 @@ mcp__jui-tools__doc_generate_html with input_dir: "tests/", output_dir: "tests/h
 
 ## Flow D: Validation only
 
-Call `test_validate` with the target directory in `files` and `no_install: true`. Report errors; do not fix them blindly — understand each one. A coverage failure in the result is routed as in A4, not fixed in the test files, and an `[INFO] … cannot fail on iOS` line is handled as in A4. For the schema reference of available actions / assertions, see the `$jsonui-screen-test` skill or `test_tools/jsonui_test_cli/schema.py` in the jsonui-cli repo.
+Call `test_validate` with the target directory in `files` and `no_install: true`. Report errors; do not fix them blindly — understand each one. A coverage failure in the result is routed as in A4, not fixed in the test files. For the schema reference of available actions / assertions, see the `$jsonui-screen-test` skill or `test_tools/jsonui_test_cli/schema.py` in the jsonui-cli repo.
 
 ---
 

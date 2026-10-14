@@ -96,6 +96,13 @@ Rules (enforced by build validation — violations fail the build):
      Never register Image `"src"` / `"srcName"` values — image sources are not
      user-visible text, and a src that collides with a strings key breaks the image
    - `"title"` attributes
+   - On a custom component, a literal String prop named `text`, `hint`,
+     `placeholder`, `label`, `prompt`, `alt` or `accessibilityLabel`: from
+     jsonui-cli 1.9.6 these names are `jui lint-strings`' vocabulary
+     (`accessibilityLabel` added), and a converter scaffolded by 1.9.6 looks
+     such a literal up as a key on iOS and Android. Any other prop (`variant`)
+     stays a literal — do not register it (jsonui-layout skill, *Custom
+     Components*, for a converter scaffolded earlier)
    - Segment `"items"` arrays
    - ConfirmationDialog `"title"` values
    - Any other hardcoded user-facing strings

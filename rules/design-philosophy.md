@@ -50,7 +50,7 @@ Layout JSON supports two attribute override mechanisms — do not confuse them:
 | Key | Resolution | Purpose |
 |-----|-----------|---------|
 | `platform` (dict) | `jui build` time (static) | iOS/Android/Web differences (e.g. height, maxWidth) |
-| `responsive` | App runtime (dynamic) | Screen size class switching (compact / regular / landscape) |
+| `responsive` | App runtime (dynamic) | Screen size class switching (compact / regular / landscape), or window-width conditions (`minWidth:N` / `maxWidth:N`, jsonui-cli 1.9.26+) |
 
 Both can coexist on the same node. `platform` is stripped at build time; `responsive` is left for the framework to resolve at runtime.
 

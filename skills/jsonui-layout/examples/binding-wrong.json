@@ -8,7 +8,11 @@
     "@{user.name + ' ' + user.lastName}",
     "@{!isHidden}",
     "@{data.titleKey}",
-    "@{data.onNavigate}"
+    "@{data.onNavigate}",
+    "Total: @{count}",
+    "@{firstName} @{lastName}"
   ],
-  "_note_on_data_prefix": "The `data: [...]` block in a Collection cell Layout declares variable names + types. It is NOT a namespace. Bindings always reference the bare name (e.g. `@{titleKey}`, `@{onNavigate}`). Prefixing with `data.` breaks at runtime — the generated code emits direct property access."
+  "_note_on_data_prefix": "The `data: [...]` block in a Collection cell Layout declares variable names + types. It is NOT a namespace. Bindings always reference the bare name (e.g. `@{titleKey}`, `@{onNavigate}`). Prefixing with `data.` breaks at runtime — the generated code emits direct property access.",
+  "_note_on_mixed_text": "A value that mixes literal text with a binding composes a string in the layout. The ViewModel composes it (`totalLine`, `fullName`) and the layout binds it as one value: `@{totalLine}`. From jsonui-cli 1.9.6 the build warns [binding-mixed-text].",
+  "_note_on_bare_handlers": "`\"onClick\": \"onButtonTap\"` (no `@{}`) calls nothing on an event declared binding-only; write `@{onButtonTap}`. From jsonui-cli 1.9.6 the build warns (binding-bare-event)."
 }

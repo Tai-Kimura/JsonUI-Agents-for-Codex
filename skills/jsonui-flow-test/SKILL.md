@@ -232,7 +232,7 @@ When screen tests define `args` with default values, flow tests can override the
 ### Inline Steps (For Flow-Specific Actions)
 
 You can also include inline steps for flow-specific actions that don't belong to any screen test.
-Their element ids are checked against the layouts the same way as a screen test's (1.8.119+; see the jsonui-screen-test skill, *Element ids are checked against the layouts*). A `notVisible` assertion on a decorative image is named the same way (1.9.0+; the jsonui-screen-test skill, *A `notVisible` on a decorative image is named*), judged on the step's `screen`; the steps of a `block` have no screen and are not judged.
+Their element ids are checked against the layouts the same way as a screen test's (1.8.119+; see the jsonui-screen-test skill, *Element ids are checked against the layouts*). (A `notVisible` on a decorative image was named with an INFO from 1.9.0 to 1.9.29; from 1.9.30 it is not — the jsonui-screen-test skill, *A `notVisible` on a decorative image is no longer named*.) The steps of a `block` have no screen and are not judged.
 
 **Every top-level inline step (action or assert) MUST carry a non-empty `screen`** — the
 alias (from `sources`) of the screen the step runs on. This applies to `steps`, `setup`,
@@ -535,6 +535,10 @@ _Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/js
 <!-- /generated:actions -->
 
 (Inline usage of any action requires `screen` — see "Inline Steps" above.)
+
+Scroll note: `scrollUntilVisible` guarantees its target is visible, not where it stops — before asserting `visible` on a different element, `scrollUntilVisible` that element too (see the jsonui-screen-test skill's Scroll notes). Without `container`, web scrolls the target's nearest scrolling ancestor, iOS the first scroll view, Android the middle of the app window — name `container` for a scroll area smaller than the screen.
+
+Visibility note: `visible` means in the viewport (inside the screen and every scroll container — laid out below the fold is not visible), `notVisible` is its exact negation (`opacity: 0` and `enabled: false` are visible), and the screen under a native modal is not visible. An overlay drawn in the same layout covers differently per platform — assert the overlay, not what it covers (see the jsonui-screen-test skill's Visibility notes).
 
 ### Assertions
 

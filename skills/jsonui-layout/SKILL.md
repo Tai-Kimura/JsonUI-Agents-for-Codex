@@ -156,6 +156,39 @@ Define cell/header/footer structure via `sections`. Each view requires a JSON fi
 - ViewModel must ensure each item in the data source has a unique value for this field
 - Without this, SwiftUI/Compose cannot properly animate list changes or maintain scroll position
 
+### Scrolling to a cell (`scrollTo`, `scrollAnchor`)
+
+`scrollTo` binds a plain value: a `String` names the cell whose key it is, an
+`Int` a cell counted across the sections. A CHANGE of the value scrolls; the
+value the list is drawn with, and the same value sent again, do not. To name
+the same cell again, put the value back to `""` after the landing.
+
+`scrollAnchor` says where that cell lands: `top`, `center` or `bottom` (the
+default). From jsonui-cli 1.9.29 (Dynamic mode: SwiftJsonUI 10.29.15 /
+KotlinJsonUI 2.43.12) it can be bound, to choose the anchor per request — for
+example the sent message's top at the top, and on loading a conversation the
+last message's bottom at the bottom:
+
+```json
+{
+  "type": "Collection",
+  "cellIdProperty": "id",
+  "items": "@{messages}",
+  "scrollTo": "@{scrollTarget}",
+  "scrollAnchor": "@{scrollTargetAnchor}",
+  "sections": [{ "cell": "message_cell" }]
+}
+```
+
+- The anchor is read when the `scrollTo` value changes: set it in the same
+  update as the target, or before. Changing the anchor alone scrolls nothing.
+- A bound value that is not `top`, `center` or `bottom` lands as `bottom`
+  (a debug build warns).
+- Under `reverseLayout` (Compose) `top` and `bottom` name the edges on screen,
+  bound or written.
+- `defaultScrollAnchor` only sets where the list starts; after the data is
+  replaced, scroll with `scrollTo`.
+
 ### Wrong Example
 
 → Example: `examples/collection-wrong.json` - Manual view repetition prohibited
@@ -308,6 +341,32 @@ Creation commands:
 
 → Examples: `examples/include-correct.json`, `examples/include-wrong.json`
 
+**An included layout reads the including screen's data** — an include is an
+inline expansion, and the screen's ViewModel owns that data. With an `id` on
+the include node, the included layout's ids and data names take the id as a
+prefix, camelCase-joined: in an include with id `side`, the included layout's
+`@{title}` reads the screen's `sideTitle`; without an `id` it reads `title`.
+A nested include is expanded too, and its id is joined to the prefix above it
+(`row` → `chip_a` → `rowChipA…`). An include without an `id` is a defined
+form, not a mistake: from jsonui-cli 1.9.6 sjui no longer warns `is missing
+'id'` for it. The include node's object maps are laid over that data for the
+included layout — `shared_data`, then `data` (`data` wins on a key both set):
+a key is a name the included layout binds, a value is a literal or a binding
+read in the including layout's scope
+(`{ "include": "card", "data": { "title": "@{headline}" } }`). This holds on
+every platform from jsonui-cli 1.9.6 (Dynamic mode from SwiftJsonUI 10.29.2 /
+KotlinJsonUI 2.43.2); before it, web handed an included layout none of the
+screen's data (it drew its own defaults), and the iOS and Android generated
+code ignored an object map.
+
+One name declared twice in the expanded screen — say the screen and an
+include without an `id` both declare `title` — is one data entry: with one
+type that is fine; with two types the Data type keeps the first, and from
+jsonui-cli 1.9.6 every platform warns `data property '<name>' is declared as
+'<A>' and as '<B>'` (before, iOS and Android dropped the second silently, and
+web wrote both and did not compile). Declare it once, or give the include an
+`id` so the names are two.
+
 ---
 
 ## Data Binding
@@ -315,6 +374,29 @@ Creation commands:
 ### Syntax
 
 - Bind with `@{}`: `"text": "@{title}"`, `"onClick": "@{onButtonTap}"`
+- **A bound value is one binding.** Text around a binding (`"Title: @{x}"`,
+  `"@{a} / @{b}"`, `"https://cdn/@{id}.png"`) composes a string in the layout:
+  compose it in the ViewModel and bind it as one value (`"@{titleLine}"`) —
+  a layout holds no logic, and a string composed in the layout cannot be
+  localized as one text. From jsonui-cli 1.9.6 the build warns
+  `[binding-mixed-text] '<Type>.<attr>' mixes literal text with a binding …`
+  on an attribute the component declares (before, iOS and web joined the
+  pieces and Android drew the first binding alone)
+- **Handler names**: write an event as `"@{onTap}"`. An event that takes
+  only a binding (`onClick`, `onLongPress`, `onPan`, a Switch / Slider /
+  Segment / CheckBox / Radio / SelectBox `onValueChange`, …) calls nothing
+  for a bare `"onTap"`, and from jsonui-cli 1.9.6 the build warns `… is the
+  bare name 'onTap', but the attribute is declared binding-only: write
+  '@{onTap}' … (binding-bare-event)`. On an event whose declared type
+  includes a string (`onTextChange`, `onItemAppear`, a Collection's or
+  TabView's `onValueChange` and its aliases `onPageChanged` /
+  `onValueChanged` / `onTabChange`) a bare name is called, the same as
+  `@{onTap}`, from jsonui-cli 1.9.6 (Dynamic mode: SwiftJsonUI 10.29.2 /
+  KotlinJsonUI 2.43.2); before, several of them dropped it without a word.
+  On Android generated code a bare `onTextChange` passes the text to a
+  handler that takes it from jsonui-cli 1.9.7 (in 1.9.6 it compiled only
+  for a handler declared `() -> Void`).
+  `lookup_attribute` shows each event's type
 - **Views with bindings must have an `id`**
 - **Never prefix with `data.`** — bindings reference variables by bare name regardless of where they're declared (`data: [...]` at the root of a cell Layout, `stateManagement.uiVariables` in the spec, `dataFlow.viewModel.vars` — all resolve the same way at the binding site)
 
@@ -362,6 +444,7 @@ The resolution semantics are SSoT-declared (`shared/core/binding_semantics.json`
 - `@{selectedTab == 0 ? #D4A574 : #B8A894}` - Ternary operators
 - `@{items.count > 0}` - Comparisons
 - `@{price * quantity}` - Calculations
+- `"Total: @{count}"` - Text around a binding (`binding-mixed-text`, 1.9.6+): bind a `totalLine` the ViewModel composes
 
 **Allowed:**
 - `@{searchTabColor}` - ViewModel computed property
@@ -485,6 +568,12 @@ What is not a tap:
   warns `onClick on a TextField is not called: a text field's tap focuses
   it` (`… on a TextView …`) once for each such node. Remove the handler — bind `text` to read what the user types;
   `onTextChange` is called on each change.
+- An `onClick` / `onclick` on a Web: the embedded page takes the taps. Nor
+  is an `onPan` on a TextField, a TextView or a Slider called — the
+  control's own drag (text selection, the slider's value) takes the
+  gesture. From jsonui-cli 1.9.6 `jui build` warns `'<attr>' is not called
+  on a <Type>: <reason>` on every platform, and Android no longer wires a
+  TextView's `onPan`. Remove the attribute.
 
 A control's own `onClick` — on a Switch, Toggle, CheckBox, Radio, Segment,
 Slider or SelectBox — is called once, after the control's own change (a Slider's when the drag
@@ -494,6 +583,19 @@ jsonui-cli 1.9.0: `canTap: false` stops the call and not the change, and
 SwiftJsonUI and KotlinJsonUI, not with jsonui-cli. To act on a control's change,
 bind its value (the view model's var then changes with it) rather than
 reading it in `onClick`.
+
+A pager's (a paging Collection's) `onValueChange` / `onPageChanged` is
+called with the new page when the page changes — a swipe, a `scrollTo`, a
+`currentPage` write — and not when the pager first appears. A TabView's
+`onValueChange` is called with the new index when the selected tab changes —
+a tap on another tab, a `selectedIndex` write — not when the TabView first
+appears, and not when the selected tab is tapped again. Both hold on every
+platform from jsonui-cli 1.9.6 (Dynamic mode: SwiftJsonUI 10.29.2 /
+KotlinJsonUI 2.43.2); before, Android called the pager's handler with the
+page it appeared on (web, with that page on the first scroll), and Android
+and web called the TabView's on every tab tap and never on a `selectedIndex`
+write. Load what the first page or tab shows when
+the screen loads, not from this handler.
 
 A tap whose `enabled` is bound stays a button, and reads as disabled while
 the value is false, on iOS and Android. A bound `canTap` or `userInteractionEnabled` also stops the tap while it is false, and the element is not announced as a button then (a
@@ -617,6 +719,21 @@ When generating Converters:
    (*Tappables are announced as buttons*, above): the component gives itself
    its role in its own code (the specification rules, *A tap on a custom
    component*)
+6. A literal String prop is localized (looked up as a strings.json key, as
+   a Label's `text` is) only when the prop's name is display text — `text`,
+   `hint`, `placeholder`, `label`, `prompt`, `alt`, `accessibilityLabel` —
+   and written as the literal otherwise (`"variant": "bar"`), on iOS and
+   Android alike, in a converter scaffolded by jsonui-cli 1.9.6 or later.
+   Before, Android looked every String literal up (and could warn `Bare key
+   … foreign section` for a `variant`) and iOS looked none up. A converter
+   scaffolded earlier keeps its old behaviour until it is scaffolded again:
+   the user runs the command on its header's `Generator:` line in a
+   terminal and answers `y` only for the converter file
+   (`<name>_converter.rb` for sjui, `<name>_component.rb` for kjui) and `n`
+   for the rest (the Swift / Kotlin component holds the app's code). Never
+   add `--force`, which overwrites the component's body too. Run from an
+   agent's shell (not a terminal) the command keeps every file and asks
+   nothing
 
 ---
 
@@ -647,15 +764,48 @@ Components can have a `responsive` block for size class-based attribute override
 | `regular` | Large screen (iPad, Android expanded) |
 | `landscape` | Landscape orientation |
 | `compact-landscape` | Small screen + landscape |
+| `medium-landscape` | Medium screen + landscape |
 | `regular-landscape` | Large screen + landscape |
 
-Priority: compound > landscape > regular > medium > compact > default
+Priority: regular-landscape > medium-landscape > compact-landscape > landscape > regular > medium > compact > default
+
+**One key wins, alone.** Of the keys that hold, only the highest-priority one is applied on top of the base; the others are NOT stacked under it. `{ "compact": { "padding": 4 }, "regular": { "spacing": 24 } }` on a regular window gives spacing 24 and the BASE padding — put every attribute a size class needs into that size class's override. (From jsonui-cli 1.9.26 / KotlinJsonUI's next release, Android Dynamic mode draws it the same way; it used to stack.)
+
+### Window-width conditions (jsonui-cli 1.9.26+)
+
+When the size classes cannot tell two situations apart — an open foldable held upright is `regular` at 669pt, the same class as the same device open sideways at 867pt — write width conditions instead:
+
+```json
+{
+  "type": "View",
+  "orientation": "vertical",
+  "responsive": {
+    "maxWidth:700": { "orientation": "vertical" },
+    "minWidth:700": { "orientation": "horizontal", "spacing": 24 }
+  }
+}
+```
+
+| Key | Holds when |
+|---|---|
+| `minWidth:N` | the window is **at least** N wide (`width >= N`) |
+| `maxWidth:N` | the window is **narrower than** N (`width < N` — N itself is NOT included) |
+
+- N is a whole number in the platform's logical unit: iOS pt, Android dp, web CSS px. The width is the **window's** (iOS: the scene / window, Android: `LocalWindowInfo.containerSize`, web: the viewport), not the parent's.
+- `maxWidth:700` and `minWidth:700` split every width with no gap and no overlap (fractional widths included). ⚠️ `maxWidth:699` + `minWidth:700` leaves 699..700 to the base.
+- ⚠️ The layout key's `maxWidth` is "less than N". jsonui-test-runner's responsive **test condition** `maxWidth` is "at most N" — a different thing with the same name.
+- Of the conditions that hold, the most narrowing one wins alone: the smallest `maxWidth`, else the largest `minWidth`.
+- `jui build` refuses (`ERROR [responsive]`), before writing anything:
+  - width conditions and size classes (`compact` … `regular-landscape`) in the same `responsive` block — use one or the other;
+  - a `maxWidth` whose N is larger than some `minWidth`'s N (both would hold at once): every maxWidth's N must be ≤ every minWidth's N;
+  - anything that looks like a width condition and is not exactly `minWidth:N` / `maxWidth:N` — no `-landscape` combination, no unit (`700px`), no fraction, no other casing.
+- No named breakpoints yet: write the number in each layout.
 
 ### Rules
 
 - `responsive` can be added to ANY component
 - Only attribute overrides — `type`, `child`, `data` CANNOT be in responsive
-- Unspecified attributes keep the default value
+- Unspecified attributes keep the default value (the base — not another key's override)
 - Use for: orientation changes, spacing/padding adjustments, visibility toggling, fontSize changes
 - For completely different structures, use variant files (`screen@regular.json`) — see below
 
