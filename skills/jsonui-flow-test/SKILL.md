@@ -500,7 +500,7 @@ remains the `jsonui-test validate` reference.
 ### Actions
 
 <!-- generated:actions -->
-_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.10.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.10.0` (28 actions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
+_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.12.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.12.0` (28 actions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
 
 | Action | 説明 | Required | Optional | Platform notes |
 |---|---|---|---|---|
@@ -543,12 +543,12 @@ Visibility note: `visible` means in the viewport (inside the screen and every sc
 ### Assertions
 
 <!-- generated:assertions -->
-_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.10.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.10.0` (10 assertions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
+_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.12.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.12.0` (10 assertions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
 
 | Assertion | 説明 | Required | Optional | Platform notes |
 |---|---|---|---|---|
-| `visible` | 要素が表示されている | `id` | `timeout` | - |
-| `notVisible` | 要素が非表示または不存在 | `id` | `timeout` | - |
+| `visible` | 要素がビューポート内に見えている（画面とすべてのスクロール容器の内側に縦横 1pt/px 以上。中心でなく一部で可。レイアウト上存在するだけでは不可） | `id` | `timeout` | - |
+| `notVisible` | `visible` の否定（不存在、非表示、またはビューポートの外） | `id` | `timeout` | - |
 | `enabled` | 要素が有効 | `id` | `timeout` | - |
 | `disabled` | 要素が無効 | `id` | `timeout` | - |
 | `text` | テキストを検証（`equals`／`contains`） | `id` | `equals`, `contains`, `timeout` | - |
