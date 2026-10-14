@@ -164,6 +164,16 @@ Show the completed specification and ask: "Is this component specification corre
 jsonui-doc generate component {project_directory}/docs/components/json/{componentname}.component.json -o {project_directory}/docs/components/html/{componentname}.html
 ```
 
+From jsonui-cli 1.9.6 the page renders every `notes` the spec carries (the
+top level, each section, each row of props / slots / structure components /
+internal states / exposed events), and fields it used to drop (each
+structure component's `boundToProp`, `structure.layout` as a tree, an exposed
+event parameter's description). A screen spec's page (`jsonui-doc generate
+spec`) likewise draws the fields it dropped before (a Collection's and its
+sections' notes, `structure.embeds`, a UI variable's default, …). Write notes
+in `notes`, not in a description to make them show; regenerate a page made
+by an earlier release to see them.
+
 ### Step 8: Link to Screen Specifications (MANDATORY)
 
 **After generating component documentation, link the component to screen specs.**

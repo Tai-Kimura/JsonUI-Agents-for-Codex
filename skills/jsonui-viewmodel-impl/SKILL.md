@@ -341,6 +341,7 @@ data.productItems = CollectionDataSource(section = Section(cellData = items))
 9. **NEVER modify code inside tools directories** (`sjui_tools/`, `kjui_tools/`, `rjui_tools/`)
 10. **NEVER edit GENERATED_CODE sections** (Kotlin only) - Code between `// >>> GENERATED_CODE_START` and `// >>> GENERATED_CODE_END` is auto-generated
 11. **A var bound to an enum attribute holds one of the spellings the attribute declares, case and all** (1.9.0+) - the generated code looks the value up as written. A word the attribute does not declare (another case, or a word declared nowhere) is not one it has to read, and can draw the default — nothing warns, since the build cannot see what the var will hold. Look the spellings up with `lookup_attribute`. (Before jsonui-cli 1.9.0, the value was lowercased first.)
+12. **A display line made of text and values is composed here, not in the layout** - a layout that writes `"Total: @{count}"` gets a `[binding-mixed-text]` warning from jsonui-cli 1.9.6. Expose one var (`totalLine`) whose text comes from strings.json through StringManager / R.string with the value formatted in (a format string key, e.g. `"Total: %d"`), and the layout binds `@{totalLine}`.
 
 ---
 
