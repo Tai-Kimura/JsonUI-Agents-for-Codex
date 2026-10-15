@@ -153,7 +153,7 @@ When no `case` or `cases` is specified, all cases from the referenced screen tes
 #### Conditional Flow Steps (`when`)
 Any flow step (file reference, block, or inline) may carry a `when` pre-condition and is
 skipped when it is not satisfied. Same condition object as screen tests
-(`visible` / `notVisible` / `platform` / `state`, ANDed):
+(`visible` / `notVisible` / `hidden` / `platform` / `state`, ANDed):
 ```json
 { "file": "product-detail", "case": "詳細表示", "when": { "platform": ["ios", "android"] } }
 ```
@@ -500,7 +500,7 @@ remains the `jsonui-test validate` reference.
 ### Actions
 
 <!-- generated:actions -->
-_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.12.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.12.0` (28 actions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
+_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.13.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.13.0` (28 actions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
 
 | Action | 説明 | Required | Optional | Platform notes |
 |---|---|---|---|---|
@@ -538,17 +538,20 @@ _Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/js
 
 Scroll note: `scrollUntilVisible` guarantees its target is visible, not where it stops — before asserting `visible` on a different element, `scrollUntilVisible` that element too (see the jsonui-screen-test skill's Scroll notes). Without `container`, web scrolls the target's nearest scrolling ancestor, iOS the first scroll view, Android the middle of the app window — name `container` for a scroll area smaller than the screen.
 
-Visibility note: `visible` means in the viewport (inside the screen and every scroll container — laid out below the fold is not visible), `notVisible` is its exact negation (`opacity: 0` and `enabled: false` are visible), and the screen under a native modal is not visible. An overlay drawn in the same layout covers differently per platform — assert the overlay, not what it covers (see the jsonui-screen-test skill's Visibility notes).
+Visibility note: `visible` means in the viewport (inside the screen and every scroll container — laid out below the fold is not visible), `notVisible` is its exact negation (`opacity: 0` and `enabled: false` are visible), and the screen under a native modal is not visible. To check that something is not shown, assert `hidden` (not drawn at all, wherever it is) — `notVisible` passes for an element scrolled out. An overlay drawn in the same layout covers differently per platform — assert the overlay, not what it covers (see the jsonui-screen-test skill's Visibility notes).
+
+**Keyboard (iOS, jsonui-test-runner-ios 1.14.0+)**: a `tap` whose target sits under the software keyboard fails with `keyboard covers '<id>'` unless the keyboard can be put away without Return; write `{ "action": "hideKeyboard" }` between the last `input` and that `tap`. `hideKeyboard` may press the focused single-line field's Return key (return / Done only), which also runs the field's `onSubmit` if the screen binds one. Details: `jsonui-screen-test` → Keyboard notes.
 
 ### Assertions
 
 <!-- generated:assertions -->
-_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.12.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.12.0` (10 assertions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
+_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.13.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.13.0` (11 assertions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
 
 | Assertion | 説明 | Required | Optional | Platform notes |
 |---|---|---|---|---|
 | `visible` | 要素がビューポート内に見えている（画面とすべてのスクロール容器の内側に縦横 1pt/px 以上。中心でなく一部で可。レイアウト上存在するだけでは不可） | `id` | `timeout` | - |
 | `notVisible` | `visible` の否定（不存在、非表示、またはビューポートの外） | `id` | `timeout` | - |
+| `hidden` | 要素が描画されていない（不存在、gone、または自身か祖先が invisible / hidden）。位置に依らない: 画面外・スクロール外・モーダルの下・重なりの下・opacity 0・enabled:false は描画されている扱い | `id` | `timeout` | - |
 | `enabled` | 要素が有効 | `id` | `timeout` | - |
 | `disabled` | 要素が無効 | `id` | `timeout` | - |
 | `text` | テキストを検証（`equals`／`contains`） | `id` | `equals`, `contains`, `timeout` | - |

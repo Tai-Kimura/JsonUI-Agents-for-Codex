@@ -128,7 +128,7 @@ jsonui-cli remains the `jsonui-test validate` reference.
 ### Actions
 
 <!-- generated:actions -->
-_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.12.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.12.0` (28 actions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
+_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.13.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.13.0` (28 actions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
 
 | Action | 説明 | Required | Optional | Platform notes |
 |---|---|---|---|---|
@@ -167,16 +167,19 @@ Scroll notes:
 - **Without `container`, each platform scrolls a different surface**: web scrolls the target's nearest scrolling ancestor (a JsonUI page scrolls in its ScrollView's element, not the window), falling back to the window; iOS scrolls the first scroll view on screen; Android swipes across the middle of the app window, so it moves whichever scroll view lies under that line. On a screen-sized ScrollView all three reach the target; for a smaller scroll area (a list inside a card, a horizontal row), name it with `container`.
 - **Before asserting `visible` on a different element, scroll to that element too** (`scrollUntilVisible` on it), even if it sat on screen in the run you watched. A validation message at the bottom of a form, below a fixed footer, is the typical case: after `tap` Save, `scrollUntilVisible` the error label, then assert it.
 
-Visibility notes (`visible` / `notVisible` / `when.visible` / `when.notVisible`, one predicate on all three platforms; Android is the baseline):
+Visibility notes (`visible` / `notVisible` / `hidden` and their `when` forms, one predicate each on all three platforms; Android is the baseline):
 - **`visible` means in the viewport**: at least 1pt/px each way of the element inside the screen and inside every scroll container above it. A part showing is enough — its centre may be outside. An element laid out below a ScrollView's fold is **not** `visible`, although it exists: `scrollUntilVisible` it first.
 - **`notVisible` is exactly the negation**: absent, hidden (`visibility: invisible` / `gone`), or outside the viewport. It does not mean "covered" or "not tappable": an element at `opacity: 0`, or `enabled: false`, is `visible`.
-- **A `notVisible` meant as "not shown" also passes when the element is only scrolled out.** If the element would sit below the fold when shown, that `notVisible` cannot fail. Scroll its container to where it would appear first, or assert what you mean directly: `count` with `equals: 0` when it must not exist.
+- **To check that something is not shown, assert `hidden`, not `notVisible`** (jsonui-cli 1.9.31+; iOS needs SwiftJsonUI 10.29.16+, Android KotlinJsonUI 2.43.14+). `notVisible` is the viewport's question, so it passes for an element that is drawn but scrolled out or below the fold — a "must not appear" check that cannot fail there. `hidden` (and `when: { hidden: id }`) holds only when the element is not drawn at all: no element has the id, or it or an ancestor is `visibility: "gone"` / `"invisible"` / `hidden: true`. Off screen, scrolled out, under a modal or an overlay, `opacity: 0` and `enabled: false` are all drawn, so `hidden` fails on them. `count` with `equals: 0` is not the same check: on web a `gone` element stays in the page (`display: none`) and is counted. With an older SwiftJsonUI / KotlinJsonUI a bound `visibility` / `hidden` (and on iOS a static `hidden: true`) can read as shown.
+- **`hidden` on a cell of a lazy Collection** (`lazy: "lazy"`, the default): iOS and Android create only the cells near the screen, so a cell far off screen has no element yet and `hidden` passes for it there, while web draws every cell and `hidden` fails. With `lazy: "none"` or `"eager"` every cell exists on all three. Assert `hidden` on a cell only after scrolling to where it would be, or on something outside the list.
 - **Under a native modal the screen beneath is not visible** — iOS `.sheet` (any detent) / `.fullScreenCover` / `.alert` / `.confirmationDialog`, Android `ModalBottomSheet` / `Dialog`. Assert on the modal's own elements while it is up.
 - **An overlay drawn in the same layout is not a modal** (a backdrop View with a panel, the usual web dialog): what it covers is still `visible` on iOS and web, while Android hides an element covered by a Button (and not one covered only by a plain colored View). Do not assert `visible` / `notVisible` on what an overlay covers — assert the overlay itself (`visible` on its panel, `notVisible` on it after closing).
 
 Keyboard notes:
 - **`typeText`** types on the software keyboard into the **currently-focused** field — it takes no `id`. Use it for focused-but-untargetable fields (e.g. an invisible code-entry input behind a custom 2FA/PIN UI). Focus must already be established (a prior `tap`, or the app focusing programmatically).
-- **`hideKeyboard`** dismisses the soft keyboard; it is a no-op when no keyboard is shown. Use it when the keyboard covers the next tap target and the field type has no return key (e.g. `number-pad`). On iOS the last-resort strategy is a drag-to-dismiss gesture, which only works when the enclosing ScrollView opts in via `"keyboardDismissMode": "interactive"` (or `"onDrag"`) in the layout JSON — coordinate with the layout when a screen needs this.
+- **`hideKeyboard`** dismisses the soft keyboard; it is a no-op when no keyboard is shown. Use it when the keyboard covers the next tap target. On iOS it tries, in order: a dismiss key (iPad), an accessory-toolbar Done, a drag-to-dismiss gesture (works only when the enclosing ScrollView opts in via `"keyboardDismissMode": "interactive"` or `"onDrag"` in the layout JSON), and — from jsonui-test-runner-ios 1.14.0 (jsonui-cli 1.9.31) — **the Return key of the focused field**. Return is pressed only on a single-line field (never a multi-line one, where it inserts a newline) and only when the key reads return / Done / 改行 / 完了; a key that names an action (Go, Send, Search, Next, 送信, 検索 …) is refused and named in the failure, and the step fails if the field's value changed. ⚠️ **Return also runs the field's `onSubmit` when the screen binds one** — the driver cannot see whether it does, and the run prints `hideKeyboard: dismissed via Return on '<id>' — Return also fires the field's onSubmit if the screen binds one`. If the screen submits on Return, put `hideKeyboard` where submitting is acceptable, or keep the keyboard out of the way another way (scroll the target clear).
+- **After typing, iOS waits for the keyboard to settle** (from 1.14.0): the keyboard can leave and come back about a second after `input` / `typeText` / `clear`. `hideKeyboard` and `tap` read it only once it is still, so a `hideKeyboard` straight after typing no longer passes as "not visible" in that gap. When no keyboard comes back, the wait costs up to 2s.
+- **`tap` on a target under the iOS keyboard** (from 1.14.0) no longer taps the frame center — that point is a key, and the tap typed a character into the focused field while pressing nothing. The driver puts the keyboard away first with the dismiss key / accessory Done / drag, **never Return** (the target is usually the submit button the Return would already have fired), and fails with `keyboard covers '<id>' — hideKeyboard (which may press Return) or scroll it clear first` when it cannot. On an iPhone text keyboard (no dismiss key) over a form without interactive scroll-dismiss, write `{ "action": "hideKeyboard" }` between the last `input` and the `tap`.
 
 addMedia notes (gallery/photo-library seeding):
 - **Fixture placement**: put media files in `tests/media/` (override with `test.mediaDir` in the config). `jsonui-test validate` installs them automatically to the iOS UITest target (`<target_dir>/media/`); reference them by **basename** in `paths` (`"paths": ["icon.png"]`) — subdirectory paths work on Android but resolve by basename on iOS (the validator warns).
@@ -192,12 +195,13 @@ with `waitFor`** — the assertion already waits. Use `waitFor` only when the ne
 an *action* (not an assertion) that needs the element present first.
 
 <!-- generated:assertions -->
-_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.12.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.12.0` (10 assertions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
+_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.13.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.13.0` (11 assertions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
 
 | Assertion | 説明 | Required | Optional | Platform notes |
 |---|---|---|---|---|
 | `visible` | 要素がビューポート内に見えている（画面とすべてのスクロール容器の内側に縦横 1pt/px 以上。中心でなく一部で可。レイアウト上存在するだけでは不可） | `id` | `timeout` | - |
 | `notVisible` | `visible` の否定（不存在、非表示、またはビューポートの外） | `id` | `timeout` | - |
+| `hidden` | 要素が描画されていない（不存在、gone、または自身か祖先が invisible / hidden）。位置に依らない: 画面外・スクロール外・モーダルの下・重なりの下・opacity 0・enabled:false は描画されている扱い | `id` | `timeout` | - |
 | `enabled` | 要素が有効 | `id` | `timeout` | - |
 | `disabled` | 要素が無効 | `id` | `timeout` | - |
 | `text` | テキストを検証（`equals`／`contains`） | `id` | `equals`, `contains`, `timeout` | - |
@@ -214,7 +218,7 @@ _Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/js
 |-----------|---------|
 | `label` | Human-readable step name for logs/reports. **Exception**: on `selectOption`, `label` is the option text, not a step name. |
 | `optional` | `true` → a failure of this step becomes a warning and execution continues. |
-| `when` | Pre-condition; the step is skipped when not satisfied. Object with `visible` / `notVisible` (element id), `platform`, and/or `state` (`{path, equals}`), ANDed. |
+| `when` | Pre-condition; the step is skipped when not satisfied. Object with `visible` / `notVisible` / `hidden` (element id), `platform`, and/or `state` (`{path, equals}`), ANDed. |
 
 ```json
 { "action": "tap", "id": "tutorial_close", "when": { "visible": "tutorial_overlay" }, "optional": true }
@@ -478,7 +482,7 @@ Set ViewModel state before tests:
 
 ## Setup and Teardown
 
-Run steps before/after each test case:
+`setup` runs **once per file, before the first case**, and `teardown` runs **once, after the last case** — not around each case. This is how all three drivers run a screen test file:
 
 ```json
 {
@@ -491,6 +495,35 @@ Run steps before/after each test case:
   "cases": [...]
 }
 ```
+
+**The cases share one screen state, in order.** The screen is opened once and every case starts where the previous case left it: its scroll position, the screen it navigated to, what it typed. So:
+
+- A case that scrolls (`scroll`, `scrollUntilVisible`) leaves the next case scrolled: an element near the top may then be outside the viewport, and its `visible` fails.
+- A case that navigates away (tap a link, submit a form) leaves the next case on the other screen, where the ids it expects are not there.
+- Putting the initialisation in `setup` does not reset the screen between cases — `setup` runs only before the first one.
+- A setup failure fails every case; teardown still runs.
+
+Either order the cases so each starts where the previous one ends, or declare `caseIsolation: "reopen"`:
+
+```json
+{
+  "caseIsolation": "reopen",
+  "setup": [ { "action": "waitFor", "id": "list_header" } ],
+  "cases": [
+    { "name": "scrolls to the footer", "steps": [ { "action": "scrollUntilVisible", "id": "list_footer" } ] },
+    { "name": "header is shown", "steps": [ { "assert": "visible", "id": "list_header" } ] }
+  ]
+}
+```
+
+| `caseIsolation` | Screen | `setup` / `teardown` |
+|---|---|---|
+| `"shared"` (default; same as omitting it) | opened once; cases share its state | once per file |
+| `"reopen"` | opened afresh before **each** case | before / after **each** case |
+
+With `"reopen"` the web driver goes back to the URL the page was on when the file started (the file's `mocks` re-applied, the `screenReady` gate awaited); iOS and Android relaunch the app with the file's `launch` and `mocks`. A case skipped by `skip` / `platform` / `responsive` opens nothing. A setup failure fails only that case, and its teardown still runs. It costs one page load (web) or one app launch (iOS / Android) per case, so use it when the cases really need a fresh screen, not by default.
+
+`caseIsolation` is read from jsonui-test-runner web 1.14.0, iOS 1.14.0 and Android 1.16.0. An older driver ignores it and runs the file as `"shared"`. `jsonui-test validate` rejects any other value. It applies to screen test files run on their own; a flow that references a case runs it inside the flow and ignores it.
 
 ## Test Case Arguments (args)
 
@@ -743,6 +776,8 @@ When the app shows a native alert dialog (confirm, permission request, etc.), us
 ```
 
 The `button` parameter specifies the button text to tap (e.g., "OK", "Cancel", "Delete").
+
+From jsonui-test-runner-ios 1.14.0 (jsonui-cli 1.9.31), iOS `alertTap` taps only once the button is hittable and then checks that it went away, tapping again while `timeout` lasts. A tap made while an alert or sheet is still appearing can be lost: the iOS "Save Password?" sheet after a sign-in stayed up after one tap and the next step failed on the screen under it. A run that needed more than one tap says so (`alertTap '<button>': the first N tap(s) did not dismiss it`), and a button that never goes now fails the step (`was tapped N time(s) and is still there`) instead of passing it.
 
 ### Selecting Tabs in TabView/TabBar
 Use `selectTab` to select a tab by index:
