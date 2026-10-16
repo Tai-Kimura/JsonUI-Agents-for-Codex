@@ -128,7 +128,7 @@ jsonui-cli remains the `jsonui-test validate` reference.
 ### Actions
 
 <!-- generated:actions -->
-_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.13.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.13.0` (28 actions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
+_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.14.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.14.0` (28 actions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
 
 | Action | 説明 | Required | Optional | Platform notes |
 |---|---|---|---|---|
@@ -195,7 +195,7 @@ with `waitFor`** — the assertion already waits. Use `waitFor` only when the ne
 an *action* (not an assertion) that needs the element present first.
 
 <!-- generated:assertions -->
-_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.13.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.13.0` (11 assertions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
+_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.14.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.14.0` (11 assertions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
 
 | Assertion | 説明 | Required | Optional | Platform notes |
 |---|---|---|---|---|
@@ -206,7 +206,7 @@ _Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/js
 | `disabled` | 要素が無効 | `id` | `timeout` | - |
 | `text` | テキストを検証（`equals`／`contains`） | `id` | `equals`, `contains`, `timeout` | - |
 | `count` | 要素数を検証（`equals: 0` は不存在で成立） | `id`, `equals` | `timeout` | - |
-| `state` | ViewModel 状態を検証（`path` はドット記法、StateProvider 必須） | `path`, `equals` | `timeout` | - |
+| `state` | ViewModel の data を検証（`path` はドット記法。ハーネスの provider は不要 — JsonUI ライブラリ ≥ SwiftJsonUI 10.30.0 / KotlinJsonUI 2.44.0 の state ブリッジを読む） | `path`, `equals` | `timeout` | - |
 | `screenshot` | ベースライン画像とのビジュアル比較（ベースライン無しは新規作成＋警告） | `name` | `cropId`, `threshold=98` | - |
 | `openedUrl` | 直近の `window.open` 呼び出しの URL を検証 | - | `equals`, `contains`, `timeout` | Web のみ（`when.platform: web` でゲート） |
 | `screen` | 指定画面の表示を検証（排他は主張しない — 埋め込み／タブ等で複数同時あり得る） | `name` | `timeout` | - |
@@ -218,7 +218,7 @@ _Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/js
 |-----------|---------|
 | `label` | Human-readable step name for logs/reports. **Exception**: on `selectOption`, `label` is the option text, not a step name. |
 | `optional` | `true` → a failure of this step becomes a warning and execution continues. |
-| `when` | Pre-condition; the step is skipped when not satisfied. Object with `visible` / `notVisible` / `hidden` (element id), `platform`, and/or `state` (`{path, equals}`), ANDed. |
+| `when` | Pre-condition; the step is skipped when not satisfied. Object with `visible` / `notVisible` / `hidden` (element id), `platform`, and/or `state` (`{path, equals}`, read from the state bridge like the `state` assertion; instant — an absent bridge or an unresolved path is not met, a truncated iOS bridge fails the step), ANDed. |
 
 ```json
 { "action": "tap", "id": "tutorial_close", "when": { "visible": "tutorial_overlay" }, "optional": true }
@@ -262,11 +262,79 @@ A screen/flow test may declare a root-level `launch` object applied before the a
 `permissions` values are `allow` / `deny` / `unset`; names: camera, microphone, location,
 notifications, photos, contacts, calendar, bluetooth.
 
+The runner applies `launch` on all three platforms — on web too from jsonui-test-runner web
+1.15.0 (before it, the harness had to call `applyLaunchConfig`, which is removed). Per
+platform:
+
+- **iOS**: launch environment `JSONUI_TEST_CLEAR_STATE` / `JSONUI_TEST_PERMISSIONS` /
+  `JSONUI_TEST_ARGS`. The runner resets its keys before every launch (from 1.15.0), so one
+  file's `launch` never reaches the next file.
+- **Android**: `clearState` wipes the app's persisted files, prefs, databases and caches in
+  process (not `pm clear`); `allow` is granted, `deny` is *asserted* (a granted permission
+  declared `deny` fails the file), `unset` leaves it as it is; `arguments` → the
+  `JSONUI_TEST_ARGS` intent extra.
+- **Web**: `clearState` clears cookies and the origin's local / session storage (not
+  IndexedDB); a `deny` or `unset` clears the context's permissions first, then the `allow`s
+  are granted again; `arguments` → `sessionStorage["JSONUI_TEST_ARGS"]`, removed at the end
+  of the file. Then the runner calls the harness's `afterLaunch(page)` hook, writes the
+  initialState, switches the mocks and reloads the page once (`goto` on a reopen). The page
+  must already be on the app (not `about:blank`) when a file with a launch starts.
+
+**Web harness: seed cookies in `afterLaunch`.** `clearState` removes cookies and storage, so
+whatever the harness set up before `runner.run()` and needs to survive a launch — an auth
+cookie, a storage flag — goes in the runner config hook `afterLaunch: (page) => void |
+Promise<void>`. It is awaited after clearState / permissions / arguments and before the
+initialState write, the mocks and the reload; it runs on every launch (per case under
+`caseIsolation: "reopen"`) and not at all for a file with nothing to launch with; a throw fails
+the launch like the other launch steps (setup).
+
+```typescript
+const runner = new JsonUITestRunner(page, {
+  afterLaunch: async (page) => {
+    await page.context().addCookies([{ name: 'session', value: token, url: baseUrl }]);
+  },
+});
+// or createRunner().afterLaunch(async (page) => { … }).build(page)
+```
+
+On web the initialState payload also carries `writtenAt`; the generated hook takes it only in
+a document opened after it was written (the one the reload / `goto` opens), so a page still
+hydrating from before the launch cannot consume it first. Nothing to write in the test or
+harness — regenerate the app with `jui build` from the jsonui-cli of this train.
+
+`clearState` (iOS) and `arguments` are delivered and no further: reading them is the app's
+own code, not the libraries'. A file with a `launch`, `mocks` or a non-empty `initialState`
+launches the app (reloads, on web) once before the first case — before each case under
+`caseIsolation: "reopen"`; with none of them it does not.
+
 ### `state` Assertion vs. Visual State
 
-Prefer the `state` assertion (`{ "assert": "state", "path": "isLoading", "equals": true }`)
-to verify ViewModel state directly — it works on all three platforms and is more precise than
-inferring state from what is on screen. It requires the harness to expose a state provider.
+Prefer the `state` assertion to verify the screen's ViewModel Data directly — it works on all
+three platforms and is more precise than inferring state from what is on screen:
+
+```json
+{ "assert": "state", "path": "isLoading", "equals": true },
+{ "assert": "state", "path": "user.name", "equals": "Taro" },
+{ "assert": "state", "path": "tags.0", "equals": "new" },
+{ "assert": "state", "path": "nickname", "equals": null }
+```
+
+- **The harness needs nothing.** The app publishes its Data on a state bridge and the driver
+  reads it (iOS leaf `__state_<screenId>`, Android `JsonUIState` on the screen marker, web
+  `window.__JSONUI_STATE__[screenId]`). This needs SwiftJsonUI ≥ 10.30.0 / KotlinJsonUI ≥
+  2.44.0, code generated by the jsonui-cli of the same train (rjui's from that jsonui-cli on
+  web), a development build (the screen-marker gate), and drivers iOS 1.15.0 / Android 1.17.0
+  / web 1.15.0. A provider the harness still passes wins over the bridge. Older libraries
+  publish no bridge, and `state` then times out saying the bridge is absent.
+- **What it reads**: the Data of the screen under test (the screen id of `source.layout`);
+  in a flow, the step's `screen`, else the last `screen` an earlier step named. Only Data
+  whose class `initialState` accepts is published (below) — not closures, not
+  `CollectionDataSource`, not ViewModel properties outside `data`.
+- **`path`**: dot notation; a decimal segment indexes an array from 0 (`tags.0`, not `tags.01`).
+- **`equals: null`** asserts the value is `null`. A path that does not resolve is not `null`:
+  it keeps the assertion waiting and fails at the timeout.
+- `state` auto-waits like the other assertions. On iOS the bridge holds up to 32 KB; a
+  larger Data fails `state` at once.
 
 ## Element Identification (CRITICAL)
 
@@ -346,7 +414,7 @@ Use **Title Case** for `metadata.name` - this is displayed in documentation and 
    - KotlinJsonUI: Look for `*ViewModel.kt` files
    - ReactJsonUI: Look for `*ViewModel.ts` or hooks files
 3. **DO NOT guess ViewModel properties** - Only use properties that actually exist
-4. **Check if properties are settable** - Computed properties cannot be set via `initialState`
+4. **Read the layout's `data` section** - `initialState` can set only the Data names declared there (see *initialState Restrictions*)
 
 ### Creating Tests from Layout
 
@@ -382,33 +450,29 @@ tests/login.test.json
 
 ### initialState Restrictions
 
-**IMPORTANT**: `initialState` can only set properties that are:
-- Mutable (`var` in Swift, `var` in Kotlin, not `readonly` in TypeScript)
-- Not computed properties
-- Directly settable (not derived from other sources like UserDefaults, API, etc.)
+**IMPORTANT**: `initialState.viewModel` keys are the **Data names the layout declares** — the
+`data` section of the screen under test's layout (includes expanded, their names prefixed by
+the include's id in camelCase: include `header` + `title_text` → `headerTitleText`). Top level
+only, case-sensitive, no dot notation (`user.name` is one key and not a Data name).
 
-If a property is computed or depends on external state, **DO NOT use initialState**.
-Instead, create UI-only tests that don't depend on specific ViewModel state.
+Not settable, even though they exist on the generated Data or the ViewModel:
+
+- fields a generator adds by itself — `<id>IsFocused`, a Radio group's selection, TabView members
+- a `data` written as an object (the style shorthand) — it declares nothing
+- ViewModel properties outside `data` (computed properties, repositories, private state)
+- values an API provides — they are the ViewModel's to load (its `init` / `onAppear` may
+  already have run with default values when initialState is applied); make them with `mocks`
 
 ```json
-// BAD - computed properties cannot be set
-{
-  "initialState": {
-    "viewModel": {
-      "isLoading": true  // Won't work if this is a computed property
-    }
-  }
-}
+// BAD - not Data names: a computed VM property, a generator-added field, dot notation
+{ "initialState": { "viewModel": { "isFormValid": true, "emailIsFocused": true, "user.name": "Taro" } } }
 
-// GOOD - Test only UI elements without state assumptions
-{
-  "name": "initial_display",
-  "description": "Initial display shows logo",
-  "steps": [
-    { "assert": "visible", "id": "logo" }
-  ]
-}
+// GOOD - Data names from the layout's data section, values of their class
+{ "initialState": { "viewModel": { "email": "test@example.com", "agreed": false } } }
 ```
+
+If what the case needs is not Data, do not use `initialState`: reach it with steps, or with
+`mocks`. The full rules (types, timing, receipt) are in *Initial State* below.
 
 ## Platform-Specific Tests
 
@@ -466,19 +530,95 @@ variant tree:
 
 ## Initial State
 
-Set ViewModel state before tests:
+Put values into the Data of the screen under test before the first case:
 
 ```json
 {
+  "type": "screen",
+  "source": { "layout": "layouts/login.json" },
   "initialState": {
     "viewModel": {
-      "isLoggedIn": false,
-      "email": ""
+      "email": "test@example.com",
+      "rememberMe": true
     }
   },
   "cases": [...]
 }
 ```
+
+How it reaches the app (jsonui-test-runner iOS 1.15.0 / Android 1.17.0 / web 1.15.0, with
+SwiftJsonUI ≥ 10.30.0 / KotlinJsonUI ≥ 2.44.0 and code generated by the jsonui-cli of the
+same train):
+
+- The driver launches the app once (web: reloads) with the values in the
+  `JSONUI_TEST_INITIAL_STATE` payload, addressed to the screen id of `source.layout` (the
+  child screen also when `embeddedIn` is set).
+- The app applies them **once per launch, the first time that screen appears**. Navigating
+  away and back, or the screen being rebuilt, in the same launch does not apply them again —
+  a case that returns to the screen finds whatever the previous steps left.
+- The app reports what it applied and rejected, and the driver checks that report before
+  `setup` runs. Only a development build receives it (the same gate as the screen marker:
+  DEBUG / `FLAG_DEBUGGABLE` / `NODE_ENV !== 'production'`, or the marker's opt-in key).
+- An empty `viewModel` (`{}`) is the same as none: no payload, no launch.
+
+**Values must fit the Data's class** (the class as the layout writes it; `Integer` is `Int`,
+`Number` is `Double`, `Boolean` is `Bool`; optional is a trailing `?`). Each key is judged on
+its own; the others are still applied.
+
+| Data class | Accepts | Rejected (examples) |
+|---|---|---|
+| `String` | string | `1`, `true` |
+| `Int` | integral number within 32 bits (−2147483648 … 2147483647); `2.0` is accepted | `1.5`, `true`, `"1"`, `2147483648` |
+| `Double` / `Float` / `CGFloat` / `Number` | any number | `"1.5"` |
+| `Bool` | `true` / `false` only | `0`, `1`, `"true"` |
+| `Color` | string (colour token or hex) | `1` |
+| `Array(X)` / `[X]` / `List<X>` (X above) | array, every element checked as X; elements are not optional | `["a", null]` for `Array(String)` |
+| `Array` | array of strings / numbers / booleans | a nested array or object |
+| `Object` / `Hash` | object of strings / numbers / booleans | a nested array or object |
+| any of the above with `?` | the same, plus `null` | `null` without `?` |
+| closures / event handlers, `CollectionDataSource`, `Visibility`, `Image`, `EdgeInsets`, `Dp`, `Alignment`, `Void`, an array of a custom type (`[OrderItem]`), any other class | nothing — not settable | anything, `null` included |
+
+`Visibility` is not settable because its value differs per platform; set the Data it is
+computed from, or reach the state with steps.
+
+**Case-level `initialState`** is merged over the file's key by key (a case's value — `null`
+too — replaces the file's value for that key whole). It needs `caseIsolation: "reopen"`: under
+`"shared"` the screen opens once, before the first case, so a case's values cannot be
+delivered — `jsonui-test validate` errors (`case-initial-state-needs-reopen`) and the driver
+fails that case at setup.
+
+```json
+{
+  "caseIsolation": "reopen",
+  "initialState": { "viewModel": { "email": "" } },
+  "cases": [
+    { "name": "empty email shows the hint", "steps": [ { "assert": "visible", "id": "email_hint" } ] },
+    { "name": "prefilled email enables submit",
+      "initialState": { "viewModel": { "email": "test@example.com" } },
+      "steps": [ { "assert": "enabled", "id": "submit_button" } ] }
+  ]
+}
+```
+
+**Setup failures** (`failureReason: "setup"`; all the cases of a shared file, that case on a
+reopen):
+
+- *rejected* — `initialState for '<screen>' was rejected by the app: …` lists each key with
+  its reason: `not a data field`, `type mismatch: expected <class>`, `null for non-optional
+  <class>`, `unsupported type <class>`, and on Android `viewModel has no updateData` (the
+  ViewModel lacks the generated update block; `jui build` warns about it). Fix the key or the
+  value — validate reports the same before the run.
+- *not confirmed* — no report within `screenReadyTimeout` (15000 ms by default): `initialState
+  for '<screen>' was not confirmed by the app within …` (web: `… no receipt from the app
+  within …`). The message lists the causes: a library or generated code older than the
+  versions above (rebuild with `jui build`), a build with the screen-marker gate closed, on
+  web a page that does not go through the generated ViewModel hook, a screen id that does not
+  match the layout. Fix the build, not the test.
+
+`jsonui-test validate` checks the keys and values against the layout's Data on every platform
+the file runs on (errors), and says once, as INFO, when it cannot check them — an app-owned
+screen with no layout, a layout it cannot read, or a data item that gives that platform no
+class. INFO is not "checked and clean".
 
 ## Setup and Teardown
 
@@ -521,9 +661,9 @@ Either order the cases so each starts where the previous one ends, or declare `c
 | `"shared"` (default; same as omitting it) | opened once; cases share its state | once per file |
 | `"reopen"` | opened afresh before **each** case | before / after **each** case |
 
-With `"reopen"` the web driver goes back to the URL the page was on when the file started (the file's `mocks` re-applied, the `screenReady` gate awaited); iOS and Android relaunch the app with the file's `launch` and `mocks`. A case skipped by `skip` / `platform` / `responsive` opens nothing. A setup failure fails only that case, and its teardown still runs. It costs one page load (web) or one app launch (iOS / Android) per case, so use it when the cases really need a fresh screen, not by default.
+With `"reopen"` the web driver goes back to the URL the page was on when the file started (the file's `mocks` re-applied, the `screenReady` gate awaited); iOS and Android relaunch the app with the file's `launch` and `mocks`. Every reopen also delivers the `initialState` again (the file's, merged with the case's) and checks its receipt. A case skipped by `skip` / `platform` / `responsive` opens nothing. A setup failure fails only that case, and its teardown still runs. It costs one page load (web) or one app launch (iOS / Android) per case, so use it when the cases really need a fresh screen, not by default.
 
-`caseIsolation` is read from jsonui-test-runner web 1.14.0, iOS 1.14.0 and Android 1.16.0. An older driver ignores it and runs the file as `"shared"`. `jsonui-test validate` rejects any other value. It applies to screen test files run on their own; a flow that references a case runs it inside the flow and ignores it.
+`caseIsolation` is read from jsonui-test-runner web 1.14.0, iOS 1.14.0 and Android 1.16.0. An older driver ignores it and runs the file as `"shared"`. `jsonui-test validate` rejects any other value. It applies to screen test files run on their own; a flow that references a case runs it inside the flow and ignores it — and ignores the file's and the case's `initialState` too (validate and the driver warn `referenced-initial-state-ignored`; the flow's own `initialState.viewModels` is the place for them).
 
 ## Test Case Arguments (args)
 

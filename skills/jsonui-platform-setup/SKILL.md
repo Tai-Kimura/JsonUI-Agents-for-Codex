@@ -330,6 +330,12 @@ Wire Playwright:
 
 4. Verify: `npx playwright test`
 
+The runner applies each file's `launch` itself (jsonui-test-runner-web 1.15.0; there is no
+`applyLaunchConfig` to call), and its `clearState` removes cookies and storage. A harness that
+seeds an auth cookie or a storage flag does it in the runner config hook
+`afterLaunch: async (page) => { … }`, which runs after the clearing and before the reload
+(the jsonui-screen-test skill, *Web harness: seed cookies in `afterLaunch`*).
+
 ---
 
 ## Completion output

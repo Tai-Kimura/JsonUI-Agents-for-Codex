@@ -349,9 +349,11 @@ What actually halts vs what works:
 | Field-level `oneOf` + `discriminator` with explicit `mapping`, variants `$ref` top-level schemas, sibling discriminator property exists | **Supported** (codegens dispatch via Swift enum / Kotlin sealed class / TS discriminated union) |
 | Field-level `oneOf` without `discriminator` | Halts |
 | Field-level `oneOf` + `discriminator` but `mapping` missing / partial / pointing outside `oneOf` list | Halts |
-| Schema-level `oneOf` (top-level discriminated envelope) — with or without discriminator | Halts (v2) |
+| Schema-level `oneOf` (top-level envelope) with `discriminator.propertyName`, no own `properties`, `$ref`-only variants that are not unions — `mapping` explicit (validated against each variant's `const` / `enum` tag) or omitted (inferred from every variant's `const` string / single-value string `enum` tag; printed as a WARNING) | **Supported** (Android: `serializer: "kotlinx"` only — Moshi / none halt) |
+| Schema-level `oneOf` without `discriminator`, with own `properties`, with an inline variant, a variant that is itself a union, duplicate / missing / non-string inferred tags, or a mapping that contradicts a variant's tag | Halts |
 | `discriminator` without `oneOf` | Halts |
-| `anyOf` anywhere | Halts (v2) |
+| `anyOf` anywhere | Halts — except a null union |
+| Null union: `anyOf` / `oneOf` of exactly one non-null member plus `{"type": "null"}` (either order), or 3.1 `type: [T, "null"]` | **Supported** — read as that member with `nullable: true` (same DTOs as `nullable: true` / `$ref` + `nullable: true`) |
 
 When `has_one_of: true` fires, open the swagger and verify each `oneOf` site matches the supported shape — only halt-shaped cases need rework before `jui build`.
 
