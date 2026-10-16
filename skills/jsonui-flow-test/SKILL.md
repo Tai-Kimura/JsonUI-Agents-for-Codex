@@ -160,8 +160,59 @@ skipped when it is not satisfied. Same condition object as screen tests
 
 #### Launch Configuration (flow root)
 A flow test may declare a root-level `launch` object (`clearState` / `permissions` /
-`arguments`) applied before the flow starts — same shape as screen tests. See the
+`arguments`) applied before the flow starts — same shape as screen tests, and applied by the
+runner on all three platforms (web from jsonui-test-runner web 1.15.0). See the
 jsonui-screen-test skill for details.
+
+#### Initial State (flow root)
+`initialState.viewModels` puts values into the Data of the screens the flow visits. Its keys
+are **screen ids** — the same values the steps write in `screen` (layout basename without
+`.json`, see *`screen` values are canonical screen ids*). Each inner object follows the screen
+test rules (*Initial State* in the jsonui-screen-test skill): Data names the layout declares,
+values fitting the Data's class, `null` only for a class ending in `?`.
+
+```json
+{
+  "type": "flow",
+  "initialState": {
+    "viewModels": {
+      "login": { "email": "test@example.com" },
+      "checkout": { "couponCode": "WELCOME10" }
+    }
+  },
+  "steps": [
+    { "screen": "login", "action": "tap", "id": "login_button" },
+    { "file": "home", "case": "open_cart" },
+    { "screen": "checkout", "assert": "visible", "id": "coupon_applied" }
+  ]
+}
+```
+
+- All entries travel with the flow's one launch. Each screen applies its entry **once, the
+  first time the flow reaches it**; coming back to it later in the same flow does not apply it
+  again.
+- The driver checks the app's receipt where the flow reaches the screen — the first time an
+  inline step's `screen` changes to it (after the implicit screen check passes; with
+  `verifyScreenTransitions` off, still at that step). A screen stays pending until its receipt
+  passed, so a retried body (`retry`) checks it again. A rejected key or no receipt fails the
+  flow there (see *Setup failures* in the jsonui-screen-test skill for the
+  messages and causes). Drivers iOS 1.15.0 / Android 1.17.0 / web 1.15.0 with SwiftJsonUI ≥
+  10.30.0 / KotlinJsonUI ≥ 2.44.0 and code from the jsonui-cli of the same train.
+- **Name each screen in an inline step's `screen`.** A screen in `viewModels` that no step in
+  `setup` / `steps` names never has its receipt checked — `jsonui-test validate` warns. The
+  driver warns about every screen still pending when the flow ends — also one an earlier
+  attempt reached but did not confirm, when the attempt that passed never went there. A file reference carries no `screen`, so a
+  screen visited only inside a referenced case is not "reached"; add an inline step on it
+  (an `assert: "screen"` is enough).
+- **`initialState.screen` is removed.** A flow starts where the app starts. validate errors
+  (`flow-initial-state-screen-removed`); delete the key.
+- **A referenced file's or case's own `initialState` is ignored inside the flow** —
+  validate and the driver warn (`referenced-initial-state-ignored`). Move the values into
+  `viewModels` under that screen's id.
+- An empty `viewModels` (`{}`) is the same as none.
+
+`state` / `when.state` in a flow read the Data of the step's `screen` (else the last `screen`
+an earlier step named); a case a flow references reads its own file's screen.
 
 #### Step-level Features
 Inline flow steps and block steps support the same step attributes as screen tests —
@@ -500,7 +551,7 @@ remains the `jsonui-test validate` reference.
 ### Actions
 
 <!-- generated:actions -->
-_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.13.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.13.0` (28 actions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
+_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.14.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.14.0` (28 actions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
 
 | Action | 説明 | Required | Optional | Platform notes |
 |---|---|---|---|---|
@@ -545,7 +596,7 @@ Visibility note: `visible` means in the viewport (inside the screen and every sc
 ### Assertions
 
 <!-- generated:assertions -->
-_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.13.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.13.0` (11 assertions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
+_Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/jsonui-test-runner/blob/v1.14.0/schemas/actions.schema.json) @ jsonui-test-runner `v1.14.0` (11 assertions). Do not edit by hand — `node scripts/gen-skill-action-tables.mjs --fix` regenerates; the pin lives in that script._
 
 | Assertion | 説明 | Required | Optional | Platform notes |
 |---|---|---|---|---|
@@ -556,7 +607,7 @@ _Generated from [`schemas/actions.schema.json`](https://github.com/Tai-Kimura/js
 | `disabled` | 要素が無効 | `id` | `timeout` | - |
 | `text` | テキストを検証（`equals`／`contains`） | `id` | `equals`, `contains`, `timeout` | - |
 | `count` | 要素数を検証（`equals: 0` は不存在で成立） | `id`, `equals` | `timeout` | - |
-| `state` | ViewModel 状態を検証（`path` はドット記法、StateProvider 必須） | `path`, `equals` | `timeout` | - |
+| `state` | ViewModel の data を検証（`path` はドット記法。ハーネスの provider は不要 — JsonUI ライブラリ ≥ SwiftJsonUI 10.30.0 / KotlinJsonUI 2.44.0 の state ブリッジを読む） | `path`, `equals` | `timeout` | - |
 | `screenshot` | ベースライン画像とのビジュアル比較（ベースライン無しは新規作成＋警告） | `name` | `cropId`, `threshold=98` | - |
 | `openedUrl` | 直近の `window.open` 呼び出しの URL を検証 | - | `equals`, `contains`, `timeout` | Web のみ（`when.platform: web` でゲート） |
 | `screen` | 指定画面の表示を検証（排他は主張しない — 埋め込み／タブ等で複数同時あり得る） | `name` | `timeout` | - |
