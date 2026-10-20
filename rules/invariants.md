@@ -77,9 +77,14 @@ This is not a corner case. Across six projects measured together, the count of s
 actually compared was zero in every one — 47, 30, 19, 18, 11 and 2 screens respectively,
 all of them skipped with the reason `layout authored externally`.
 
-**Satisfying this invariant is therefore not by itself evidence that spec and Layout agree.** Read the line `jui verify` prints (1.8.5 and later name the denominator: `verified N of M screen(s) — K skipped (reason)`), and treat `verified 0` as *this check did not run*, not as *this check passed*. `--json PATH` writes the same numbers as `verified` / `skipped` / `total` / `skippedByReason` for a gate to assert on.
+**Satisfying this invariant is therefore not by itself evidence that spec and Layout agree.** Read both lines `jui verify` prints:
 
-When `verified` is 0, spec–Layout agreement has to come from somewhere else — review of the authored Layout against the spec, or a test that exercises the screen. Do not report the screen as verified.
+- `verified N of M screen(s) — K skipped (reason)` (1.8.5 and later): the screens whose Layout was compared with the one the spec generates.
+- `checked against the spec's declarations: K of E externally authored layout(s) — F finding(s)` (2.3.12 and later): the externally authored screens, which `verified` never counts. Each is checked against its spec's declarations — every name the Layout binds and every `data` entry must be declared (`specification-rules.md` → "Every name the Layout binds is declared by the spec"). A finding is a WARNING; `--fail-on-diff` counts it only when `jui.config.json` has `"verify": {"external": "gate"}`.
+
+A project whose screens are all authored externally prints `verified 0 of M` and `checked M of M` together: the check ran, on the second line. The second line is printed only when the project has an externally authored layout (E above 0). The check did not run when `verified` is 0 and `checked` is 0 or missing (missing with external layouts means a jsonui-cli before 2.3.12); treat that as *this check did not run*, not as *this check passed*. A `checked` with findings above 0 is not a pass either: read the WARNING lines. `--json PATH` writes the same numbers as `verified` / `skipped` / `total` / `skippedByReason` and `externalChecked` / `externalTotal` / `externalFindings` / `externalNotChecked` for a gate to assert on.
+
+When both are 0 for a screen — not compared and not checked (`externalNotChecked` names why) — spec–Layout agreement has to come from somewhere else: review of the authored Layout against the spec, or a test that exercises the screen. Do not report the screen as verified.
 
 ---
 
