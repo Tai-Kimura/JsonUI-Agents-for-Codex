@@ -34,6 +34,11 @@ JsonUI agents call the `jsonui-mcp-server` (the `jui-tools` MCP) to interact wit
 | Validate test files (always `no_install: true`; from 1.8.119 the result also carries the project's contracts-coverage section — a gate from 1.9.0) | `mcp__jui-tools__test_validate` | `jsonui-test validate --no-install` |
 | Generate branch tests from a spec's branchContracts | `mcp__jui-tools__test_generate_branch_tests` | `jsonui-test generate branch-tests` |
 | Contract-gap coverage (declared API outcomes no branch row answers; read-only. Its `exit` does not read the baseline: `jsonui-test validate` compares these entries with the app's baseline, and gates on that from 1.9.0) | `mcp__jui-tools__test_contracts_coverage` | `jsonui-test contracts coverage` |
+| jui viz (local viewer of Claude Code sessions only): server running, hooks installed, relay registered | `mcp__jui-tools__viz_status` | `jui viz status --json --with-relay` |
+| jui viz: check the environment | `mcp__jui-tools__viz_doctor` | `jui viz doctor --json` |
+| jui viz: start the server in the background, get its URL | `mcp__jui-tools__viz_start` | `jui viz start --json` |
+| jui viz: stop the server | `mcp__jui-tools__viz_stop` | `jui viz stop` |
+| jui viz: open the page in the browser | `mcp__jui-tools__viz_open` | `jui viz open` |
 
 These commands have no MCP equivalent today and are Bash-invoked:
 `jui lint-generated`, `jui lint-strings` (lint gates), the two invariant-5 checks —
@@ -41,6 +46,8 @@ These commands have no MCP equivalent today and are Bash-invoked:
 `jsonui-test generate branch-tests --check` (the generator has `test_generate_branch_tests`; **the `--check` mode does not**) —
 and `jsonui-test contracts baseline` (1.8.119+; `test` runs it only to shrink an existing baseline — the first recording is the user's decision).
 Everything else goes through MCP — including every other `jsonui-test` operation an agent performs.
+
+The `viz_*` tools are for the main session when the user asks about jui viz; no agent declares them. Installing the hooks or the relay (`jui viz hooks install`, `jui viz relay install`) writes `~/.claude/settings.json` and the user's MCP config, so it has no MCP tool and is left to the user.
 
 ---
 

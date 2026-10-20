@@ -68,6 +68,24 @@ What this means in practice:
 
 The one legitimate exception: `screen_parent_spec` index files, where `structure` can hold a brief `rootComponents` summary for human readers, but the real UI still lives in the referenced Layout JSON.
 
+### Every name the Layout binds is declared by the spec
+
+The Layout JSON is written by hand, so nothing generates its bindings from the spec — the spec has to declare them. `jui verify` checks every externally authored layout against its spec (`checked against the spec's declarations: K of E externally authored layout(s) — F finding(s)`; a WARNING, counted by `--fail-on-diff` when `jui.config.json` has `"verify": {"external": "gate"}`). A name is declared only by what goes into the data section `jui g project` writes:
+
+- `stateManagement.uiVariables`
+- what the spec's `displayLogic`, `collection` or `tabView` generate
+
+`dataFlow.viewModel.vars` / `methods` and `stateManagement.eventHandlers` are the view model's and the view's own and never go into data ("a value the view does not use must not be in data"), so a name the Layout binds that is only there is reported (`declared only in dataFlow.viewModel.vars, which never goes into the data section`). Keeping it there as well is fine; it must also be in `uiVariables`.
+
+It is checked for each `@{…}` binding in the layout (its root name) and each entry of the layout file's own `data` section.
+
+**Where to declare a name the Layout binds: `stateManagement.uiVariables`.** A layout's bindings resolve against the data section `jui g project` writes, and that is built from `uiVariables` (plus what `displayLogic` / `collection` / `tabView` generate). A handler the Layout binds (`"onClick": "@{onSaveTap}"`) is a `uiVariables` entry with a callback type — `"(() -> Void)?"` or the `callback` alias. A screen's `stateManagement.eventHandlers` are view-local: they never go into the data section, and doc validate requires their names to match `^on[A-Z]`.
+
+Two rules decide the cases that are not obvious:
+
+1. **An include's bindings are declared by the screen that includes it.** At runtime the including screen's view model receives them, and `jui build` writes that view model's protocol from that screen's spec. An include with an `id` spells what is inside it with the id in front — `{"id": "pager", "include": "common/pager"}` binding `@{summaryText}` is `pagerSummaryText` — and that prefixed name is what the including spec declares, in `stateManagement.uiVariables` (a handler such as `pagerOnNextTap` with a callback type — it is a camelCase variable name, not an `on…` event handler name). A partial shared by several screens is declared in each of them; there is no separate spec for a partial. A sub spec's screen is checked as its parent after the merge: the declaration can sit in the parent or in the sub spec.
+2. **Do not use `stateManagement.cellData`.** It is not a JsonUI field: no generator, validator or check reads it, so a name written only there is not declared (`jui verify` says `declared only under stateManagement.cellData, which jui does not read`). Declare such names in `stateManagement.uiVariables` (with the include's prefix when they are bound inside an include). Collection cells keep their own `cell.uiVariables` / `cell.eventHandlers`, as below.
+
 The rest of this document is the reference for the spec fields that remain (metadata, dataFlow, stateManagement, relatedFiles, etc.). Layout itself is documented in `rules/file-locations.md` + the Layout JSON files themselves.
 
 ---
