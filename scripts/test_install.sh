@@ -67,6 +67,15 @@ p="$(project path)" && {
   [ "$code" -eq 1 ] && ok "-s ../agents (a folder the pack has, outside skills/) is refused" || fail "-s ../agents exited $code"
 }
 
+# 3b. a skill's name followed by a way out of skills/ (to a folder the pack has) is refused and writes nothing
+p="$(project climb)" && {
+  before="$(cd "$p" && find . -type f -print0 | sort -z | xargs -0 "${SUM[@]}")"
+  out="$(cd "$p" && bash "$ROOT/install.sh" -s "$OTHER/../../agents" 2>&1)"; code=$?
+  after="$(cd "$p" && find . -type f -print0 | sort -z | xargs -0 "${SUM[@]}")"
+  [ "$code" -eq 1 ] && [ "$before" = "$after" ] \
+    && ok "-s $OTHER/../../agents is refused and writes nothing" || fail "-s $OTHER/../../agents: exit $code, changed: $([ "$before" = "$after" ] && echo no || echo yes)"
+}
+
 # 4. -s repeats; an empty project gets only skills/<names>
 p="$WORK/bare" && mkdir -p "$p" && {
   out="$(cd "$p" && bash "$ROOT/install.sh" -s "$SKILL" -s "$OTHER" 2>&1)" || fail "-s twice exited $?: $out"
