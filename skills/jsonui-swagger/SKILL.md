@@ -174,6 +174,10 @@ Projects can declare contract checks in `jui.config.json` (top-level
   schema (connection via `JSONUI_CHECK_DB_URL_{NAME}` env var, never in
   config). Type comparison is family-lenient by default; add `x-db-type`
   to a column for exact-match.
+- `builtin:infra-iac`, `builtin:infra-code`, `builtin:infra-load` — the
+  server room's model (`docs/infra`) against the IaC, the code, and its load
+  definitions. Findings are warnings unless the check sets `"gate": true`.
+  These belong to `/jsonui-infra` (run them with `mcp__jui-tools__infra_check`).
 
 `check` is an explicit command that may execute project-declared code —
 it never runs as part of `generate html`. Results are saved as

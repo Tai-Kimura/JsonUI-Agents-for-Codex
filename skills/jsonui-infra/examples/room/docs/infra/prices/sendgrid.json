@@ -1,0 +1,8 @@
+{
+  "version": 0,
+  "id": "sendgrid",
+  "prices": [
+    {"provider": "sendgrid", "service": "email", "sku": "emails", "region": "global", "unit": "email",
+     "price_usd": 0.0006, "effective": "2026-10-01", "source": "https://sendgrid.com/pricing/", "note": "an example price, not a quote"}
+  ]
+}

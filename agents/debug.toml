@@ -25,6 +25,9 @@ allowed_tools = [
   "mcp__jui-tools__list_api_specs",
   "mcp__jui-tools__list_api_models",
   "mcp__jui-tools__preview_api_model_sync",
+  "mcp__jui-tools__infra_validate",
+  "mcp__jui-tools__infra_load_validate",
+  "mcp__jui-tools__infra_cost",
 ]
 
 developer_instructions = '''
@@ -88,6 +91,8 @@ Map the user's description to a spec section:
 | Embed child navigate() does the wrong thing | Read `Embed.navigationMode`. `delegate` (the default): child `navigate` drives the parent NavController/Router. `isolated`: the embed owns a private stack and a push stays inside it (a spec can declare it from jsonui-cli 1.9.0; a Layout JSON Embed could before). `pop` / `dismiss` / `navigateBack` are bounded at the embed (do not close it). |
 | Embed event handler not firing on parent | `structure.embeds[].events` mapping → confirm parent VM has the named method or eventHandler. Validator catches this at spec time; runtime miss usually means lib `emit(name, payload)` was called with a name not in the map. |
 | Generated code does not compile after a jsonui-cli upgrade (a JsonUI name it cannot find, or an argument it does not take) | **spec-external** — the app's SwiftJsonUI / KotlinJsonUI is older than the generated code needs: see "The libraries move with the CLI" in `rules/invariants.md`. Never edit the generated file. |
+| `jui viz`'s server room does not open, or a node / edge / flow is missing from it | `mcp__jui-tools__infra_validate`: `readable: false` gives the reason (no model files, bad `jui.config.json`, a file too large); a file with an error is left out whole; a flow with an error is left out (its `flow.*` problem names the rule). The model is `docs/infra/*.json` — route fixes to **/agent define** (Task 7). |
+| The server room's cost is missing or looks wrong | `mcp__jui-tools__infra_load_validate` (a load file with an error is left out; `load.overlap`: only one row per node counts), then `mcp__jui-tools__infra_cost`: `noPrice`, `noRule`, `loadUndefined`, `priceWarnings` (`prices.free_dropped`), `notes` (`cost.free_per_scenario`: free amounts are taken per environment). Amounts are USD on demand over the month's real hours. Route fixes to **/agent define** (Task 7). |
 | Symptom not in the spec (infra, runtime race, memory) | **spec-external** — confirm there's no spec ↔ impl drift first, then go to impl |
 
 If the symptom doesn't fit cleanly, pick the closest and note the assumption in the report.
