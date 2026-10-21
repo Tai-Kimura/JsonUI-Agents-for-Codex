@@ -12,6 +12,9 @@
 #   ./install.sh -b develop         # Install from specific branch
 #   ./install.sh -c abc123          # Install from specific commit
 #   ./install.sh -v 1.0.0           # Install from specific version tag
+#   ./install.sh -s jsonui-infra    # Add or update ONE skill only (repeat -s for more);
+#                                   # nothing else is touched — no .codex/config.toml,
+#                                   # agents, rules, other skills, or AGENTS.md
 #
 # Testing: set JSONUI_AGENTS_TARBALL_URL to any curl-able tarball URL
 # (e.g. file:///tmp/pack.tar.gz built with `git archive --prefix=x/ HEAD`).
@@ -21,9 +24,10 @@ set -e
 # Default values
 REF="main"
 REF_TYPE="branch"
+ONLY_SKILLS=()
 
 # Parse arguments
-while getopts "b:c:v:h" opt; do
+while getopts "b:c:v:s:h" opt; do
     case $opt in
         b)
             REF="$OPTARG"
@@ -37,13 +41,17 @@ while getopts "b:c:v:h" opt; do
             REF="$OPTARG"
             REF_TYPE="tag"
             ;;
+        s)
+            ONLY_SKILLS+=("$OPTARG")
+            ;;
         h)
-            echo "Usage: $0 [-b branch] [-c commit] [-v version]"
+            echo "Usage: $0 [-b branch] [-c commit] [-v version] [-s skill ...]"
             echo ""
             echo "Options:"
             echo "  -b BRANCH   Install from specific branch (default: main)"
             echo "  -c COMMIT   Install from specific commit hash"
             echo "  -v VERSION  Install from specific version tag"
+            echo "  -s SKILL    Add or update only this skill (repeatable); nothing else is touched"
             echo "  -h          Show this help message"
             exit 0
             ;;
@@ -93,6 +101,35 @@ for f in "$SRC/.codex/config.toml" "$SRC/AGENTS.md"; do
         exit 1
     fi
 done
+
+# -s: only the named skills. Every name is checked before anything is written, and
+# nothing but skills/<name>/ is written: a project that already has the pack gets a
+# new skill without its .codex/config.toml, agents, rules, other skills or AGENTS.md
+# being rewritten.
+if [ ${#ONLY_SKILLS[@]} -gt 0 ]; then
+    bad=0
+    for skill in "${ONLY_SKILLS[@]}"; do
+        if ! [[ "$skill" =~ ^[a-z0-9][a-z0-9-]*$ ]] || [ ! -d "$SRC/skills/$skill" ]; then
+            echo "Error: no skill named '$skill' in the pack." >&2
+            bad=1
+        fi
+    done
+    if [ "$bad" -ne 0 ]; then
+        echo "Skills in the pack:" >&2
+        for sdir in "$SRC"/skills/*/; do echo "  $(basename "$sdir")" >&2; done
+        exit 1
+    fi
+    echo ""
+    echo "Installing only the named skills..."
+    for skill in "${ONLY_SKILLS[@]}"; do
+        echo "  - skills/$skill/"
+        mkdir -p "$SKILLS_DIR/$skill"
+        cp -R "$SRC/skills/$skill/." "$SKILLS_DIR/$skill/"
+    done
+    echo ""
+    echo "Installed ${#ONLY_SKILLS[@]} skill(s); nothing else was changed."
+    exit 0
+fi
 
 # Create directories
 for dir in "$CODEX_DIR" "$AGENTS_DIR" "$SKILLS_DIR" "$RULES_DIR"; do

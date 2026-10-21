@@ -16,6 +16,10 @@ curl -H "Cache-Control: no-cache" -sL "https://raw.githubusercontent.com/Tai-Kim
 curl -H "Cache-Control: no-cache" -sL "...install.sh?$(date +%s)" | bash -s -- -b develop
 curl -H "Cache-Control: no-cache" -sL "...install.sh?$(date +%s)" | bash -s -- -c abc123
 curl -H "Cache-Control: no-cache" -sL "...install.sh?$(date +%s)" | bash -s -- -v 1.0.0
+
+# One skill only, into a project that already has the pack (nothing else is written:
+# no .codex/config.toml, agents, rules, other skills or AGENTS.md)
+curl -H "Cache-Control: no-cache" -sL "...install.sh?$(date +%s)" | bash -s -- -s jsonui-infra
 ```
 
 Enable Codex CLI's multi-agent feature (`/experimental` → toggle on, or add `[features] multi_agent = true` to `~/.codex/config.toml`), then:
