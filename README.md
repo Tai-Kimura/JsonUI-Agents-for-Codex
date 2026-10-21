@@ -42,7 +42,7 @@ You'll be asked to pick a workflow. Three of the four route through `/agent cond
 | Agent | R/W | Responsibility |
 |---|---|---|
 | `conductor` | R | Entry point — reads repo state via MCP and routes to the right sub-agent |
-| `define` | W | Spec authoring (screen / component / API/DB / doc-rules), validate, HTML docs |
+| `define` | W | Spec authoring (screen / component / API/DB / doc-rules / the server room `docs/infra`), validate, HTML docs |
 | `ground` | W | `jui init`, platform scaffolding, test runner setup |
 | `implement` | W | Layout / Styles / VM body + localize + `jui build` (0 warnings) + `jui verify` (no drift) |
 | `navigation-ios` | W | SwiftUI NavigationStack / UIKit UINavigationController |
@@ -53,7 +53,7 @@ You'll be asked to pick a workflow. Three of the four route through `/agent cond
 
 Switch between them with `/agent <name>`. All agents are MCP-first — they call the `jsonui-mcp-server` for spec / layout reads, lookups, generation, build, verify. Bash shell-outs are reserved for the commands without MCP wrappers (see `rules/mcp-policy.md`).
 
-## Skills (11)
+## Skills (12)
 
 Authoring guides invoked from agents via `$skill-name`.
 
@@ -62,6 +62,7 @@ Authoring guides invoked from agents via `$skill-name`.
 | `jsonui-screen-spec` | `define` | Screen `.spec.json` authoring |
 | `jsonui-component-spec` | `define` | Reusable component spec |
 | `jsonui-swagger` | `define` | API / DB OpenAPI |
+| `jsonui-infra` | `define` | The server room (`docs/infra`): model, flows, load, prices, cost, checks |
 | `jsonui-dataflow` | `define`, `implement`, `debug` | `dataFlow.{viewModel,repositories,useCases,apiEndpoints}` + Mermaid linkage |
 | `jsonui-layout` | `implement` | Layout JSON + Styles + includes |
 | `jsonui-viewmodel-impl` | `implement` | VM / Repository / UseCase method body (signatures stay in spec) |

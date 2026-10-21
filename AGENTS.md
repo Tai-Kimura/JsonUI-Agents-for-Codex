@@ -89,6 +89,7 @@ It handles all of:
 - **New work / feature addition** — routes to `ground` (setup, if fresh) → `define` (spec) → `implement` → `test`, one screen at a time
 - **Modify existing** — for bugs, run `debug` (READ-ONLY) first to locate the root cause from the spec, then route to `define` / `implement` / `navigation-*` as the report indicates. For a feature change, go directly to the relevant agent.
 - **Investigate only** — `debug` (READ-ONLY) walks the structure starting from the spec
+- **Server room** — the infrastructure, flows, load and cost under `docs/infra` that `jui viz` draws: `define` (Task 7, `$jsonui-infra`), not backend mode
 
 **Spec-first bug tracing** — when investigating a bug, always start from the spec, not the stack trace. Symptom → spec-section mapping:
 

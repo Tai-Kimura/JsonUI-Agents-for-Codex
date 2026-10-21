@@ -172,6 +172,21 @@ Required so the wrapper is usable as a Retrofit request/response type and as a f
 
 **Do not delete the AUTO-GENERATED markers** — without them the patcher falls back to "append at end of file" mode and duplicates the block.
 
+## The Server Room (`docs/infra`)
+
+The infrastructure `jui viz` draws, plays flows on and prices. Hand-written JSON, owned by `/agent define` (Task 7,
+`$jsonui-infra`); it describes the IaC and the code and never changes them.
+
+| Path (default) | `jui.config.json` → `infra` | What |
+|---|---|---|
+| `docs/infra/*.json` | `dir` | The model: environments, groups, nodes, edges, flows (several files merged) |
+| `docs/infra/load/*.json` | `load_dir` | Load scenarios, one environment's month each |
+| `docs/infra/prices/*.json` | `prices_dir` | The room's own prices (what the bundled table lacks) |
+| `docs/infra/seed/` | — | `infra_seed`'s draft and report when written (`write: true`) — never read as the model |
+| `docs/infra/.check-report.infra-*.json` | — | `infra_check`'s reports (generated) |
+
+No value of a secret, an account id or an address in any of them — `infra_validate` refuses the file.
+
 ## ⛔ NEVER Edit Platform Copies Directly
 
 Each platform's `Layouts/` directory is overwritten by `jui build`. Any direct edits there will be lost.

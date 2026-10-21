@@ -1,7 +1,7 @@
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 
-# Spec authoring (screen / component / API+DB / doc-rules). Validates + regenerates HTML docs. Does not touch Layout or VM impl.
+# Spec authoring (screen / component / API+DB / doc-rules / the server room docs/infra). Validates + regenerates HTML docs. Does not touch Layout or VM impl.
 allowed_tools = [
   "Read",
   "Write",
@@ -29,6 +29,12 @@ allowed_tools = [
   "mcp__jui-tools__search_components",
   "mcp__jui-tools__list_api_specs",
   "mcp__jui-tools__preview_api_model_sync",
+  "mcp__jui-tools__infra_seed",
+  "mcp__jui-tools__infra_validate",
+  "mcp__jui-tools__infra_load_validate",
+  "mcp__jui-tools__infra_prices_validate",
+  "mcp__jui-tools__infra_cost",
+  "mcp__jui-tools__infra_check",
 ]
 
 developer_instructions = '''
@@ -41,6 +47,8 @@ The spec authoring and editing agent. Responsible for the *intent and contract* 
 - Screen spec (`docs/screens/json/*.spec.json`) — create, edit, validate, generate HTML docs
 - Component spec (`docs/screens/json/components/*.component.json`) — for non-standard components
 - API / DB OpenAPI (`docs/api/*.json`, `docs/db/*.json`)
+- The server room (`docs/infra/*.json`, `docs/infra/load/`, `docs/infra/prices/`) — the declared infrastructure
+  `jui viz` draws, its flows, load scenarios and own prices (Task 7)
 - Custom validation rules (`.jsonui-doc-rules.json`) for non-JsonUI projects
 - Requirements gathering (when starting fresh)
 - `branchContracts` — the per-method decision table a spec carries for every
@@ -93,6 +101,7 @@ What are you doing?
 3. **Author API / DB spec** — OpenAPI
 4. **Author component spec** — custom component for functionality not in standard JsonUI
 5. **Close contract coverage** — answer the API outcomes `test_contracts_coverage` reports uncovered
+6. **Server room** — draft / write / price the declared infrastructure under `docs/infra` (Task 7)
 ```
 
 If the user already has a clear request, skip the question.
@@ -534,6 +543,23 @@ Show the drafts as one table per screen: method · operation · status · draft 
 1. `doc_validate_spec`
 2. `test_contracts_coverage` again — quote before and after on one line per platform: required · row · excluded · uncovered · not evaluated · exit · baselined (matched · new · stale[ · unmeasured now][ · vanished]). Take the counts from `platforms[].totals` (`statuses_required` and `units` are there from 1.8.118, before that add up `screens[]`), `exit` from `platforms[].exit`, and baselined · matched · new · stale · hidden · vanished from `platforms[].baseline`. A row that asserts `"api.<op>": "called"` for an operation the method did not reach before makes that (method, operation) a new unit, so `statuses required` can grow: draft the new units in another round, until a re-measure adds none
 3. Route to `/agent test` to regenerate branch tests and, when the app has a coverage baseline, to shrink it (`jsonui-test contracts baseline`) — you are Bash-free and never edit that file. Each new row and each `alsoStatuses` copy is a new generated test. If one goes red against the implementation, that is a finding for `/agent debug`. Do not weaken the row to make it green.
+
+---
+
+## Task 7: Server room (`docs/infra`)
+
+The infrastructure `jui viz` draws as a server room — environments, groups, nodes, edges, flows — and the load
+scenarios and prices its cost page simulates. Declaring it is spec work: it describes the IaC and the code, it never
+changes them.
+
+Invoke `$jsonui-infra` for the procedure and the rules (flows, load, prices) before writing any file. Its gates, in
+order: `mcp__jui-tools__infra_seed` (draft, read-only), `infra_validate` (model and flows),
+`infra_load_validate`, `infra_prices_validate`, `infra_cost` (what is unpriced, with no rule, with no load),
+`infra_check` (against the IaC, the code and the load). Done means `infra_validate` and `infra_load_validate` report
+0 errors, every `noPrice` / `noRule` / `loadUndefined` entry of `infra_cost` is either fixed or stated with its
+reason, and the load numbers' basis (measured or assumed) is in your report.
+
+No value of a secret, an account id or an address in any file — names and ids only.
 
 ---
 

@@ -20,7 +20,7 @@ description = "READ-ONLY bug investigation and behavior tracing. Always starts f
 config_file = "agents/debug.toml"
 
 [agents.define]
-description = "Spec authoring and editing agent. Owns screen specs, component specs, API/DB OpenAPI, and custom validation rules. MCP-first: uses doc_init_spec, doc_validate_spec, doc_generate_spec, jui_verify. Does not touch Layout JSON or VM impl."
+description = "Spec authoring and editing agent. Owns screen specs, component specs, API/DB OpenAPI, the server room (docs/infra: model, flows, load, prices), and custom validation rules. MCP-first: uses doc_init_spec, doc_validate_spec, doc_generate_spec, jui_verify. Does not touch Layout JSON or VM impl."
 config_file = "agents/define.toml"
 
 [agents.ground]
