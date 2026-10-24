@@ -911,7 +911,7 @@ A cell's child carries the same id in every cell, so `{ "assert": "text", "id": 
 ```
 
 - Every step that targets an element by id takes `within`, and so does a `when` / `while` condition beside its `visible` / `notVisible` / `hidden`.
-- With no `within` element on screen the step fails (`count` too — it does not read 0).
+- With no `within` element on screen the step fails, whatever it asserts — `visible`, `notVisible`, `hidden` and `count` alike — and a condition with `within` is not met. To check that a cell itself is not shown, write `hidden` on the cell's id (`product_list_item_3`) without `within`.
 - `index` is **not** "the n-th match": it is `tapItem`'s, `selectTab`'s and `selectOption`'s only, and `validate` reports it on any other step as an error.
 
 ### Handling Native Alert Dialogs
