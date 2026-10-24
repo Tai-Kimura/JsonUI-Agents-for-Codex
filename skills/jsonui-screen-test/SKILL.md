@@ -900,6 +900,20 @@ Use `tapItem` to tap an item at a specific index in a CollectionView or List:
 
 The element ID is constructed as `{collectionId}_item_{index}` internally. In a Collection with more than one section, `index` is the item's place in its own section — two sections each have an `_item_0`, so `index` alone does not tell them apart — except in a paging horizontal Collection, where from jsonui-cli 1.9.0 it is the page's place among all the pages (before 1.9.0, the web and iOS pagers counted from 0 again in each section as well).
 
+### One cell's child: `within`
+A cell's child carries the same id in every cell, so `{ "assert": "text", "id": "itemTitle" }` reads the first one on screen. To name the n-th cell's child, look the id up inside that cell with `within` (drivers web 1.18.0 / iOS 2.2.0 / Android 1.20.0):
+
+```json
+{ "assert": "text", "id": "itemTitle", "within": "product_list_item_1", "equals": "B" },
+{ "assert": "hidden", "id": "saleBadge", "within": "product_list_item_1" },
+{ "action": "tap", "id": "favoriteButton", "within": "product_list_item_2" },
+{ "assert": "visible", "id": "itemTitle", "when": { "visible": "saleBadge", "within": "product_list_item_0" } }
+```
+
+- Every step that targets an element by id takes `within`, and so does a `when` / `while` condition beside its `visible` / `notVisible` / `hidden`.
+- With no `within` element on screen the step fails (`count` too — it does not read 0).
+- `index` is **not** "the n-th match": it is `tapItem`'s, `selectTab`'s and `selectOption`'s only, and `validate` reports it on any other step as an error.
+
 ### Handling Native Alert Dialogs
 When the app shows a native alert dialog (confirm, permission request, etc.), use `alertTap` to tap a button:
 

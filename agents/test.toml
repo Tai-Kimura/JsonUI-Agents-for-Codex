@@ -184,6 +184,15 @@ For each eventHandler and each key displayLogic state, draft a test case:
 
 Invoke `$jsonui-screen-test` for the canonical schema, action/assertion reference, and examples.
 
+**One cell of a Collection — `within`.** A cell's child has the same id in every cell, so a step on it alone reads the first one on screen. To target the n-th cell's child, look it up inside the cell: `"within": "<collectionId>_item_<n>"` (0-based). Every step that targets an id takes it (tap, input, text, visible, hidden, count, readText, a screenshot's `cropId`, …), and so does a `when` / `while` condition beside its `visible` / `notVisible` / `hidden`:
+
+```jsonc
+{ "assert": "text", "id": "itemTitle", "within": "productList_item_1", "equals": "B" },
+{ "assert": "hidden", "id": "saleBadge", "within": "productList_item_1" }
+```
+
+Do **not** write `index` for "the n-th match": `index` belongs to `tapItem`, `selectTab` and `selectOption` only, and `test_validate` reports it on any other step as an error. Drivers: web 1.18.0 / iOS 2.2.0 / Android 1.20.0 or later.
+
 ### A3. Write the file
 
 ```
