@@ -73,9 +73,8 @@ jui verify --fail-on-diff
 
 `jui verify` only compares screens whose Layout JSON it could have generated. A screen whose spec points at a hand-authored layout is **skipped**, and skipped screens do not affect the exit code. So a face where every screen is authored externally passes this invariant while comparing nothing.
 
-This is not a corner case. In a project whose screens all use hand-authored layouts, the count of screens
-actually compared was zero in every one,
-all of them skipped with the reason `layout authored externally`.
+This is not a corner case. A project whose screens all use hand-authored layouts compares
+zero screens — every one is skipped with the reason `layout authored externally`.
 
 **Satisfying this invariant is therefore not by itself evidence that spec and Layout agree.** Read both lines `jui verify` prints:
 
