@@ -237,7 +237,7 @@ Wire the JsonUITestRunner XCUITest driver into the iOS project:
 
    ```swift
    // Package.swift or via Xcode → File → Add Packages
-   .package(url: "https://github.com/Tai-Kimura/jsonui-test-runner-ios", from: "1.0.0")
+   .package(url: "https://github.com/Tai-Kimura/jsonui-test-runner-ios", from: "2.6.0")
    ```
 
 4. Link `JsonUITestRunner` to the UI test target.
@@ -282,7 +282,7 @@ Wire UIAutomator-based driver:
 1. Add to `app/build.gradle.kts`:
 
    ```kotlin
-   androidTestImplementation("io.github.tai-kimura:jsonui-test-runner-android:1.0.0")
+   androidTestImplementation("io.github.tai-kimura:jsonui-test-runner-android:1.25.0")
    ```
 
 2. Create `app/src/androidTest/java/.../SmokeTest.kt`:

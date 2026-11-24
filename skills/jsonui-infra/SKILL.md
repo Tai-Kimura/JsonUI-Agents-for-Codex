@@ -1,6 +1,6 @@
 ---
 name: jsonui-infra
-description: Writes and maintains a project's server room — the infra model under docs/infra (environments, groups, nodes, edges, flows), its load scenarios and its own prices — that jui viz draws in 3D, plays flows on and prices month by month. Drafts from IaC with infra_seed, validates with infra_validate / infra_load_validate / infra_prices_validate, prices with infra_cost and keeps it true with infra_check.
+description: Writes and maintains a project's server room — the infra model under docs/infra (environments, groups, nodes, edges, flows), its load scenarios and its own prices — that jui viz draws in 3D, plays flows on and prices month by month. Drafts from IaC with infra_seed, validates with infra_validate / infra_load_validate / infra_prices_validate, prices with infra_cost and keeps it true with infra_check. Also writes migration plans (docs/infra/migrations/<name>: changes and removals on top of the model), checked with infra_validate and priced old against new with infra_cost's plan.
 tools: Read, Write, Edit, Glob, Grep
 ---
 
@@ -28,6 +28,7 @@ project's jsonui-doc is older: tell the user, do not work around it.
 | `docs/infra/load/*.json` | One load scenario per file: one environment's month of traffic (`id`, `month`, `environment`, `profiles`, `week`, `loads`, `edges`). |
 | `docs/infra/prices/*.json` | Only prices the bundled table lacks (a SaaS, a region it does not have). |
 | `docs/infra/seed/` | `infra_seed`'s draft and report. Never the model: copy from it. |
+| `docs/infra/migrations/<name>/` | One migration plan: `changes.json` and `removals.json` (jsonui-cli 2.3.20+; `infra.migrations_dir` moves the folder). The model stays the old side. |
 
 ## Workflow
 
@@ -75,11 +76,26 @@ Declare in `jui.config.json` → `checks`: `{"name": "infra-iac", "type": "built
 Run `mcp__jui-tools__infra_check` and resolve each result that is not ok: a node the IaC has and the model lacks
 (`missing_in_doc`), the reverse (`missing_in_impl`), a category or service that differs (`mismatch`).
 
-### Step 8: Report
+### Step 8: A migration plan (only when the user asks for one)
+
+The model in `docs/infra/*.json` is today's infrastructure; a plan says what moves. Write
+`docs/infra/migrations/<name>/changes.json` and `removals.json` by **Migration rules** below — never edit the model to
+show where it is going. Then `mcp__jui-tools__infra_validate` with `plan: "<name>"`: fix every problem it lists under
+`migrations` (the plan's own codes and the infra checks on the merged new model), and read its `steps` — the order
+`jui viz`'s 移管 button will play. Then `mcp__jui-tools__infra_cost` with `plan` (and a `scenario`): the month old,
+new and the difference, per node, per provider and after each step; `account: true` adds the account's month (its
+environments priced together). Every node the plan adds needs a price and load like any other (Step 5): write its load
+row in the room's load file (validate does not flag a row for a node a plan adds; it counts in the new month) — a node
+added with no load row costs 0 in the difference, which is not a saving. Read `unpricedChanged` (the changed nodes
+whose month is not all priced in the old or the new; the difference leaves their part out) before calling the
+difference a saving. A step's difference is the whole month's change at that step, not its node's own: a neighbour can
+move with it (a shared free amount); its `moved` names what moved. A node's own change is its row in the per-node list.
+
+### Step 9: Report
 
 List the files written, the counts from `infra_validate`, the scenarios, the month's total and its top nodes from
 `infra_cost`, what is unpriced and why, the assumptions behind the load numbers, and what `infra_check` still
-reports.
+reports. For a plan: its counts and steps, and the old → new month with its biggest changes.
 
 ## Flow rules
 
@@ -117,6 +133,20 @@ A flow is always **at one node**. Each move leaves the node the flow is at and e
   (`prices.free_dropped`). Copy the `free` you mean to keep.
 - The month has its real hours (720 / 744), not 730. Amounts are USD, on demand — no reservations, discounts or tax.
   Say so when comparing with a hand-made estimate.
+
+## Migration rules
+
+New = the model + `changes.json` − `removals.json`.
+
+| Rule | Note |
+|---|---|
+| `changes.json` has the model's shape (`groups`, `nodes`, `edges`, `flows`, `environments`, `version: 0`) and an optional `order`: node ids. | A flow, group or edge with an id the model has replaces it; a new id adds one. |
+| A node in `changes` with an id the model has **replaces** it; a new id **adds** a node. | Write the whole node: a replacement is not a patch. |
+| `removals.json` is `{"version": 0, "nodes": [id], "groups": [id], "edges": [id or {"from", "to"}], "flows": [id]}`. A removed node **takes its edges** with it. | Do not list those edges again. |
+| **A plan that changes a flow** writes the whole flow in `changes`' `flows` (by the flow's id), and lists a flow that goes in `removals`' `flows`. Flows change at the plan's last step. | A flow that walks a node the plan removes must be rewritten or removed, or the plan fails on the new model's check (`flow.node.missing`). |
+| A replaced node **keeps its edges** unless `changes` or `removals` names them. | To rewire, remove the old edge and add the new one. |
+| An id in both files (`migration.both`), twice (`migration.duplicate`), a removal the model lacks (`migration.remove_missing`), an `order` id the plan does not touch (`migration.order_unknown`) and an edge whose end the new model lacks (`migration.edge_end`) are errors. | Each names the file and path. |
+| The play order is `order`, else the order of `changes`' nodes, then `removals`' nodes — one node a step. An edge comes in at the later step of its two ends and goes at the earlier; a group comes in with the first node it holds; flows, removed groups, and edges or groups with no node of their own changing come at one last step. | Put what must exist first (a new database before the service that reads it) first. |
 
 ## What you do not do
 
